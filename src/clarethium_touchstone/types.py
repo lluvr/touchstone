@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import Literal, TypedDict
 
-
 # -- Output measurement (Standard Section 5) -------------------------------
 
 

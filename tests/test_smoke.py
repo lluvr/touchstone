@@ -33,44 +33,69 @@ def test_version_strings() -> None:
 
 
 def test_measure_layer_functions_present() -> None:
-    """All Standard Section 5 layer functions are exposed by measure module."""
-    from clarethium_touchstone import measure as measure_module
+    """All Standard Section 5 layer functions are accessible from measure module.
 
-    expected = {
-        "measure",
-        "structural_profile",
-        "claim_density",
-        "temporal_instability",
-        "fabrication_rate",  # deprecated alias
-        "source_matching",
-        "entity_provenance",
-        "vocabulary_proximity",
-        "presentation_features",
-        "epistemic_calibration",
-        "information_novelty",
-        "quality_profile",
-        "grounding_decomposition",
-    }
-    actual = set(measure_module.__all__)
-    assert expected.issubset(actual), f"Missing from measure module: {expected - actual}"
+    Functions are imported by name; if any are missing the import fails. Asserting
+    callability confirms each is a function rather than a stale binding.
+    """
+    from clarethium_touchstone.measure import (
+        claim_density,
+        entity_provenance,
+        epistemic_calibration,
+        fabrication_rate,
+        grounding_decomposition,
+        information_novelty,
+        measure,
+        presentation_features,
+        quality_profile,
+        source_matching,
+        structural_profile,
+        temporal_instability,
+        vocabulary_proximity,
+    )
+
+    functions = (
+        measure,
+        structural_profile,
+        claim_density,
+        temporal_instability,
+        fabrication_rate,
+        source_matching,
+        entity_provenance,
+        vocabulary_proximity,
+        presentation_features,
+        epistemic_calibration,
+        information_novelty,
+        quality_profile,
+        grounding_decomposition,
+    )
+    assert all(callable(f) for f in functions)
 
 
 def test_align_layer_functions_present() -> None:
-    """All Standard Section 6 layer functions are exposed by align module."""
-    from clarethium_touchstone import align as align_module
+    """All Standard Section 6 layer functions are accessible from align module."""
+    from clarethium_touchstone.align import (
+        align,
+        analyze_spec,
+        coverage_mapping,
+        emphasis_balance,
+        extract_requirements,
+        pipeline_check,
+        scope_drift,
+        semantic_coverage,
+    )
 
-    expected = {
-        "align",
-        "extract_requirements",
-        "coverage_mapping",
-        "scope_drift",
-        "emphasis_balance",
-        "semantic_coverage",
-        "analyze_spec",
-        "pipeline_check",
-    }
-    actual = set(align_module.__all__)
-    assert expected.issubset(actual), f"Missing from align module: {expected - actual}"
+    functions = (
+        align,
+        extract_requirements,
+        coverage_mapping,
+        scope_drift,
+        emphasis_balance,
+        semantic_coverage,
+        analyze_spec,
+        pipeline_check,
+    )
+    assert all(callable(f) for f in functions)
 
 
 def test_implementation_pending() -> None:
