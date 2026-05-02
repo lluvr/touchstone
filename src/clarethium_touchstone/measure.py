@@ -13,6 +13,7 @@ LLM API for baseline generation.
 
 Implementation status: progressive extraction in progress.
 
+* Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c; 1a returns None)
 * Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
 * All other layers: skeleton, raises ``NotImplementedError``
@@ -252,11 +253,227 @@ def measure(
 
 # -- Layer 1: Structural profile ------------------------------------------
 
+# Layer 1b: causal-reasoning markers vs filler/buzzword markers.
+_MECHANISM_PATTERNS: tuple[str, ...] = (
+    r"\bbecause\b",
+    r"\bcauses\b",
+    r"\bleads?\s+to\b",
+    r"\bresults?\s+in\b",
+    r"\bdue\s+to\b",
+    r"\bdriven\s+by\b",
+    r"\bmediated\s+by\b",
+    r"\bthrough\s+the\s+mechanism\b",
+    r"\bcontributes?\s+to\b",
+    r"\bstems?\s+from\b",
+    r"\bconsequently\b",
+    r"\btherefore\b",
+    r"\bthus\b",
+    r"\bcreates?\s+(?:a|an|the)\b",
+    r"\bprevents?\s+(?:a|an|the|this|that)\b",
+    r"\bundermines?\b",
+    r"\breinforces?\b",
+    r"\bexacerbates?\b",
+    r"\btriggers?\b",
+    r"\breduces?\s+(?:a|an|the|this|that)\b",
+    r"\bincreases?\s+(?:a|an|the|this|that)\b",
+    r"\bdepends?\s+on\b",
+    r"\bin\s+response\s+to\b",
+)
+
+_BUZZWORD_PATTERNS: tuple[str, ...] = (
+    r"\bfundamentally\b",
+    r"\binherently\b",
+    r"\bexponentially\b",
+    r"\btransformative\b",
+    r"\bparadigm\b",
+    r"\bsynerg(?:y|istic)\b",
+    r"\bholistically\b",
+    (
+        r"\bleverage\b(?=\s+(?:the|this|that|our|their|your|its|a|an|"
+        r"existing|new|current|available|key|core|unique|critical|"
+        r"strategic|digital|modern|data|technology|AI|cloud))"
+    ),
+    r"\bosmosis\b",
+    r"\bseamlessly\b",
+    r"\brobust\b(?=\s+(?:framework|solution|approach|system))",
+    r"\bcomprehensive\b(?=\s+(?:framework|solution|approach|strategy))",
+    r"\bcritical(?:ly)?\s+important\b",
+    r"\bgame.?changer\b",
+    r"\bpivotal\b",
+)
+
+_MECH_RE = re.compile("|".join(_MECHANISM_PATTERNS), re.IGNORECASE)
+_BUZZ_RE = re.compile("|".join(_BUZZWORD_PATTERNS), re.IGNORECASE)
+
+
+def _mechanism_ratio(text: str) -> float:
+    """Layer 1b: causal-reasoning markers / (causal + buzzword) markers.
+
+    Construct: ratio of mechanism language to filler/buzzword language.
+    Measures reasoning STYLE, not reasoning quality. Returns 0.0 when
+    no markers of either kind are present.
+    """
+    mech = len(_MECH_RE.findall(text))
+    buzz = len(_BUZZ_RE.findall(text))
+    total = mech + buzz
+    if total == 0:
+        return 0.0
+    return round(mech / total, 4)
+
+
+# Layer 1c: epistemic register patterns. Five categories.
+_REGISTER_PATTERNS: dict[str, tuple[str, ...]] = {
+    "ASSERTION": (
+        r"\bmust\b",
+        r"\balways\b",
+        r"\bnever\b",
+        r"\bundeniably\b",
+        r"\bclearly\b",
+        r"\bobviously\b",
+        r"\bensures?\b",
+        r"\bguarantees?\b",
+        r"\brequires?\b",
+        r"\bwill\s+(?:lead|result|cause|create|produce)\b",
+        r"\bis\s+essential\b",
+        r"\bis\s+critical\b",
+        r"\bis\s+(?:the\s+)?key\b",
+    ),
+    "QUALIFIED": (
+        r"\btends?\s+to\b",
+        r"\bin\s+many\s+cases\b",
+        r"\bevidence\s+suggests?\b",
+        r"\boften\b",
+        r"\btypically\b",
+        r"\bgenerally\b",
+        r"\busually\b",
+        r"\bfrequently\b",
+        r"\bcan\s+(?:lead|result|cause|help)\b",
+        r"\bmay\s+(?:lead|result|cause|help|be|not)\b",
+        r"\blikely\b",
+        r"\bprobably\b",
+    ),
+    "CONDITIONAL": (
+        r"\bwhen\s+\w+\s+(?:is|are|do|does|have|has)\b",
+        r"\bif\s+(?:the|this|a|an|these|those)\b",
+        r"\bdepending\s+on\b",
+        r"\bassuming\b",
+        r"\bin\s+(?:cases|situations|contexts)\s+where\b",
+        r"\bprovided\s+that\b",
+        r"\bunder\s+(?:conditions|circumstances)\b",
+        r"\bwhether\b",
+    ),
+    "EVIDENCED": (
+        r"\bstudies?\s+(?:show|indicate|suggest|find|found|demonstrate)\b",
+        r"\bresearch\s+(?:show|indicate|suggest|find|found|demonstrate)s?\b",
+        r"\bdata\s+(?:show|indicate|suggest|reveal)s?\b",
+        r"\baccording\s+to\b",
+        r"\bempirical(?:ly)?\b",
+        r"\bobserved\b",
+        r"\bmeasured\b",
+        r"\bevidence\s+(?:from|shows?|indicates?|suggests?)\b",
+    ),
+    "SPECULATIVE": (
+        r"\bmight\b",
+        r"\bcould\s+(?:be|lead|result|have|create|potentially)\b",
+        r"\bpossibly\b",
+        r"\bperhaps\b",
+        r"\bremains?\s+to\s+be\s+seen\b",
+        r"\bit\s+is\s+(?:possible|plausible|conceivable)\b",
+        r"\bspeculat(?:e|ive|ion)\b",
+        r"\bhypothes(?:is|ize|etical)\b",
+    ),
+}
+
+_REG_COMPILED: dict[str, re.Pattern[str]] = {
+    register: re.compile("|".join(patterns), re.IGNORECASE)
+    for register, patterns in _REGISTER_PATTERNS.items()
+}
+
+# Below this match count, the assertion ratio is unreliable.
+_MIN_RELIABLE_REGISTER_MATCHES = 10
+
+
+def _extract_section_bodies(text: str) -> list[str]:
+    """Return the body text under each ``##`` / ``###`` heading.
+
+    Excludes the headings themselves. Returns an empty list when the
+    text contains no level-2/3 markdown headings.
+    """
+    sections: list[str] = []
+    current_heading: str | None = None
+    current_body: list[str] = []
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if stripped.startswith("## ") or stripped.startswith("### "):
+            if current_heading is not None:
+                sections.append("\n".join(current_body).strip())
+            current_heading = stripped
+            current_body = []
+        elif current_heading is not None:
+            current_body.append(line)
+    if current_heading is not None:
+        sections.append("\n".join(current_body).strip())
+    return sections
+
+
+def _assertion_ratio(text: str) -> tuple[float, Literal["adequate", "low"]]:
+    """Layer 1c: assertion register fraction of total epistemic-register matches.
+
+    Counts five register categories: ASSERTION, QUALIFIED, CONDITIONAL,
+    EVIDENCED, SPECULATIVE. Returns the fraction of matches in the
+    ASSERTION category, plus a precision indicator ("adequate" if the
+    total match count meets the reliability threshold of 10, otherwise
+    "low").
+
+    Operates on section bodies when level-2/3 headings are present
+    (preferred mode, validated). Falls back to full text otherwise.
+    Returns (0.0, "low") when no register markers are found.
+    """
+    section_bodies = _extract_section_bodies(text)
+    body_text = "\n".join(section_bodies) if section_bodies else text
+
+    counts = {
+        register: len(compiled.findall(body_text)) for register, compiled in _REG_COMPILED.items()
+    }
+    total = sum(counts.values())
+
+    if total == 0:
+        return 0.0, "low"
+
+    ratio = counts["ASSERTION"] / total
+    precision: Literal["adequate", "low"] = (
+        "adequate" if total >= _MIN_RELIABLE_REGISTER_MATCHES else "low"
+    )
+    return round(ratio, 4), precision
+
 
 def structural_profile(text: str, *, topic: str | None = None) -> StructuralProfile:
-    """Layer 1: heading defaultness (1a, optional), mechanism ratio (1b),
-    assertion ratio (1c)."""
-    raise NotImplementedError
+    """Layer 1: structural profile (1a heading defaultness, 1b mechanism
+    ratio, 1c assertion ratio).
+
+    Layer 1a (``heading_defaultness``) requires both a ``topic`` argument
+    and an LLM-API integration to generate baseline documents. The
+    integration is not yet wired in this build, so 1a always returns
+    ``None`` even when a topic is supplied. 1b and 1c run on any text.
+
+    Args:
+        text: The output to measure.
+        topic: Optional topic string for 1a baseline generation
+            (currently inert; reserved for the LLM-API integration).
+
+    Returns:
+        A ``StructuralProfile`` with ``heading_defaultness`` (None until
+        1a is wired), ``mechanism_ratio``, ``assertion_ratio``, and
+        ``assertion_precision``.
+    """
+    del topic  # Reserved for Layer 1a; not used until LLM API is wired.
+    ratio, precision = _assertion_ratio(text)
+    return {
+        "heading_defaultness": None,
+        "mechanism_ratio": _mechanism_ratio(text),
+        "assertion_ratio": ratio,
+        "assertion_precision": precision,
+    }
 
 
 # -- Layer 2: Claim density -----------------------------------------------
