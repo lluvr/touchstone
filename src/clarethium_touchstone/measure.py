@@ -13,6 +13,7 @@ LLM API for baseline generation.
 
 Implementation status: progressive extraction in progress.
 
+* Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
 * All other layers: skeleton, raises ``NotImplementedError``
 
@@ -260,10 +261,144 @@ def structural_profile(text: str, *, topic: str | None = None) -> StructuralProf
 
 # -- Layer 2: Claim density -----------------------------------------------
 
+# Numerical claim patterns. Recall ~97% on digit-formatted numbers across
+# three document types per the operator's research vault. Misses numbers
+# expressed as words (e.g. "twenty percent") and relative claims.
+_NUMERICAL_CLAIM_PATTERNS: tuple[tuple[str, str], ...] = (
+    (
+        r"(?:~|approximately |about |roughly |nearly |over |under )?"
+        r"(\d+(?:\.\d+)?)\s*%",
+        "percentage",
+    ),
+    (r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*%", "pct_range"),
+    (
+        r"\$\s*(\d+(?:[.,]\d+)*)\s*(M|B|K|million|billion|thousand|mn|bn)?",
+        "dollar",
+    ),
+    (r"(\d+(?:\.\d+)?)\s*[x×](?:\s|$|,)", "multiplier"),
+    (r"(\d+(?:\.\d+)?)\s*-?\s*fold", "multiplier"),
+    (
+        r"(\d+(?:,\d{3})*)\s+(?:companies|firms|teams|organizations|employees|"
+        r"engineers|developers|users|customers|tools|platforms|products|projects|"
+        r"systems|failures|incidents|outages|services|applications|repositories|"
+        r"modules|microservices|endpoints|APIs?|databases?|clusters?|regions?)",
+        "entity_count",
+    ),
+    (
+        r"(\d+(?:\.\d+)?)\s*[-–]?\s*(?:\d+(?:\.\d+)?\s*)?"
+        r"(?:days?|weeks?|months?|years?|hours?|minutes?|quarters?|sprints?)",
+        "duration",
+    ),
+)
+
+# Causal language markers. Counted per sentence (a sentence with three
+# markers contributes one causal claim, not three).
+_CAUSAL_MARKERS: tuple[str, ...] = (
+    r"\bbecause\b",
+    r"\bsince\b(?!\s+\d)",
+    r"\bdue to\b",
+    r"\bowing to\b",
+    r"\bas a result of\b",
+    r"\bcaused? by\b",
+    r"\bdriven by\b",
+    r"\bleads? to\b",
+    r"\bresults? in\b",
+    r"\bcauses?\b",
+    r"\bproduces?\b",
+    r"\bgenerates?\b",
+    r"\btriggers?\b",
+    r"\bconsequently\b",
+    r"\btherefore\b",
+    r"\bthus\b",
+    r"\bhence\b",
+    r"\bthe (?:primary|main|key|root|fundamental|core|underlying|central) "
+    r"(?:cause|reason|driver|factor|mechanism|force)\b",
+    r"\b(?:directly|indirectly) (?:causes?|leads? to|results? in|drives?)\b",
+    r"\bis responsible for\b",
+    r"\baccounts? for\b",
+    r"\benables?\b",
+    r"\bprevents?\b",
+    r"\binhibits?\b",
+    r"\bfacilitates?\b",
+    r"\bexacerbates?\b",
+    r"\bcompounds?\b(?:\s+the)",
+    r"\bamplifies?\b",
+    r"\breinforces?\b",
+    r"\bundermines?\b",
+    r"\berodes?\b",
+)
+
+_CAUSAL_COMBINED = "|".join(_CAUSAL_MARKERS)
+
+
+def _split_sentences(text: str) -> list[tuple[str, str, int]]:
+    """Split markdown into ``(heading, sentence, paragraph_index)`` tuples.
+
+    Strips list markers, splits on sentence boundaries, drops sentences
+    shorter than 30 characters. Heading state is carried forward across
+    paragraphs until a new heading line is encountered.
+    """
+    results: list[tuple[str, str, int]] = []
+    current_heading = ""
+    para_idx = 0
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("#"):
+            current_heading = re.sub(r"^#+\s*", "", stripped)
+            continue
+        cleaned = re.sub(r"^[-*•]\s+", "", stripped)
+        cleaned = re.sub(r"^\d+\.\s+", "", cleaned)
+        parts = re.split(r"(?<=[.!?])\s+(?=[A-Z])", cleaned)
+        for sent in parts:
+            sent = sent.strip()
+            if len(sent) > 30:
+                results.append((current_heading, sent, para_idx))
+        para_idx += 1
+    return results
+
+
+def _count_numerical_claim_sentences(text: str) -> int:
+    """Count sentences containing at least one digit-formatted number."""
+    n = 0
+    for _heading, sent, _pos in _split_sentences(text):
+        for pattern, _num_type in _NUMERICAL_CLAIM_PATTERNS:
+            if re.search(pattern, sent, re.IGNORECASE):
+                n += 1
+                break
+    return n
+
+
+def _count_causal_claim_sentences(text: str) -> int:
+    """Count sentences containing at least one causal-language marker."""
+    n = 0
+    for _heading, sent, _pos in _split_sentences(text):
+        if re.search(_CAUSAL_COMBINED, sent, re.IGNORECASE):
+            n += 1
+    return n
+
 
 def claim_density(text: str) -> ClaimDensity:
-    """Layer 2: numerical and causal claim counts per 1000 words."""
-    raise NotImplementedError
+    """Layer 2: numerical and causal claim counts per 1000 words.
+
+    Counts sentences (not raw markers) so a sentence with multiple
+    markers contributes a single claim. Word count uses simple ``\\w+``
+    tokenisation. Density is per 1000 words with a floor of 0.1k to
+    avoid division by zero on very short inputs.
+    """
+    n_words = len(re.findall(r"\b\w+\b", text))
+    n_numerical = _count_numerical_claim_sentences(text)
+    n_causal = _count_causal_claim_sentences(text)
+
+    k_words = max(n_words / 1000, 0.1)
+    return {
+        "numerical_per_1kw": round(n_numerical / k_words, 1),
+        "causal_per_1kw": round(n_causal / k_words, 1),
+        "n_numerical": n_numerical,
+        "n_causal": n_causal,
+        "n_words": n_words,
+    }
 
 
 # -- Layer 3: Temporal instability ----------------------------------------
