@@ -16,6 +16,7 @@ Implementation status: progressive extraction in progress.
 * Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c; 1a returns None)
 * Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
+* Layer 6 (``vocabulary_proximity``): IMPLEMENTED (directional in v1.0)
 * Layer 7 (``presentation_features``): IMPLEMENTED
 * Layer 9 (``information_novelty``): IMPLEMENTED (experimental in v1.0)
 * All other layers: skeleton, raises ``NotImplementedError``
@@ -704,8 +705,51 @@ def entity_provenance(text: str, source: str) -> EntityProvenance:
 
 
 def vocabulary_proximity(text: str, source: str) -> VocabularyProximity:
-    """Layer 6: per-sentence content word overlap with source."""
-    raise NotImplementedError
+    """Layer 6 (DIRECTIONAL in v1.0): per-sentence content-word overlap
+    with source.
+
+    For each qualifying sentence in ``text``, computes the fraction of
+    content words present (as substrings) in the lowercased source.
+    Returns the mean across sentences and the raw per-sentence scores.
+
+    Construct: how much of the generated vocabulary comes from source
+    material? High = close paraphrase or summary; low = novel
+    vocabulary, which can be original analysis (desirable) or
+    fabricated content (undesirable). Layer 6 alone cannot
+    distinguish; consult Layers 4-5 for fabrication detection.
+
+    Vault behaviour preserved: word-in-source check is a substring
+    match (``w in source_lower``), so a content word ``cat`` is
+    considered present if the source contains ``catalog``. This is
+    generous and intentional — surfaces lexical overlap without
+    requiring exact tokenisation parity.
+
+    Output:
+
+    * ``mean_proximity`` — mean across qualifying sentences. 0.0 when
+      no sentence qualifies.
+    * ``per_sentence_proximity`` — raw per-sentence scores (rounded to
+      3 decimals for storage parity with the mean).
+    """
+    sentences = _split_sentences_simple(text)
+    source_lower = source.lower()
+
+    scores: list[float] = []
+    for sent in sentences:
+        sent_words = _content_words(sent)
+        if not sent_words:
+            continue
+        grounded = sum(1 for w in sent_words if w in source_lower)
+        scores.append(grounded / len(sent_words))
+
+    if not scores:
+        return {"mean_proximity": 0.0, "per_sentence_proximity": []}
+
+    mean_proximity = sum(scores) / len(scores)
+    return {
+        "mean_proximity": round(mean_proximity, 3),
+        "per_sentence_proximity": [round(s, 3) for s in scores],
+    }
 
 
 # -- Layer 7: Presentation features ---------------------------------------
