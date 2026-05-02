@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pytest
 
-
 REFERENCE_ROOT = Path(__file__).parent / "reference"
 
 

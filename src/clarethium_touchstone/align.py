@@ -22,7 +22,6 @@ from __future__ import annotations
 from clarethium_touchstone._version import __standard_version__, __version__
 from clarethium_touchstone.types import (
     AlignResult,
-    AlignSummary,
     CoverageEntry,
     DriftSection,
     Requirement,
