@@ -17,6 +17,7 @@ Implementation status: progressive extraction in progress.
 * Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
 * Layer 7 (``presentation_features``): IMPLEMENTED
+* Layer 9 (``information_novelty``): IMPLEMENTED (experimental in v1.0)
 * All other layers: skeleton, raises ``NotImplementedError``
 
 See Appendix C of the Standard for layer-by-layer status.
@@ -889,10 +890,112 @@ def epistemic_calibration(text: str, source: str) -> EpistemicCalibration:
 
 # -- Layer 9: Information novelty -----------------------------------------
 
+# Stop words shared across the lexical layers (currently Layer 9; Layer 6
+# will reuse when extracted). Removing high-frequency function words keeps
+# the novelty signal focused on content vocabulary.
+_STOP_WORDS: frozenset[str] = frozenset(
+    # split-string form is intentionally more readable than a flat list
+    # literal of ~100 short tokens; runs once at module load.
+    """
+    a an the and or but if in on at to for of with by from as is are was were
+    be been being have has had do does did will would shall should can could
+    may might must need not no nor so yet also just only even still already
+    than then that this these those it its he she they them their his her we
+    our you your i me my which what when where who whom how why all each
+    every any some most more less much many few several both either neither
+    into onto upon about above below between through during before after
+    since until while however therefore moreover furthermore although because
+    versus via per etc vs often very quite rather too such like
+    """.split()  # noqa: SIM905
+)
+
+
+def _content_words(text: str) -> list[str]:
+    """Return lowercase content words (3+ alphabetic chars, no stop words).
+
+    Used by Layer 9 (cumulative-vocabulary novelty). Numerals are
+    excluded by the ``[a-z]`` character class; the 3-char floor drops
+    most function words that escape the stop list.
+    """
+    words = re.findall(r"[a-z]{3,}", text.lower())
+    return [w for w in words if w not in _STOP_WORDS]
+
 
 def information_novelty(text: str) -> InformationNovelty:
-    """Layer 9 (experimental): per-sentence lexical novelty."""
-    raise NotImplementedError
+    """Layer 9 (EXPERIMENTAL in v1.0): per-sentence lexical novelty.
+
+    For each sentence, computes the fraction of content words not seen
+    in any earlier sentence. Tracks repetition patterns and the OLS
+    slope of novelty over sentence position (decay).
+
+    Length-confounded by Heaps' law: longer texts naturally exhibit
+    lower mean novelty as the cumulative vocabulary saturates. The
+    Standard (Section 5.9) marks this layer experimental and warns
+    against direct cross-document comparison without length controls.
+
+    Output:
+
+    * ``mean_novelty`` — mean per-sentence novelty (0 to 1)
+    * ``repetition_rate`` — fraction of sentences with novelty < 0.2
+    * ``decay`` — OLS slope of novelty over sentence position. Negative
+      decay is natural; steep negative + high repetition = padding.
+    * ``q1_novelty`` — mean novelty of the first quarter of sentences
+    * ``q4_novelty`` — mean novelty of the last quarter of sentences
+
+    All fields are 0.0 for input with no qualifying sentences.
+    """
+    sentences = _split_sentences_simple(text)
+
+    cumulative_vocab: set[str] = set()
+    novelty_scores: list[float] = []
+
+    for sent in sentences:
+        words = _content_words(sent)
+        if not words:
+            continue
+        novel = [w for w in words if w not in cumulative_vocab]
+        novelty = len(novel) / len(words)
+        novelty_scores.append(novelty)
+        cumulative_vocab.update(words)
+
+    n = len(novelty_scores)
+    if n == 0:
+        return {
+            "mean_novelty": 0.0,
+            "repetition_rate": 0.0,
+            "decay": 0.0,
+            "q1_novelty": 0.0,
+            "q4_novelty": 0.0,
+        }
+
+    mean_nov = sum(novelty_scores) / n
+
+    # Repetition rate: sentences with strictly less than 20% novel content
+    repetitive = sum(1 for s in novelty_scores if s < 0.2)
+    repetition_rate = repetitive / n
+
+    # OLS slope of novelty vs sentence index. Requires at least 3 points;
+    # for n in {1, 2} the slope is undefined / unstable, returned as 0.0.
+    decay_slope = 0.0
+    if n > 2:
+        x_mean = (n - 1) / 2
+        cov_xy = sum((i - x_mean) * (y - mean_nov) for i, y in enumerate(novelty_scores))
+        var_x = sum((i - x_mean) ** 2 for i in range(n))
+        if var_x > 0:
+            decay_slope = cov_xy / var_x
+
+    # Quartile sizes use a 1-sentence floor so q1/q4 are always defined.
+    q_size = max(n // 4, 1)
+    q1 = sum(novelty_scores[:q_size]) / q_size
+    q4 = sum(novelty_scores[-q_size:]) / q_size
+
+    return {
+        "mean_novelty": round(mean_nov, 3),
+        "repetition_rate": round(repetition_rate, 3),
+        "decay": round(decay_slope, 4),
+        "q1_novelty": round(q1, 3),
+        "q4_novelty": round(q4, 3),
+    }
 
 
 # -- Layer 10: Quality profile --------------------------------------------
