@@ -87,23 +87,41 @@ def test_no_markers_yields_zero() -> None:
 
 
 def test_leverage_with_qualifying_noun_counted_as_buzzword() -> None:
-    """'leverage the X' pattern is a buzzword; bare 'leverage' is not."""
-    buzz_text = "We leverage the existing infrastructure across all teams."
-    plain_text = "We leverage data analysis."  # 'data' is in qualifier list -> buzz
-    plain_text_2 = "We leverage many tools."  # 'many' not in list -> NOT buzz
-    assert _mechanism_ratio(buzz_text) == 0.0
-    # data IS in the qualifier list, so this counts as buzz
-    assert _mechanism_ratio(plain_text) == 0.0
-    # 'many' is not in the qualifier list, so leverage doesn't trigger
-    assert _mechanism_ratio(plain_text_2) == 0.0
+    """'leverage the X' triggers the buzzword pattern; 'leverage <other>' does
+    not. Paired with a mechanism marker so the ratio actually distinguishes
+    the cases (testing buzz alone is degenerate: 0 mech / N buzz = 0.0
+    regardless of whether buzz fires).
+    """
+    # 'because' is mech in both. Buzz only fires when leverage is followed by
+    # a qualifier word from the pattern list.
+    buzz_qual = "Latency drops because we leverage the existing infrastructure."
+    no_buzz = "Latency drops because we leverage many tools every single day."
+    # buzz_qual: 1 mech + 1 buzz = ratio 1/2 = 0.5
+    assert _mechanism_ratio(buzz_qual) == 0.5
+    # no_buzz: 1 mech + 0 buzz = ratio 1/1 = 1.0
+    assert _mechanism_ratio(no_buzz) == 1.0
 
 
 def test_robust_qualifier_counted_as_buzzword() -> None:
-    """'robust framework/solution/approach/system' counts as buzzword."""
-    text = "We built a robust framework. The approach is robust."
-    # First 'robust' (followed by 'framework') triggers, second does not
-    ratio = _mechanism_ratio(text)
-    assert ratio == 0.0  # 1 buzz, 0 mech -> 0.0
+    """'robust framework/solution/approach/system' triggers buzz; bare 'robust'
+    does not. Paired with a mech marker to distinguish the cases.
+    """
+    triggers = "It fails because the robust framework is hard to maintain."
+    # 1 mech + 1 buzz = 0.5
+    assert _mechanism_ratio(triggers) == 0.5
+    no_trigger = "It fails because the model is robust to noise even at scale."
+    # 1 mech + 0 buzz = 1.0 ('robust to' not in pattern list)
+    assert _mechanism_ratio(no_trigger) == 1.0
+
+
+def test_critically_important_counted_as_buzzword() -> None:
+    """'critically important' triggers buzz; bare 'critical' does not."""
+    triggers = "It fails because this is critically important to the team."
+    # 1 mech + 1 buzz = 0.5
+    assert _mechanism_ratio(triggers) == 0.5
+    no_trigger = "It fails because this is critical work for the entire team."
+    # 1 mech + 0 buzz = 1.0
+    assert _mechanism_ratio(no_trigger) == 1.0
 
 
 def test_mechanism_ratio_rounded_to_4_decimals() -> None:
@@ -231,6 +249,53 @@ def test_extract_section_bodies_handles_h3_headings() -> None:
     text = "## Top\nA.\n### Sub\nB."
     bodies = _extract_section_bodies(text)
     assert len(bodies) == 2
+
+
+def test_extract_section_bodies_h1_does_not_start_section() -> None:
+    """Vault behaviour: only ## and ### start sections; # (h1) does not."""
+    text = "# Top h1 heading\nh1 body content stays orphaned and excluded.\n## Sub\nBody."
+    bodies = _extract_section_bodies(text)
+    # Only the ## section is captured; the h1 body is dropped as preamble
+    assert len(bodies) == 1
+    assert "Body." in bodies[0]
+    assert "h1 body" not in bodies[0]
+
+
+def test_extract_section_bodies_h4_does_not_start_section() -> None:
+    """Vault behaviour: #### (h4) does not start a new section.
+
+    h4 lines fall through and accumulate into the current ## or ### body.
+    """
+    text = "## Top\nA body.\n#### Sub h4\nAfter h4."
+    bodies = _extract_section_bodies(text)
+    assert len(bodies) == 1
+    # h4 line and content after it stays in the parent ## body
+    assert "After h4." in bodies[0]
+
+
+def test_extract_section_bodies_preamble_dropped() -> None:
+    """Vault behaviour: text before the first ## heading is excluded entirely."""
+    text = "Preamble paragraph never captured.\n\n## Section\nSection body kept."
+    bodies = _extract_section_bodies(text)
+    assert len(bodies) == 1
+    assert "Preamble" not in bodies[0]
+    assert "Section body kept." in bodies[0]
+
+
+def test_assertion_ratio_with_mixed_h2_h3_sections() -> None:
+    """Mixed ## and ### sections all contribute to the body text under
+    analysis. Assertion markers in any section count.
+    """
+    text = (
+        "## Top\nA system must always work reliably across the production fleet.\n"
+        "### Sub\nThe approach tends to succeed in most documented cases here.\n"
+        "## Other\nResults probably appear within the expected window of operation."
+    )
+    ratio, _precision = _assertion_ratio(text)
+    # 'must', 'always' = 2 ASSERTION; 'tends to', 'probably' = 2 QUALIFIED
+    # No EVIDENCED markers (avoided 'observed'), no SPECULATIVE
+    # ratio = 2 / 4 = 0.5
+    assert ratio == 0.5
 
 
 # ---------------------------------------------------------------------------

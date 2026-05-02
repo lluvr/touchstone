@@ -146,13 +146,31 @@ def test_years_filtered() -> None:
 
 
 def test_word_count_callouts_filtered() -> None:
-    """Word-count callouts must not count as data."""
+    """Word-count callouts must not count as data: filter drops them entirely
+    so they affect neither n_total nor unsourced_details.
+    """
     source = "Brief content."
-    output = "Some analysis. Word count: 1,247 words."
+    output = "Word count: 1,247 words. Other content here without other digits."
     result = source_matching(output, source)
-    # 1,247 is in a word count context, should be filtered
-    # (Other digit-only data should still count if any)
-    assert all(d["value"] != "1247" for d in result["unsourced_details"])
+    assert result["n_total"] == 0
+    assert result["unsourced_details"] == []
+
+
+def test_word_count_filter_does_not_drop_distant_numbers() -> None:
+    """A word-count callout filters numbers within ~60 chars (the vault's
+    proximity window). Numbers further away are NOT affected.
+    """
+    source = "Revenue was $100M."
+    # Pad to push $100M outside the 60-char window of the word-count callout
+    output = (
+        "Revenue was $100M. "
+        + ("And then context unrelated to counting. " * 3)
+        + "Word count: 1,247 words."
+    )
+    result = source_matching(output, source)
+    # $100M is far enough from "Word count" to escape the filter
+    assert result["n_total"] == 1
+    assert result["n_unsourced"] == 0
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +191,73 @@ def test_no_numbers_in_output() -> None:
     result = source_matching("Just text without any digits.", "Source has $100M.")
     assert result["n_total"] == 0
     assert result["unsourced_rate"] == 0.0
+
+
+def test_empty_source_marks_all_unsourced() -> None:
+    """Empty source: every output number is flagged unsourced."""
+    result = source_matching("Revenue $100M, growth 10%, 2.5x margin.", "")
+    assert result["n_total"] >= 3
+    assert result["n_in_source"] == 0
+    assert result["unsourced_rate"] == 1.0
+
+
+# ---------------------------------------------------------------------------
+# Vault-fidelity behaviour pinning
+#
+# These tests document algorithm choices preserved from the operator's
+# research vault. Changing them requires a Standard version bump
+# (Section 10). Failing one of these tests means the algorithm drifted.
+# ---------------------------------------------------------------------------
+
+
+def test_claimed_range_dedup_prevents_phantom_subtokens() -> None:
+    """A "2.58%" match must not also yield phantom 2.58 (decimal) and 2/258
+    (integer) extractions. Higher-priority patterns claim the range first.
+    """
+    # Self-source: every number must be found, AND there must be exactly
+    # one number found (the percentage), not multiple.
+    text = "Operating margin reached 2.58% in the most recent reporting period."
+    result = source_matching(text, text)
+    assert result["n_total"] == 1
+    assert result["unsourced_rate"] == 0.0
+
+
+def test_year_boundary_inclusive_at_1990_and_2035() -> None:
+    """Year filter range is inclusive: 1990 and 2035 are filtered as years,
+    1989 and 2036 are kept as data values.
+    """
+    in_range_text = "We launched in 1990 and ramped through 2035 across markets."
+    out_range_text = "Founded in 1989 with a 2036 horizon for the next product."
+    src = "Reference."
+    in_range = source_matching(in_range_text, src)
+    out_range = source_matching(out_range_text, src)
+    assert in_range["n_total"] == 0
+    assert out_range["n_total"] == 2  # 1989 and 2036 are integers, kept
+
+
+def test_multiplier_uses_substring_match_in_source() -> None:
+    """Vault behaviour: multiplier source matching uses unanchored substring
+    search, so "2x" output matches "12x" in source. This is generous and
+    intentional; pinned here so future tightening is visible.
+    """
+    out = "Margin grew 2x year over year for sustained profitable growth here."
+    src = "Margin grew 12x year over year for sustained profitable growth here."
+    result = source_matching(out, src)
+    # "2x" output is marked in-source because "12x" contains the substring
+    assert result["n_unsourced"] == 0
+
+
+def test_percentage_decimal_falls_back_to_integer_part() -> None:
+    """Vault behaviour: when an output percentage like 10.5% is not found
+    verbatim in source, the algorithm searches for the integer part (10%).
+    This is generous and intentional; pinned here so future tightening is
+    visible.
+    """
+    out = "Margin reached 10.5% in Q3 after seasonal demand normalised steadily."
+    src = "Margin reached 10% in Q3 after seasonal demand normalised steadily."
+    result = source_matching(out, src)
+    # 10.5% is accepted because 10% is in source
+    assert result["n_unsourced"] == 0
 
 
 # ---------------------------------------------------------------------------

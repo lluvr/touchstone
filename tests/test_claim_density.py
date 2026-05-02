@@ -207,6 +207,22 @@ def test_markdown_headings_skipped() -> None:
     assert result["n_numerical"] == 0
 
 
+def test_all_heading_levels_skipped() -> None:
+    """The Layer 2 sentence splitter skips ANY line starting with ``#``,
+    regardless of heading level. Body content alone provides claim counts.
+    """
+    text = (
+        "# h1 with 10% growth\n"
+        "## h2 with 20% growth\n"
+        "### h3 with 30% growth\n"
+        "#### h4 with 40% growth\n"
+        "Body grew 50% across all reporting segments steadily this year."
+    )
+    result = claim_density(text)
+    # Only the body sentence with 50% counts
+    assert result["n_numerical"] == 1
+
+
 def test_list_markers_stripped() -> None:
     """Bullet/numbered list markers are stripped before sentence analysis."""
     text = (
