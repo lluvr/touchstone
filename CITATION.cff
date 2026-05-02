@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use Touchstone (Standard or library), please cite both the Standard and the library."
+title: "Touchstone"
+abstract: >
+  Touchstone is a model-independent verification methodology and reference
+  implementation for AI-coupled work. The Standard defines eleven measurement
+  layers for output profiling and five layers for specification compliance
+  verification, all designed to operate without depending on AI models to
+  judge AI outputs. The library is the canonical reference implementation.
+type: software
+authors:
+  - name: "Clarethium"
+    website: "https://clarethium.com"
+license: Apache-2.0
+url: "https://touchstone.clarethium.com"
+repository-code: "https://github.com/Clarethium/touchstone"
+keywords:
+  - artificial-intelligence
+  - ai-evaluation
+  - ai-output-verification
+  - fabrication-detection
+  - source-grounding
+  - structural-verification
+  - model-independent
+  - touchstone-standard
+references:
+  - type: standard
+    title: "Touchstone Standard 1.0"
+    url: "https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
+    license: CC-BY-4.0
+    abstract: >
+      The canonical specification defining model-independent verification
+      methodology for AI-coupled work outputs.
+preferred-citation:
+  type: software
+  title: "Touchstone: model-independent verification for AI-coupled work"
+  authors:
+    - name: "Clarethium"
+  repository-code: "https://github.com/Clarethium/touchstone"
+  license: Apache-2.0
+  url: "https://touchstone.clarethium.com"
