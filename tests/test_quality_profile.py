@@ -314,6 +314,8 @@ def test_comparisons_argument_accepted_but_unused() -> None:
         (ADEQUATE_PRECISION_TEXT, ADEQUATE_PRECISION_TEXT),
         (ADEQUATE_PRECISION_TEXT, "Some unrelated source content here."),
         ("Plain prose without any numbers in the body content.", "src"),
+        (ENTITY_RICH_TEXT, ENTITY_RICH_TEXT),
+        (ENTITY_RICH_TEXT, "Disjoint source content with no overlap."),
     ],
 )
 def test_indices_in_unit_range(text: str, source: str) -> None:
@@ -321,3 +323,60 @@ def test_indices_in_unit_range(text: str, source: str) -> None:
     result = quality_profile(text, source=source)
     assert 0.0 <= result["substance_index"] <= 1.0
     assert 0.0 <= result["presentation_index"] <= 1.0
+
+
+@pytest.mark.parametrize(
+    "text,source",
+    [
+        (ADEQUATE_PRECISION_TEXT, ADEQUATE_PRECISION_TEXT),
+        (ADEQUATE_PRECISION_TEXT, "Some unrelated source content here."),
+        ("Plain prose without any numbers in the body content.", "src"),
+        (ENTITY_RICH_TEXT, ENTITY_RICH_TEXT),
+        (ENTITY_RICH_TEXT, "Disjoint source content with no overlap."),
+        ("", "any source"),
+        (ADEQUATE_PRECISION_TEXT, ""),  # empty source
+    ],
+)
+def test_gap_in_signed_unit_range(text: str, source: str) -> None:
+    """gap is always in [-1.0, 1.0]: substance and presentation each
+    in [0,1], so their difference is bounded by [-1, 1]. When either
+    side has no contributors, gap is 0.0 (well within the range).
+    """
+    result = quality_profile(text, source=source)
+    assert -1.0 <= result["gap"] <= 1.0
+
+
+def test_gap_can_be_strongly_negative_when_substance_dominates() -> None:
+    """Self-source with adequate precision: substance maxes out at 1.0;
+    presentation is typically lower → gap strongly negative.
+    """
+    result = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)
+    # Self-source numbers → source_fidelity=1.0; only substance contributor
+    # → substance_index=1.0; presentation typically <= 0.6
+    assert result["gap"] < -0.3
+
+
+def test_gap_strongly_positive_when_substance_low_and_polished() -> None:
+    """Polished output with NO sourced numbers and ≥10 numbers (so the
+    precision threshold for source_fidelity is met): source_fidelity=0,
+    substance_index=0, presentation can be substantial → gap > 0.
+    """
+    fab = (
+        "## **CRITICAL** Findings\n\n"
+        "Revenue **definitively** grew 999% to $9.99B with 88% margin gains. "
+        "Always must always scale exponentially with 247x amplification factors. "
+        "Costs declined 73% across 25,000 employees over 36 months globally. "
+        "Headcount reached 50,000 with $145,000 average compensation paid. "
+        "Customer acquisition dropped to $11,200 from previous baseline pricing. "
+        "Retention improved 67.5% to 99.9% across all major segments today."
+    )
+    # Source has zero overlap with text's numbers (use only words)
+    src = "Brief content unrelated to the document with completely different topics."
+    result = quality_profile(fab, source=src)
+    # source_fidelity = 1.0 - 1.0 = 0.0 (all numbers unsourced)
+    # substance_index = 0.0 (only contributor is 0.0)
+    # presentation_index > 0 (formatting + assertiveness + diversity)
+    assert "source_fidelity" in result["components_available"]
+    assert result["components"]["source_fidelity"] == 0.0
+    assert result["substance_index"] == 0.0
+    assert result["gap"] > 0.3

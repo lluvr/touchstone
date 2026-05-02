@@ -284,6 +284,74 @@ def test_substring_match_full_value() -> None:
     # Substring match: 'openai' in 'openai...' → True
 
 
+def test_entity_match_is_case_insensitive_both_directions() -> None:
+    """Entity value and source are both .lower()'d before substring search,
+    so case mismatches don't prevent grounding either way.
+    """
+    # Lowercase entity value, mixed-case source
+    e_lower = {"value": "openai", "type": "ORG", "context": ""}
+    assert _entity_in_source(e_lower, "OpenAI Inc was founded recently.")
+    # Mixed-case entity value, lowercase source
+    e_mixed = {"value": "OpenAI", "type": "ORG", "context": ""}
+    assert _entity_in_source(e_mixed, "openai inc was founded recently.")
+
+
+def test_substring_match_inflates_short_entity_values() -> None:
+    """Vault behaviour: entity 'Smith' is grounded by source containing
+    'Smithsonian' because Python ``in`` is a substring check, not a
+    word-boundary check. Pinned because this affects interpretation —
+    short entity values can match unrelated longer words.
+    """
+    e = {"value": "Smith", "type": "PERSON", "context": ""}
+    assert _entity_in_source(e, "The Smithsonian Institution opened in 1846.")
+    # 'smith' is substring of 'smithsonian' → True (vault-faithful generosity)
+
+
+def test_word_by_word_fallback_when_substring_fails() -> None:
+    """When the entity value (full string) is NOT a substring of source,
+    but every content word (>3 chars, non-stop) IS in source, the
+    entity counts as grounded via the word-by-word fallback.
+    """
+    e = {"value": "Stanford University", "type": "ORG", "context": ""}
+    # Source has 'Stanford' and 'University' but not contiguous
+    src_split = "The University of California has many colleges, including Stanford in our state."
+    # Substring 'stanford university' is NOT in this source string
+    assert "stanford university" not in src_split.lower()
+    # But word-by-word fallback succeeds
+    assert _entity_in_source(e, src_split)
+
+
+def test_word_by_word_fallback_fails_when_word_missing() -> None:
+    """If any required content word is absent, word-by-word fails."""
+    e = {"value": "Stanford University", "type": "ORG", "context": ""}
+    src_partial = "The Stanford team contributed but the affiliation was elsewhere."
+    # 'University' missing from source → word-by-word fails
+    # And 'stanford university' substring also fails
+    assert not _entity_in_source(e, src_partial)
+
+
+# ---------------------------------------------------------------------------
+# ORG pattern overlap with CamelCase pattern
+# ---------------------------------------------------------------------------
+
+
+def test_org_suffix_and_camelcase_coexist() -> None:
+    """Vault behaviour: when text contains 'OpenAI Foundation', the ORG
+    suffix pattern captures 'OpenAI Foundation' AND the CamelCase
+    pattern separately captures 'OpenAI'. Both are stored because the
+    dedup key for CamelCase is ('ORG_CAMEL', value) — distinct from
+    ('ORG', 'OpenAI Foundation'). This inflates entity counts when
+    CamelCase orgs appear inside larger ORG-suffix phrases.
+    """
+    text = "OpenAI Foundation announced new initiatives across all sites today."
+    entities = _extract_entities(text)
+    org_values = {e["value"] for e in entities if e["type"] == "ORG"}
+    assert "OpenAI Foundation" in org_values
+    assert "OpenAI" in org_values
+    # Both stored: 2 ORG entries for what semantically reads as one org
+    assert sum(1 for e in entities if e["type"] == "ORG") == 2
+
+
 # ---------------------------------------------------------------------------
 # Deduplication
 # ---------------------------------------------------------------------------
