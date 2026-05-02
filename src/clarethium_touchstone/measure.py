@@ -19,6 +19,9 @@ Implementation status: progressive extraction in progress.
 * Layer 6 (``vocabulary_proximity``): IMPLEMENTED (directional in v1.0)
 * Layer 7 (``presentation_features``): IMPLEMENTED
 * Layer 9 (``information_novelty``): IMPLEMENTED (experimental in v1.0)
+* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L4, presentation
+  from L7; entity_grounding / temporal_stability / epistemic_calibration /
+  structural_effort reserved for future layers)
 * All other layers: skeleton, raises ``NotImplementedError``
 
 See Appendix C of the Standard for layer-by-layer status.
@@ -1049,15 +1052,96 @@ def quality_profile(
     text: str,
     *,
     source: str | None = None,
-    comparisons: list[str] | None = None,
+    comparisons: list[str] | None = None,  # noqa: ARG001 (reserved for L3)
 ) -> QualityProfile:
-    """Layer 10: composite substance vs presentation index plus gap.
+    """Layer 10 (EXPERIMENTAL in v1.0): composite substance vs presentation
+    index plus gap.
 
-    Validated across four studies (cross-condition, cross-generator,
-    dose-response gradient). See Standard Section 7.4 for threshold
-    interpretation.
+    Aggregates fidelity-leaning layers into a substance index and surface-
+    leaning layers into a presentation index. The gap (presentation -
+    substance) is the overclaiming signal: positive gap means polished
+    surface exceeds verifiable substance.
+
+    Substance components (when wired):
+
+    * ``source_fidelity`` = 1 - source_matching.unsourced_rate (Layer 4),
+      contributed only when ``source`` is provided and the source-matching
+      precision is not ``low``.
+    * (entity_grounding, temporal_stability, epistemic_calibration are
+      reserved for Layers 5, 3, 8 once those are extracted)
+
+    Presentation components (always available):
+
+    * ``assertiveness`` — Layer 7 assertiveness_ratio
+    * ``formatting_intensity`` — Layer 7 formatting_density / 3, capped at 1.0
+    * ``vocabulary_diversity`` — Layer 7 type_token_ratio
+    * (structural_effort from Layer 1a heading_defaultness reserved
+      until the LLM-API integration is wired)
+
+    Indices are honest only when at least one substance AND at least one
+    presentation component contributed. When either side is empty,
+    ``substance_index``, ``presentation_index``, and ``gap`` are all
+    ``0.0`` — callers MUST inspect ``components_available`` to determine
+    whether the indices are meaningful.
+
+    Args:
+        text: The output to evaluate.
+        source: Source material; required for substance contribution
+            from Layer 4.
+        comparisons: Reserved for Layer 3 (temporal instability).
+            Currently inert.
+
+    Returns:
+        A ``QualityProfile`` dict with substance / presentation indices,
+        gap, the contributing component scores, and the list of
+        contributors.
+
+    Validation (vault notes): four studies showed strong d effects
+    (-5.78, -5.43, -2.28; monotonic 4-dose). Composite metrics inherit
+    component limitations.
     """
-    raise NotImplementedError
+    substance: dict[str, float] = {}
+    presentation: dict[str, float] = {}
+
+    # Substance: source fidelity (Layer 4) when source is provided and
+    # precision is at least "adequate". "low" precision is excluded
+    # because few-number outputs produce unstable rates.
+    if source is not None:
+        sm = source_matching(text, source)
+        if sm["precision"] != "low":
+            substance["source_fidelity"] = 1.0 - sm["unsourced_rate"]
+
+    # Presentation: surface signals from Layer 7. These are always
+    # computable from text alone.
+    pf = presentation_features(text)
+    presentation["assertiveness"] = pf["assertiveness_ratio"]
+    presentation["formatting_intensity"] = min(pf["formatting_density"] / 3, 1.0)
+    presentation["vocabulary_diversity"] = pf["type_token_ratio"]
+
+    # Compose components dict (one entry per contributor, rounded for
+    # storage parity with the indices).
+    components: dict[str, float] = {
+        k: round(v, 3) for k, v in {**substance, **presentation}.items()
+    }
+    components_available = list(substance.keys()) + list(presentation.keys())
+
+    # Indices: honest only when both sides have at least one component.
+    if substance and presentation:
+        sub_idx = sum(substance.values()) / len(substance)
+        pres_idx = sum(presentation.values()) / len(presentation)
+        gap = pres_idx - sub_idx
+    else:
+        sub_idx = 0.0
+        pres_idx = 0.0
+        gap = 0.0
+
+    return {
+        "substance_index": round(sub_idx, 3),
+        "presentation_index": round(pres_idx, 3),
+        "gap": round(gap, 3),
+        "components": components,
+        "components_available": components_available,
+    }
 
 
 # -- Layer 11: Grounding decomposition (G/F/P) ----------------------------
