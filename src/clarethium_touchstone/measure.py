@@ -15,16 +15,17 @@ Implementation status: progressive extraction in progress.
 
 * Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c; 1a returns None)
 * Layer 2 (``claim_density``): IMPLEMENTED
+* Layer 3 (``temporal_instability``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
 * Layer 5 (``entity_provenance``): IMPLEMENTED (directional in v1.0)
 * Layer 6 (``vocabulary_proximity``): IMPLEMENTED (directional in v1.0)
 * Layer 7 (``presentation_features``): IMPLEMENTED
 * Layer 8 (``epistemic_calibration``): IMPLEMENTED (experimental in v1.0)
 * Layer 9 (``information_novelty``): IMPLEMENTED (experimental in v1.0)
-* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L4 + L5 + L8,
-  presentation from L7; temporal_stability / structural_effort reserved
-  for future layers)
-* All other layers: skeleton, raises ``NotImplementedError``
+* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L3 + L4 + L5 +
+  L8, presentation from L7; structural_effort reserved for L1a once the
+  LLM-API integration is wired)
+* Layer 11 (``grounding_decomposition``): skeleton, raises ``NotImplementedError``
 
 See Appendix C of the Standard for layer-by-layer status.
 """
@@ -630,8 +631,53 @@ def claim_density(text: str) -> ClaimDensity:
 
 
 def temporal_instability(text: str, comparisons: list[str]) -> TemporalInstability:
-    """Layer 3: instability rate of digit-formatted numbers across versions."""
-    raise NotImplementedError
+    """Layer 3: cross-version number stability across regenerated outputs.
+
+    Construct: fraction of unique (value, type) number pairs that appear
+    in only SOME versions of the same task. Instability is a PROXY for
+    fabrication, not a direct measurement: EXP-081c showed ~46% of
+    unstable numbers coincidentally match source material (parametric-
+    memory overlap, not retrieval). Instability overcounts true
+    fabrication by approximately half. Cannot detect stable fabrication
+    (consistently wrong numbers across regenerations).
+
+    Algorithm: extract digit-formatted numbers from ``text`` plus each
+    comparison; build a set of (value, type) pairs per version; numbers
+    in ALL versions are stable, numbers in only SOME are unstable.
+    ``instability_rate = unstable / total_unique``.
+
+    Args:
+        text: Primary document.
+        comparisons: List of one or more alternative regenerations of
+            the same task. May be empty: with no comparisons, every
+            number in text is "stable" (appears in all 1 versions),
+            so instability_rate is 0.0 (uninformative — supply at
+            least one comparison for a meaningful signal).
+
+    Returns:
+        ``TemporalInstability`` with rate, counts, and versions
+        compared. Empty input or zero numbers yields all-zero output.
+    """
+    all_texts = [text, *comparisons]
+    all_num_sets: list[set[tuple[str, str]]] = []
+
+    for t in all_texts:
+        nums = _filter_numbers(_extract_numbers_for_matching(t), t)
+        all_num_sets.append({(n["value"], n["type"]) for n in nums})
+
+    all_nums = set().union(*all_num_sets) if all_num_sets else set()
+    n_versions = len(all_texts)
+    stable = {v for v in all_nums if sum(v in s for s in all_num_sets) == n_versions}
+    n_unstable = len(all_nums) - len(stable)
+    total = len(all_nums)
+    instability_rate = n_unstable / total if total > 0 else 0.0
+
+    return {
+        "instability_rate": round(instability_rate, 3),
+        "n_unstable": n_unstable,
+        "n_total": total,
+        "versions_compared": n_versions,
+    }
 
 
 # Deprecated alias, removed in v2.0
@@ -1357,7 +1403,7 @@ def quality_profile(
     text: str,
     *,
     source: str | None = None,
-    comparisons: list[str] | None = None,  # noqa: ARG001 (reserved for L3)
+    comparisons: list[str] | None = None,
 ) -> QualityProfile:
     """Layer 10 (EXPERIMENTAL in v1.0): composite substance vs presentation
     index plus gap.
@@ -1378,7 +1424,9 @@ def quality_profile(
     * ``epistemic_calibration`` = epistemic_calibration.calibration_score
       (Layer 8), contributed when ``source`` is provided and the
       calibration precision is not ``low`` (≥5 assertions found).
-    * (temporal_stability reserved for Layer 3 once extracted)
+    * ``temporal_stability`` = 1 - temporal_instability.instability_rate
+      (Layer 3), contributed when ``comparisons`` is provided and at least
+      10 unique numbers appear across versions (vault precision threshold).
 
     Presentation components (always available):
 
@@ -1437,6 +1485,14 @@ def quality_profile(
         ec = epistemic_calibration(text, source)
         if ec["precision"] != "low":
             substance["epistemic_calibration"] = ec["calibration_score"]
+
+    # Temporal stability (Layer 3) when comparisons are supplied and at
+    # least 10 unique numbers appear across versions (vault precision
+    # threshold). Independent of source.
+    if comparisons:
+        ti = temporal_instability(text, comparisons)
+        if ti["n_total"] >= 10:
+            substance["temporal_stability"] = 1.0 - ti["instability_rate"]
 
     # Presentation: surface signals from Layer 7. These are always
     # computable from text alone.

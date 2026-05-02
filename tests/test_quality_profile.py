@@ -4,10 +4,14 @@ Layer 10 is a composite: it aggregates fidelity-leaning layers into a
 substance index and surface-leaning layers into a presentation index.
 Gap = presentation - substance is the overclaiming signal.
 
-In the current build, substance contribution comes only from Layer 4
-(``source_fidelity``); Layers 5, 8, 3 are skeleton. Presentation
-contributions come from Layer 7 (assertiveness, formatting_intensity,
-vocabulary_diversity).
+Substance contributors (current build):
+- ``source_fidelity`` from Layer 4
+- ``entity_grounding`` from Layer 5
+- ``epistemic_calibration`` from Layer 8
+- ``temporal_stability`` from Layer 3 (when comparisons supplied)
+
+Presentation contributors (always available from Layer 7):
+- ``assertiveness``, ``formatting_intensity``, ``vocabulary_diversity``
 
 Each index is computed independently when its side has contributors.
 Gap is meaningful only when BOTH sides contributed; otherwise gap is
@@ -316,6 +320,60 @@ def test_layer_10_all_three_substance_components_contribute() -> None:
     assert result["substance_index"] == 1.0
 
 
+def test_temporal_stability_appears_with_comparisons_and_enough_numbers() -> None:
+    """temporal_stability (Layer 3) contributes when comparisons are
+    supplied AND at least 10 unique numbers appear across versions.
+    """
+    # ADEQUATE_PRECISION_TEXT has ≥10 numbers and self-comparisons → all stable
+    result = quality_profile(
+        ADEQUATE_PRECISION_TEXT,
+        source=ADEQUATE_PRECISION_TEXT,
+        comparisons=[ADEQUATE_PRECISION_TEXT],
+    )
+    assert "temporal_stability" in result["components_available"]
+    # Identical regenerations: every number stable → temporal_stability = 1.0
+    assert result["components"]["temporal_stability"] == 1.0
+
+
+def test_temporal_stability_excluded_when_no_comparisons() -> None:
+    """Without comparisons, temporal_stability is not contributed."""
+    result = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)
+    assert "temporal_stability" not in result["components_available"]
+
+
+def test_temporal_stability_excluded_when_too_few_numbers() -> None:
+    """Even with comparisons, if fewer than 10 unique numbers appear,
+    temporal_stability is excluded (vault precision threshold).
+    """
+    text = "Revenue grew 12%."
+    result = quality_profile(text, source=text, comparisons=[text])
+    # Only 1 unique number → temporal_stability excluded
+    assert "temporal_stability" not in result["components_available"]
+
+
+def test_temporal_stability_lowers_substance_with_unstable_regen() -> None:
+    """When regenerations diverge, temporal_stability drops below 1.0,
+    pulling substance_index down even when source_fidelity stays at 1.0.
+    """
+    base = ADEQUATE_PRECISION_TEXT
+    # Comparison with all numbers changed
+    diverged = (
+        "Revenue grew 47% to $999M with 88% margins reported. "
+        "Costs declined 33% across 9,999 employees over 47 months. "
+        "Headcount reached 7,500 with $99,000 average compensation paid. "
+        "Customer acquisition cost dropped to $7,700 from previous baseline. "
+        "Retention improved 33.3% to 99.9% across all major segments globally."
+    )
+    full_self = quality_profile(base, source=base, comparisons=[base])
+    diverged_r = quality_profile(base, source=base, comparisons=[diverged])
+    assert full_self["substance_index"] == 1.0
+    assert diverged_r["substance_index"] < 1.0
+    # source_fidelity unchanged
+    assert diverged_r["components"]["source_fidelity"] == 1.0
+    # temporal_stability dropped
+    assert diverged_r["components"]["temporal_stability"] < 0.5
+
+
 def test_layer_10_partial_substance_lowers_index_proportionally() -> None:
     """When some substance components score below 1.0 but others stay at
     1.0, substance_index is the arithmetic mean (rounded).
@@ -382,15 +440,32 @@ def test_components_rounded_to_three_decimals() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_comparisons_argument_accepted_but_unused() -> None:
-    """``comparisons`` is reserved for Layer 3; accepting it must not change output."""
-    r1 = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)
-    r2 = quality_profile(
+def test_comparisons_argument_changes_substance_when_layer_3_qualifies() -> None:
+    """``comparisons`` now wires Layer 3 (temporal stability) into substance.
+    With ≥10 unique numbers across versions, supplying comparisons adds
+    a new component (``temporal_stability``) and changes substance_index.
+    """
+    r_no_comp = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)
+    r_with_comp = quality_profile(
         ADEQUATE_PRECISION_TEXT,
         source=ADEQUATE_PRECISION_TEXT,
-        comparisons=["alt version 1", "alt version 2"],
+        comparisons=[ADEQUATE_PRECISION_TEXT],
     )
-    assert r1 == r2
+    # New component appears
+    assert "temporal_stability" not in r_no_comp["components_available"]
+    assert "temporal_stability" in r_with_comp["components_available"]
+
+
+def test_short_comparisons_do_not_qualify_for_layer_3() -> None:
+    """When comparisons are passed but the unique-number total is <10,
+    Layer 3 does not contribute; output is identical to no-comparisons.
+    """
+    short_text = "Revenue grew 12%."
+    r_no_comp = quality_profile(short_text, source=short_text)
+    r_with_short_comp = quality_profile(short_text, source=short_text, comparisons=["alt", "alt2"])
+    # Neither contributes temporal_stability (too few unique numbers)
+    assert "temporal_stability" not in r_no_comp["components_available"]
+    assert "temporal_stability" not in r_with_short_comp["components_available"]
 
 
 # ---------------------------------------------------------------------------
