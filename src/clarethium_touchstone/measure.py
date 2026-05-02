@@ -11,12 +11,18 @@ All layers operate without invoking AI models on the output, with the
 exception of Layer 1a (heading defaultness) which OPTIONALLY uses an
 LLM API for baseline generation.
 
-Implementation status: skeleton. Layer functions raise ``NotImplementedError``
-until extracted from the operator's research vault. See Appendix C of the
-Standard for the layer-by-layer status.
+Implementation status: progressive extraction in progress.
+
+* Layer 4 (``source_matching``): IMPLEMENTED
+* All other layers: skeleton, raises ``NotImplementedError``
+
+See Appendix C of the Standard for layer-by-layer status.
 """
 
 from __future__ import annotations
+
+import re
+from typing import Literal
 
 from clarethium_touchstone._version import __standard_version__, __version__
 from clarethium_touchstone.types import (
@@ -31,8 +37,178 @@ from clarethium_touchstone.types import (
     SourceMatching,
     StructuralProfile,
     TemporalInstability,
+    UnsourcedNumber,
     VocabularyProximity,
 )
+
+# ---------------------------------------------------------------------------
+# Internal helpers shared across measurement layers
+# ---------------------------------------------------------------------------
+
+# Numbers within this range are treated as years rather than data values.
+# Sourced from the operator's research vault; do not adjust without a
+# Standard update per Section 10.
+_YEAR_RANGE = (1990, 2035)
+
+
+def _is_year(val: str) -> bool:
+    """Return True when ``val`` parses as an integer in the year range."""
+    try:
+        n = int(val)
+    except ValueError:
+        return False
+    return _YEAR_RANGE[0] <= n <= _YEAR_RANGE[1]
+
+
+def _is_word_count(num: dict[str, str], text: str) -> bool:
+    """Return True when ``num`` appears in a word-count context.
+
+    Word-count callouts (e.g. "Total words: 1,247") are not data-bearing
+    numerical claims and must be filtered out before source matching.
+    """
+    for m in re.finditer(re.escape(num["raw"]), text):
+        start = max(0, m.start() - 60)
+        context = text[start : m.end() + 20].lower()
+        if "word count" in context or "total words" in context:
+            return True
+    return False
+
+
+def _add_commas(val: str) -> str | None:
+    """Insert thousands separators into a plain integer string.
+
+    ``"2000"`` becomes ``"2,000"``. Returns ``None`` for short integers
+    or non-integer strings (decimals are handled separately).
+    """
+    if "." in val or len(val) <= 3:
+        return None
+    try:
+        return f"{int(val):,}"
+    except ValueError:
+        return None
+
+
+# Regex patterns for digit-formatted numerical claims, in priority order.
+# Higher-priority patterns claim character ranges first, preventing decimal
+# and integer patterns from extracting sub-tokens of already-captured
+# percentages or dollar amounts (e.g. "2.58%" must not yield phantom "2.5").
+_NUMBER_PATTERNS: tuple[tuple[str, str], ...] = (
+    (r"(\d+(?:\.\d+)?)\s*%", "percentage"),
+    (r"\$(\d+(?:\.\d+)?(?:,\d{3})*)", "dollar"),
+    (
+        r"\$(\d+(?:\.\d+)?(?:,\d{3})*)\s*[-–]\s*\$?(\d+(?:\.\d+)?(?:,\d{3})*)\s*"
+        r"([MBKmillion|billion|thousand]*)",
+        "dollar_range",
+    ),
+    (r"(\d+(?:\.\d+)?)[xX]\b", "multiplier"),
+    (r"(?<!\$)(?<!\d)(\d+\.\d+)(?!%)", "decimal"),
+    (
+        r"(?<!\$)(?<!\d)(?<!\.)(\d{1,3}(?:,\d{3})+)(?!\.\d)(?!%)(?!\d)",
+        "integer_comma",
+    ),
+    (r"(?<!\$)(?<!\d)(?<!\.)(\d+)\s*[MBK]\b", "integer_suffix"),
+    (
+        r"(?<!\$)(?<!\d)(?<!\.)(\d{2,6})(?!\.\d)(?!%)(?!\d)(?!,\d{3})",
+        "integer",
+    ),
+)
+
+
+def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
+    """Extract digit-formatted numbers from ``text`` with type and context.
+
+    Returns a list of dicts with keys ``value`` (canonical string form),
+    ``raw`` (the matched substring), ``context`` (50-character window
+    around the match), and ``type`` (one of ``percentage``, ``dollar``,
+    ``multiplier``, ``decimal``, ``integer``).
+    """
+    numbers: list[dict[str, str]] = []
+    seen: set[tuple[str, str, int]] = set()
+    claimed_ranges: list[tuple[int, int]] = []
+
+    for pattern, num_type in _NUMBER_PATTERNS:
+        for m in re.finditer(pattern, text):
+            match_start, match_end = m.start(), m.end()
+            if any(cs <= match_start < ce or cs < match_end <= ce for cs, ce in claimed_ranges):
+                continue
+
+            val = m.group(1) if m.lastindex else m.group(0)
+            if num_type in ("dollar", "integer_comma", "dollar_range"):
+                val = val.replace(",", "")
+
+            effective_type = num_type
+            if num_type in ("integer_comma", "integer_suffix"):
+                effective_type = "integer"
+            elif num_type == "dollar_range":
+                effective_type = "dollar"
+
+            key = (val, effective_type, m.start())
+            if key in seen:
+                continue
+            seen.add(key)
+            claimed_ranges.append((match_start, match_end))
+
+            ctx_start = max(0, m.start() - 50)
+            ctx_end = min(len(text), m.end() + 50)
+            context = re.sub(r"\s+", " ", text[ctx_start:ctx_end].strip())
+            numbers.append(
+                {
+                    "value": val,
+                    "raw": m.group(0),
+                    "context": context,
+                    "type": effective_type,
+                }
+            )
+    return numbers
+
+
+def _filter_numbers(numbers: list[dict[str, str]], text: str) -> list[dict[str, str]]:
+    """Drop year-like values and word-count callouts from a number list."""
+    return [n for n in numbers if not _is_year(n["value"]) and not _is_word_count(n, text)]
+
+
+def _number_in_source(num: dict[str, str], source_text: str) -> bool:
+    """Return True if ``num`` can be located in ``source_text`` via string match.
+
+    Type-aware: percentages require a trailing ``%``, dollar amounts a
+    leading ``$``, multipliers a trailing ``x`` or ``X``. Comma-formatted
+    variants are checked alongside raw values.
+    """
+    val = num["value"]
+    ntype = num["type"]
+
+    if ntype == "percentage":
+        if re.search(re.escape(val) + r"\s*%", source_text):
+            return True
+        if "." in val:
+            int_val = val.split(".")[0]
+            if re.search(re.escape(int_val) + r"\s*%", source_text):
+                return True
+        return False
+
+    if ntype == "dollar":
+        if re.search(r"\$" + re.escape(val), source_text):
+            return True
+        comma_val = _add_commas(val)
+        return bool(comma_val and re.search(r"\$" + re.escape(comma_val), source_text))
+
+    if ntype == "multiplier":
+        return bool(re.search(re.escape(val) + r"[xX]", source_text))
+
+    # integer, decimal: try raw, then comma-formatted variant
+    if re.search(r"(?<!\d)" + re.escape(val) + r"(?!\d)", source_text):
+        return True
+    comma_val = _add_commas(val)
+    return bool(comma_val and re.search(r"(?<!\d)" + re.escape(comma_val) + r"(?!\d)", source_text))
+
+
+def _precision_for(total: int) -> Literal["low", "adequate", "good"]:
+    """Map total number count to a precision indicator."""
+    if total < 10:
+        return "low"
+    if total < 30:
+        return "adequate"
+    return "good"
 
 
 def measure(
@@ -106,8 +282,60 @@ fabrication_rate = temporal_instability
 
 
 def source_matching(text: str, source: str) -> SourceMatching:
-    """Layer 4: unsourced rate of digit-formatted numbers."""
-    raise NotImplementedError
+    """Layer 4: source fidelity for digit-formatted numbers.
+
+    Extracts digit-formatted numerical claims (percentages, dollar amounts,
+    multipliers, decimals, integers) from ``text`` and verifies each via
+    type-aware string search against ``source``. Reports the unsourced
+    rate, in/out counts, precision indicator, and per-claim details for
+    every number not found in the source.
+
+    Note: Layer 4 measures source fidelity (presence of emitted numbers in
+    source material), not fabrication directly. A correctly derived number
+    (e.g. gross profit computed from sourced components) is flagged as
+    unsourced because the literal string is not in the source. See
+    Standard Section 5.4 and the methodology paper for the construct
+    honesty discussion.
+
+    Args:
+        text: The output to verify.
+        source: Source material the output may reference.
+
+    Returns:
+        A ``SourceMatching`` dict with ``unsourced_rate``, ``n_in_source``,
+        ``n_unsourced``, ``n_total``, ``precision``, and a list of
+        ``unsourced_details`` describing each claim not found in source.
+
+    Validated: 0/309 false positives across 5 self-source files
+    (document=source). 97.1% recall on digit-formatted numbers across
+    70 manually annotated claims (3 documents, 6 categories).
+    """
+    numbers = _filter_numbers(_extract_numbers_for_matching(text), text)
+
+    in_source: list[dict[str, str]] = []
+    not_in_source: list[dict[str, str]] = []
+
+    for num in numbers:
+        if _number_in_source(num, source):
+            in_source.append(num)
+        else:
+            not_in_source.append(num)
+
+    total = len(in_source) + len(not_in_source)
+    unsourced_rate = len(not_in_source) / total if total > 0 else 0.0
+
+    unsourced_details: list[UnsourcedNumber] = [
+        {"value": n["value"], "type": n["type"], "context": n["context"]} for n in not_in_source
+    ]
+
+    return {
+        "unsourced_rate": round(unsourced_rate, 3),
+        "n_in_source": len(in_source),
+        "n_unsourced": len(not_in_source),
+        "n_total": total,
+        "precision": _precision_for(total),
+        "unsourced_details": unsourced_details,
+    }
 
 
 # -- Layer 5: Entity provenance -------------------------------------------

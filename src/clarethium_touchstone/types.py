@@ -55,13 +55,34 @@ class TemporalInstability(TypedDict):
     versions_compared: int
 
 
+class UnsourcedNumber(TypedDict):
+    """A digit-formatted number from the output not found in the source.
+
+    Contains the literal value, the recognised type (percentage, dollar,
+    multiplier, integer, decimal), and a short context window from the
+    output to aid debugging and review.
+    """
+
+    value: str
+    type: str
+    context: str
+
+
 class SourceMatching(TypedDict):
-    """Layer 4."""
+    """Layer 4 (source fidelity / number provenance).
+
+    ``unsourced_rate`` is the headline metric: fraction of digit-formatted
+    numbers in the output that are not found in the source via exact string
+    search. ``precision`` indicates the reliability of the rate given the
+    total number count (``low`` < 10, ``adequate`` < 30, ``good`` >= 30).
+    """
 
     unsourced_rate: float
+    n_in_source: int
     n_unsourced: int
     n_total: int
-    unsourced_numbers: list[str]
+    precision: Literal["low", "adequate", "good"]
+    unsourced_details: list[UnsourcedNumber]
 
 
 class EntityProvenance(TypedDict):
