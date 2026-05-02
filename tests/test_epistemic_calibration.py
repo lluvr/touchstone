@@ -54,13 +54,45 @@ def test_output_keys_are_exact_set() -> None:
 
 
 def test_empty_text_returns_zero_low_precision() -> None:
-    """Empty input: zero counts, zero rates, low precision."""
+    """Empty input: zero counts, zero rates, low precision.
+
+    IMPORTANT: ``calibration_score = 0.0`` here means NO DATA, not
+    "0% grounded". Callers must check ``n_assertions > 0`` before
+    interpreting calibration_score as a meaningful ratio. The vault
+    sentinel for this case was ``None``; the TypedDict requires a
+    float so 0.0 is the normalised value.
+    """
     result = epistemic_calibration("", "any source")
     assert result["calibration_score"] == 0.0
     assert result["overclaiming_rate"] == 0.0
     assert result["n_assertions"] == 0
     assert result["n_grounded"] == 0
     assert result["precision"] == "low"
+
+
+def test_zero_assertions_distinguishable_from_zero_grounded() -> None:
+    """Two different "0.0 calibration" scenarios must be distinguishable
+    via ``n_assertions``: (1) no assertions found at all (no data), and
+    (2) assertions found but none grounded (true overclaiming).
+    """
+    # Case 1: no data — no assertion markers in text
+    no_data = epistemic_calibration(
+        "The product launched yesterday and customers were satisfied.", "Some source."
+    )
+    assert no_data["n_assertions"] == 0
+    assert no_data["calibration_score"] == 0.0  # but means "no data"
+
+    # Case 2: real overclaiming — assertions present, none grounded
+    overclaim = epistemic_calibration(
+        "The system clearly always must definitively work without exception.",
+        "Brief unrelated source content.",
+    )
+    assert overclaim["n_assertions"] >= 1
+    assert overclaim["n_grounded"] == 0
+    assert overclaim["calibration_score"] == 0.0  # means "real 0% grounded"
+
+    # Both have calibration_score = 0.0 but n_assertions distinguishes them
+    assert no_data["n_assertions"] != overclaim["n_assertions"]
 
 
 def test_no_assertion_markers_returns_zero() -> None:
@@ -154,20 +186,27 @@ def test_ground_3_high_vocab_overlap_grounds() -> None:
 
 def test_ground_3_threshold_strictly_greater_than_half() -> None:
     """Vault threshold is ``> 0.5`` (strictly greater than half), not ≥.
-    A sentence with exactly 50% overlap does NOT ground via vocab.
+
+    A sentence with exactly 50% overlap (2 of 4 content words in source)
+    does NOT ground via vocab. Other grounds also fail in this test
+    (no numbers; no multi-word Title Case in text), so the assertion is
+    flagged as overclaiming.
     """
-    # 4 content words, exactly 2 in source → 0.5 ratio (not > 0.5)
-    # Construct precisely: 'performance', 'improve', 'xyzzy', 'qrstu'
-    # (assertion 'always' is a stop word; 'must' is also a stop word? Actually
-    # 'must' is short — 4 chars — and not in our STOP_WORDS list. Hmm.
-    # Let's avoid this corner; assert the qualitative behaviour instead.
-    # If exactly 50% overlap doesn't ground → calibration < 1.0
-    text = "Performance always must improve through xyzzy qrstu always."
-    src = "Performance improve."  # only 2 of the content words
+    # Sentence has 4 content words after stop-word filtering:
+    # "Always: improve performance via xyzzy." → ['always', 'improve',
+    # 'performance', 'xyzzy'] (via filtered as stop word).
+    # Source contains 'performance' and 'improve' but not 'always' or
+    # 'xyzzy' → exactly 2/4 = 0.5 (not > 0.5).
+    text = "Always: improve performance via xyzzy."
+    src = "Performance improve."
     result = epistemic_calibration(text, src)
-    # Either grounded or not; if 50% strictly is filtered, expect not_grounded.
-    # We just assert the test runs and gives consistent output.
-    assert result["n_assertions"] >= 1
+    # 'always' is the assertion marker
+    assert result["n_assertions"] == 1
+    # Ground 1: no numbers → fails
+    # Ground 2: 'Always:' is single Title Case (no multi-word phrase) → fails
+    # Ground 3: 0.5 ratio is NOT > 0.5 → fails
+    assert result["n_grounded"] == 0
+    assert result["calibration_score"] == 0.0
 
 
 # ---------------------------------------------------------------------------

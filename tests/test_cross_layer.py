@@ -157,3 +157,44 @@ def test_split_sentences_simple_strips_markdown_consistently() -> None:
     # No markdown markers leak
     assert all("**" not in s for s in sents)
     assert all("##" not in s for s in sents)
+
+
+# ---------------------------------------------------------------------------
+# Layer 1c vs Layer 8: assertion vocabulary divergence
+# ---------------------------------------------------------------------------
+
+
+def test_layer_8_calibration_set_strictly_extends_layer_1c() -> None:
+    """Layer 8 uses a broader assertion set than Layer 1c. Phrases like
+    ``indisputably``, ``conclusively``, ``definitively``, ``inevitably``,
+    ``it is clear that``, ``no doubt``, ``demonstrates that`` are matched
+    by Layer 8 but NOT by Layer 1c (vault preserves Layer 1c's narrower
+    set to keep its validated reference distributions stable).
+    """
+    from clarethium_touchstone.measure import (
+        _CALIBRATION_ASSERTION_RE,
+        _REG_COMPILED,
+    )
+
+    layer_8_only_phrases = [
+        "Indisputably this is correct.",
+        "Conclusively the result holds.",
+        "Definitively the approach works.",
+        "Inevitably this must succeed.",
+        "It is clear that this works.",
+        "There is no doubt about this result.",
+        "This demonstrates that approach works.",
+    ]
+    layer_1c_assertion_re = _REG_COMPILED["ASSERTION"]
+    for phrase in layer_8_only_phrases:
+        # Layer 8 catches the phrase
+        assert _CALIBRATION_ASSERTION_RE.findall(phrase), f"Layer 8 should match: {phrase!r}"
+        # Layer 1c's narrower set may still catch SOME phrases (e.g., "must"
+        # is in both), but the targeted lexical items above shouldn't fire.
+        # Verify by checking that the targeted word itself isn't matched
+        # by Layer 1c.
+        targeted_word = phrase.split()[0].rstrip(",.").lower()
+        layer_1c_matches = layer_1c_assertion_re.findall(targeted_word)
+        assert not layer_1c_matches, (
+            f"Layer 1c should NOT match {targeted_word!r} (it's a Layer 8-only marker)"
+        )

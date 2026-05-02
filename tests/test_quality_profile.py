@@ -287,6 +287,68 @@ def test_epistemic_calibration_excluded_when_fewer_than_five_assertions() -> Non
     assert "epistemic_calibration" not in result["components_available"]
 
 
+def test_layer_10_all_three_substance_components_contribute() -> None:
+    """End-to-end: text with ≥10 numbers, ≥5 entities, AND ≥5 assertion-
+    bearing sentences contributes ALL THREE substance components
+    (source_fidelity, entity_grounding, epistemic_calibration).
+
+    Self-source: each component scores 1.0 → substance_index = 1.0.
+    """
+    text = (
+        "Revenue must always grow by 12% to $143M with 25% margins for the year. "
+        "Costs clearly will inevitably decline by 8% across 5,000 employees today. "
+        "Headcount definitively must reach 2,500 with $45,000 average pay reported. "
+        "According to John Smith of OpenAI, 7.5% gains must continue indefinitely. "
+        "The Stanford University team and IBM Research clearly will lead innovation. "
+        "Work cited by Carol Brown showed 94% accuracy must hold across studies. "
+        "Customer satisfaction reached 87.4% across multiple departments globally always."
+    )
+    result = quality_profile(text, source=text)
+    # All three substance contributors present
+    assert "source_fidelity" in result["components_available"]
+    assert "entity_grounding" in result["components_available"]
+    assert "epistemic_calibration" in result["components_available"]
+    # Self-source: each substance component = 1.0
+    assert result["components"]["source_fidelity"] == 1.0
+    assert result["components"]["entity_grounding"] == 1.0
+    assert result["components"]["epistemic_calibration"] == 1.0
+    # Substance index is the mean of all 3 → 1.0
+    assert result["substance_index"] == 1.0
+
+
+def test_layer_10_partial_substance_lowers_index_proportionally() -> None:
+    """When some substance components score below 1.0 but others stay at
+    1.0, substance_index is the arithmetic mean (rounded).
+    """
+    text = (
+        "Revenue must always grow by 12% to $143M with 25% margins for the year. "
+        "Costs clearly will inevitably decline by 8% across 5,000 employees today. "
+        "Headcount definitively must reach 2,500 with $45,000 average pay reported. "
+        "According to John Smith of OpenAI, 7.5% gains must continue indefinitely. "
+        "The Stanford University team and IBM Research clearly will lead innovation. "
+        "Work cited by Carol Brown showed 94% accuracy must hold across studies. "
+        "Customer satisfaction reached 87.4% across multiple departments globally always."
+    )
+    # Source has the numbers but DIFFERENT entities (test scenario)
+    src = (
+        "Numbers reported: 12%, $143M, 25%, 8%, 5,000, 2,500, $45,000, 7.5%, 94%, 87.4%. "
+        "Plus context with assertion vocab: must always definitively grow today. "
+        "Performance clearly will inevitably continue across multiple business units. "
+        "The result must hold today. Indisputably the data clearly shows this. "
+        "Definitively this proves the case across all major segments globally always."
+    )
+    result = quality_profile(text, source=src)
+    # All 3 substance contributors should run (≥10 nums, ≥5 entities,
+    # ≥5 assertions)
+    assert "source_fidelity" in result["components_available"]
+    assert "entity_grounding" in result["components_available"]
+    assert "epistemic_calibration" in result["components_available"]
+    # Substance index is the arithmetic mean of the 3 components
+    sub_components = ("source_fidelity", "entity_grounding", "epistemic_calibration")
+    expected = round(sum(result["components"][k] for k in sub_components) / len(sub_components), 3)
+    assert abs(result["substance_index"] - expected) <= 0.001
+
+
 def test_entity_grounding_lowers_substance_with_unsourced_entities() -> None:
     """Source missing entities: entity_grounding drops below 1.0,
     pulling substance_index down even when source_fidelity stays high.
