@@ -259,6 +259,34 @@ def test_entity_grounding_excluded_when_fewer_than_five_entities() -> None:
     assert "entity_grounding" not in result["components_available"]
 
 
+def test_epistemic_calibration_appears_when_at_least_five_assertions() -> None:
+    """epistemic_calibration (Layer 8) contributes to substance when at
+    least 5 assertion-bearing sentences are extracted (precision >= adequate).
+    """
+    # Build text with 5+ sentences, each with at least one assertion marker
+    text = (
+        "Revenue must always grow by 12% across all segments globally. "
+        "Costs clearly will inevitably decline by 8% across all teams today. "
+        "Headcount definitively must reach 2,500 with $45,000 average pay. "
+        "Customer retention is critical and must improve by 7.5% always. "
+        "Margins indisputably must increase by 25% across all major markets."
+    )
+    result = quality_profile(text, source=text)
+    assert "epistemic_calibration" in result["components_available"]
+    # Self-source: every assertion grounds via Ground 1 or Ground 3
+    assert result["components"]["epistemic_calibration"] == 1.0
+
+
+def test_epistemic_calibration_excluded_when_fewer_than_five_assertions() -> None:
+    """When precision is 'low' (<5 assertions), epistemic_calibration is
+    excluded from substance.
+    """
+    text = "Revenue must grow by 12%. Performance is acceptable today."
+    result = quality_profile(text, source=text)
+    # Only 1 assertion → precision="low" → excluded
+    assert "epistemic_calibration" not in result["components_available"]
+
+
 def test_entity_grounding_lowers_substance_with_unsourced_entities() -> None:
     """Source missing entities: entity_grounding drops below 1.0,
     pulling substance_index down even when source_fidelity stays high.

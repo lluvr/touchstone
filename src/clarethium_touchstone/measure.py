@@ -19,10 +19,11 @@ Implementation status: progressive extraction in progress.
 * Layer 5 (``entity_provenance``): IMPLEMENTED (directional in v1.0)
 * Layer 6 (``vocabulary_proximity``): IMPLEMENTED (directional in v1.0)
 * Layer 7 (``presentation_features``): IMPLEMENTED
+* Layer 8 (``epistemic_calibration``): IMPLEMENTED (experimental in v1.0)
 * Layer 9 (``information_novelty``): IMPLEMENTED (experimental in v1.0)
-* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L4 + L5,
-  presentation from L7; temporal_stability / epistemic_calibration /
-  structural_effort reserved for future layers)
+* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L4 + L5 + L8,
+  presentation from L7; temporal_stability / structural_effort reserved
+  for future layers)
 * All other layers: skeleton, raises ``NotImplementedError``
 
 See Appendix C of the Standard for layer-by-layer status.
@@ -1092,10 +1093,151 @@ def presentation_features(text: str) -> PresentationFeatures:
 
 # -- Layer 8: Epistemic calibration ---------------------------------------
 
+# Broader assertion patterns than Layer 1c REGISTER_PATTERNS["ASSERTION"].
+# The structural assertion ratio (Layer 1c) was validated on the original
+# 13 patterns; Layer 8 uses a wider set including additional high-confidence
+# phrases the structural ratio intentionally omits (to preserve its
+# reference distributions). Vault-faithful.
+_CALIBRATION_ASSERTION_PATTERNS: tuple[str, ...] = (
+    # Original Layer 1c ASSERTION patterns
+    r"\bmust\b",
+    r"\balways\b",
+    r"\bnever\b",
+    r"\bundeniably\b",
+    r"\bclearly\b",
+    r"\bobviously\b",
+    r"\bensures?\b",
+    r"\bguarantees?\b",
+    r"\brequires?\b",
+    r"\bwill\s+(?:lead|result|cause|create|produce)\b",
+    r"\bis\s+essential\b",
+    r"\bis\s+critical\b",
+    r"\bis\s+(?:the\s+)?key\b",
+    # Expanded calibration-only patterns (v1.3)
+    r"\bit\s+is\s+clear\s+that\b",
+    r"\bthere\s+is\s+no\s+doubt\b",
+    r"\bwithout\s+(?:question|doubt|exception)\b",
+    r"\bproves?\s+(?:that|beyond)\b",
+    r"\bindisputabl[ye]\b",
+    r"\bconclusivel[ye]\b",
+    r"\bunambiguous(?:ly)?\b",
+    r"\bdefinitiv(?:e|ely)\b",
+    r"\binevitabl[ye]\b",
+    r"\bunquestionabl[ye]\b",
+    r"\bcertainly\b",
+    r"\bdemonstrates?\s+(?:that|the|a|an)\b",
+    r"\bwill\s+(?:always|never|inevitably|certainly)\b",
+    r"\bno\s+(?:question|doubt|exception)\b",
+    r"\bcannot\s+(?:fail|be\s+denied|be\s+disputed)\b",
+    r"\bis\s+(?:undeniable|indisputable|certain|inevitable)\b",
+    r"\bwill\s+(?:definitely|undoubtedly|surely)\b",
+    r"\bproven\s+(?:to|that|by)\b",
+)
+
+_CALIBRATION_ASSERTION_RE = re.compile("|".join(_CALIBRATION_ASSERTION_PATTERNS), re.IGNORECASE)
+
+
+def _calibration_precision(total: int) -> Literal["high", "adequate", "low"]:
+    """Map total assertion count to precision indicator.
+
+    Vault thresholds: < 5 = low, < 15 = adequate, >= 15 = good. The
+    Touchstone TypedDict uses ``high`` instead of ``good`` for the
+    upper tier (vocabulary normalisation across layers); semantics
+    are identical.
+    """
+    if total < 5:
+        return "low"
+    if total < 15:
+        return "adequate"
+    return "high"
+
 
 def epistemic_calibration(text: str, source: str) -> EpistemicCalibration:
-    """Layer 8 (experimental): grounded assertions / total assertions."""
-    raise NotImplementedError
+    """Layer 8 (EXPERIMENTAL in v1.0): per-sentence assertion grounding.
+
+    Cross-layer metric. For each sentence containing assertion markers
+    (broader set than Layer 1c), checks whether grounding evidence
+    exists via three independent paths:
+
+    1. **Sourced number** — sentence contains a digit-formatted number
+       (Layer 4 extraction) verified present in source.
+    2. **Sourced entity** — sentence contains a Title Case multi-word
+       phrase (e.g., ``Stanford University``) found in source via
+       lowercase substring search.
+    3. **High vocabulary overlap** — sentence's content words (Layer 9
+       extraction) have >50% substring presence in source.
+
+    A sentence with at least one ground is GROUNDED; otherwise it is
+    OVERCLAIMING. Returns the calibration score (grounded fraction),
+    the overclaiming rate, and a precision indicator.
+
+    The expanded assertion set (v1.3 calibration-only) catches phrases
+    like "it is clear that", "indisputable", "conclusively",
+    "definitive(ly)", "inevitable", "demonstrates that" — vault-faithful
+    augmentation that Layer 1c's structural ratio omits to preserve
+    validated reference distributions.
+
+    Returns 0.0 / "low" precision when no assertion-bearing sentences
+    are found (the TypedDict requires float values; the vault's
+    ``None`` sentinel is normalised to 0.0 here).
+    """
+    sentences = _split_sentences_simple(text)
+    source_lower = source.lower()
+
+    total_assertions = 0
+    grounded_assertions = 0
+
+    for sent in sentences:
+        if not _CALIBRATION_ASSERTION_RE.findall(sent):
+            continue
+
+        total_assertions += 1
+        grounded = False
+
+        # Ground 1: sourced number in sentence
+        sent_numbers = _filter_numbers(_extract_numbers_for_matching(sent), sent)
+        for num in sent_numbers:
+            if _number_in_source(num, source):
+                grounded = True
+                break
+
+        # Ground 2: sourced Title Case entity (multi-word phrase)
+        if not grounded:
+            for m in re.finditer(r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", sent):
+                if m.group(1).lower() in source_lower:
+                    grounded = True
+                    break
+
+        # Ground 3: high vocabulary overlap with source (>50%)
+        if not grounded:
+            sent_words = _content_words(sent)
+            if sent_words:
+                grounded_count = sum(1 for w in sent_words if w in source_lower)
+                vocab_score = grounded_count / len(sent_words)
+                if vocab_score > 0.5:
+                    grounded = True
+
+        if grounded:
+            grounded_assertions += 1
+
+    if total_assertions == 0:
+        return {
+            "calibration_score": 0.0,
+            "overclaiming_rate": 0.0,
+            "n_assertions": 0,
+            "n_grounded": 0,
+            "precision": "low",
+        }
+
+    calibration = grounded_assertions / total_assertions
+    overclaim_rate = (total_assertions - grounded_assertions) / total_assertions
+    return {
+        "calibration_score": round(calibration, 3),
+        "overclaiming_rate": round(overclaim_rate, 3),
+        "n_assertions": total_assertions,
+        "n_grounded": grounded_assertions,
+        "precision": _calibration_precision(total_assertions),
+    }
 
 
 # -- Layer 9: Information novelty -----------------------------------------
@@ -1233,8 +1375,10 @@ def quality_profile(
     * ``entity_grounding`` = 1 - entity_provenance.entity_unsourced_rate
       (Layer 5), contributed when ``source`` is provided and at least 5
       entities were extracted (precision threshold).
-    * (temporal_stability, epistemic_calibration reserved for Layers 3, 8
-      once those are extracted)
+    * ``epistemic_calibration`` = epistemic_calibration.calibration_score
+      (Layer 8), contributed when ``source`` is provided and the
+      calibration precision is not ``low`` (≥5 assertions found).
+    * (temporal_stability reserved for Layer 3 once extracted)
 
     Presentation components (always available):
 
@@ -1287,6 +1431,12 @@ def quality_profile(
         ep = entity_provenance(text, source)
         if ep["n_entities"] >= 5:
             substance["entity_grounding"] = 1.0 - ep["entity_unsourced_rate"]
+
+        # Epistemic calibration (Layer 8) when precision is at least
+        # adequate (≥5 assertion-bearing sentences).
+        ec = epistemic_calibration(text, source)
+        if ec["precision"] != "low":
+            substance["epistemic_calibration"] = ec["calibration_score"]
 
     # Presentation: surface signals from Layer 7. These are always
     # computable from text alone.
