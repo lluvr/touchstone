@@ -16,6 +16,7 @@ Implementation status: progressive extraction in progress.
 * Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c; 1a returns None)
 * Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
+* Layer 7 (``presentation_features``): IMPLEMENTED
 * All other layers: skeleton, raises ``NotImplementedError``
 
 See Appendix C of the Standard for layer-by-layer status.
@@ -708,11 +709,174 @@ def vocabulary_proximity(text: str, source: str) -> VocabularyProximity:
 
 # -- Layer 7: Presentation features ---------------------------------------
 
+# Hedging language (low confidence registers).
+_HEDGE_RE = re.compile(
+    r"\b(?:perhaps|maybe|possibly|might|could|seems?|appears?|"
+    r"suggest(?:s|ed|ing)?|indicate(?:s|d)?|tend(?:s|ed)?|"
+    r"somewhat|relatively|generally|often|usually|typically|"
+    r"in some cases|to some extent|it (?:is|seems) (?:possible|likely))\b",
+    re.IGNORECASE,
+)
+
+# Assertive language (high confidence registers). Distinct from Layer 1c
+# REGISTER_PATTERNS["ASSERTION"]; this set is wider and includes
+# rhetorical-named-cause patterns ("the key issue", "the root mechanism").
+_ASSERT_RE = re.compile(
+    r"\b(?:always|never|must|requires?|demands?|guarantees?|ensures?|"
+    r"proves?|demonstrates?|establishes?|confirms?|definitively|"
+    r"inevitably|invariably|necessarily|fundamentally|critically|"
+    r"the (?:key|core|essential|primary|fundamental|root|central) "
+    r"(?:issue|problem|cause|reason|driver|mechanism|factor))\b",
+    re.IGNORECASE,
+)
+
+# Named-concept patterns: "Title Case Word(s) + <Concept Noun>"
+# (e.g., "Sunk Cost Fallacy", "Streetlight Effect", "Dunning-Kruger Effect").
+_NAMING_RE = re.compile(
+    r"(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\s*"
+    r"(?:Effect|Trap|Paradox|Principle|Syndrome|Pattern|Loop|Cycle|"
+    r"Model|Framework|Law|Rule|Fallacy|Bias|Gap|Problem|Phenomenon|"
+    r"Spiral|Ceiling|Floor|Threshold))"
+)
+
+
+def _count_syllables(word: str) -> int:
+    """Approximate syllable count for Flesch-Kincaid grade level.
+
+    Standard heuristic: count vowel transitions, drop a trailing silent
+    'e' (unless it would zero the count). Words of three letters or
+    fewer count as one syllable. Returns at least 1 for any non-empty
+    alphabetic word.
+    """
+    word = word.lower().strip()
+    if len(word) <= 3:
+        return 1
+    count = 0
+    prev_vowel = False
+    for char in word:
+        is_vowel = char in "aeiouy"
+        if is_vowel and not prev_vowel:
+            count += 1
+        prev_vowel = is_vowel
+    if word.endswith("e") and count > 1:
+        count -= 1
+    return max(1, count)
+
+
+def _strip_markdown(text: str) -> str:
+    """Strip markdown markers (headings, bold, italic, code, link syntax).
+
+    Used as the cleaning pass for tokenisation and sentence splitting in
+    Layer 7. Heading markers and emphasis are removed; link text is
+    preserved while URL targets are dropped.
+    """
+    text = re.sub(r"#{1,6}\s+", "", text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"\*([^*]+)\*", r"\1", text)
+    text = re.sub(r"`([^`]+)`", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    return text
+
+
+def _tokenize_words(text: str) -> list[str]:
+    """Lowercased alphabetic words (with internal apostrophes).
+
+    Strips markdown first, then extracts ``[a-zA-Z']+`` runs. Numerical
+    tokens are excluded by design — Layer 7 measures language registers
+    and lexical diversity, not numerical content.
+    """
+    return re.findall(r"[a-zA-Z']+", _strip_markdown(text).lower())
+
+
+def _split_sentences_simple(text: str) -> list[str]:
+    """Split markdown into sentences for register / FK analysis.
+
+    Drops table rows (``|...|``), heading markers, emphasis, and link
+    syntax. Keeps sentences with at least 5 tokens that don't mention
+    "word count".
+    """
+    clean = re.sub(r"#{1,6}\s+", "", text)
+    clean = re.sub(r"\|[^\n]+\|", "", clean)
+    clean = re.sub(r"\*+", "", clean)
+    clean = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", clean)
+    sentences = re.split(r"(?<=[.!?])\s+", clean)
+    return [
+        s.strip()
+        for s in sentences
+        if len(s.strip().split()) >= 5 and "word count" not in s.lower()
+    ]
+
+
+def _extract_headings_simple(text: str) -> list[str]:
+    """Return ## and ### heading text (cleaned of markdown markers)."""
+    headings: list[str] = []
+    for line in text.split("\n"):
+        line = line.strip()
+        if line.startswith("## ") or line.startswith("### "):
+            h = re.sub(r"^#+\s*", "", line).strip()
+            h = re.sub(r"\*+", "", h).strip()
+            if h:
+                headings.append(h)
+    return headings
+
 
 def presentation_features(text: str) -> PresentationFeatures:
-    """Layer 7: TTR, FK grade, formatting density, assertiveness, named
-    concept count."""
-    raise NotImplementedError
+    """Layer 7: surface presentation characteristics.
+
+    Returns five descriptive features. None of them are evaluative on
+    their own; they describe the SHAPE of the prose (vocabulary
+    diversity, reading level, formatting intensity, register stance,
+    rhetorical naming) and are inputs to Layer 10's substance vs
+    presentation gap.
+
+    Components:
+
+    * ``type_token_ratio`` — unique words / total words. Higher = more
+      lexical diversity.
+    * ``fk_grade`` — Flesch-Kincaid grade level (US schooling years).
+      0.0 for empty input.
+    * ``formatting_density`` — (bold runs + list items + headings) per
+      100 words. High values indicate heavy markdown formatting.
+    * ``assertiveness_ratio`` — assertive markers / (assertive +
+      hedging markers). 0.5 default when neither register fires.
+    * ``named_concept_count`` — count of "Title Case <Concept Noun>"
+      patterns (e.g., "Sunk Cost Fallacy"). Proxy for rhetorical
+      authority signalling.
+    """
+    words = _tokenize_words(text)
+    sents = _split_sentences_simple(text)
+    headings = _extract_headings_simple(text)
+
+    n_words = len(words)
+    ttr = len(set(words)) / n_words if n_words > 0 else 0.0
+
+    n_sents = max(len(sents), 1)
+    syllable_counts = [_count_syllables(w) for w in words if w.isalpha()]
+    total_syllables = sum(syllable_counts)
+    if n_words > 0:
+        fk_grade = 0.39 * (n_words / n_sents) + 11.8 * (total_syllables / n_words) - 15.59
+    else:
+        fk_grade = 0.0
+
+    n_bold = len(re.findall(r"\*\*[^*]+\*\*", text))
+    n_list_items = len(re.findall(r"^[-*•]\s+", text, re.MULTILINE))
+    n_list_items += len(re.findall(r"^\d+\.\s+", text, re.MULTILINE))
+    formatting_density = (n_bold + n_list_items + len(headings)) / max(n_words / 100, 1)
+
+    n_hedges = len(_HEDGE_RE.findall(text))
+    n_asserts = len(_ASSERT_RE.findall(text))
+    total_register = n_asserts + n_hedges
+    assertiveness = n_asserts / total_register if total_register > 0 else 0.5
+
+    named_concepts = _NAMING_RE.findall(text)
+
+    return {
+        "type_token_ratio": round(ttr, 4),
+        "fk_grade": round(fk_grade, 1),
+        "formatting_density": round(formatting_density, 2),
+        "assertiveness_ratio": round(assertiveness, 4),
+        "named_concept_count": len(named_concepts),
+    }
 
 
 # -- Layer 8: Epistemic calibration ---------------------------------------
