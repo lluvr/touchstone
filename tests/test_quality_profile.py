@@ -227,6 +227,59 @@ def test_source_fidelity_appears_only_with_adequate_precision_and_source() -> No
     assert "source_fidelity" in r3["components_available"]
 
 
+# Text with ≥5 entities AND ≥10 numbers. Note: vault entity patterns are
+# CASE-SENSITIVE — sentence-start "According to" does not trigger; only
+# mid-sentence lowercase "according to" / "by" / "per" / "cited by" do.
+ENTITY_RICH_TEXT = (
+    "Revenue grew 12% to $143M with 25% margins for the year. "
+    "Costs declined 8% across 5,000 employees over 18 months. "
+    "Headcount reached 2,500 with $45,000 average compensation paid. "
+    "Findings according to John Smith of OpenAI confirm 7.5% gains. "
+    "The Stanford University team and IBM Research contributed. "
+    "Work cited by Carol Brown showed 94% accuracy across studies."
+)
+
+
+def test_entity_grounding_appears_when_at_least_five_entities() -> None:
+    """entity_grounding (Layer 5) contributes when source is given AND
+    at least 5 entities are extracted from text.
+    """
+    result = quality_profile(ENTITY_RICH_TEXT, source=ENTITY_RICH_TEXT)
+    assert "entity_grounding" in result["components_available"]
+    # Self-source: all entities grounded → entity_grounding == 1.0
+    assert result["components"]["entity_grounding"] == 1.0
+
+
+def test_entity_grounding_excluded_when_fewer_than_five_entities() -> None:
+    """When fewer than 5 entities extract, entity_grounding is excluded
+    (vault precision threshold).
+    """
+    # ADEQUATE_PRECISION_TEXT has plenty of numbers but no named entities
+    result = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)
+    assert "entity_grounding" not in result["components_available"]
+
+
+def test_entity_grounding_lowers_substance_with_unsourced_entities() -> None:
+    """Source missing entities: entity_grounding drops below 1.0,
+    pulling substance_index down even when source_fidelity stays high.
+    """
+    # Source has all the NUMBERS but none of the NAMED ENTITIES
+    src = (
+        "Numbers: 12%, $143M, 25%, 8%, 5,000, 18, 2,500, $45,000, 7.5%, 94%. "
+        "Entities mentioned: Acme Foundation reports across all sites today."
+    )
+    full_self = quality_profile(ENTITY_RICH_TEXT, source=ENTITY_RICH_TEXT)
+    partial = quality_profile(ENTITY_RICH_TEXT, source=src)
+    # Self-source has both substance components at 1.0
+    assert full_self["substance_index"] == 1.0
+    # Partial substance is lower because entity_grounding drops
+    assert partial["substance_index"] < 1.0
+    # source_fidelity still 1.0 because numbers match
+    assert partial["components"]["source_fidelity"] == 1.0
+    # entity_grounding should be lower (entities unsourced)
+    assert partial["components"]["entity_grounding"] < 1.0
+
+
 def test_components_rounded_to_three_decimals() -> None:
     """All component scores are rounded to 3 decimals (storage parity)."""
     result = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)

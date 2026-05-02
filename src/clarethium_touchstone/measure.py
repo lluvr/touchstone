@@ -16,11 +16,12 @@ Implementation status: progressive extraction in progress.
 * Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c; 1a returns None)
 * Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
+* Layer 5 (``entity_provenance``): IMPLEMENTED (directional in v1.0)
 * Layer 6 (``vocabulary_proximity``): IMPLEMENTED (directional in v1.0)
 * Layer 7 (``presentation_features``): IMPLEMENTED
 * Layer 9 (``information_novelty``): IMPLEMENTED (experimental in v1.0)
-* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L4, presentation
-  from L7; entity_grounding / temporal_stability / epistemic_calibration /
+* Layer 10 (``quality_profile``): IMPLEMENTED (substance from L4 + L5,
+  presentation from L7; temporal_stability / epistemic_calibration /
   structural_effort reserved for future layers)
 * All other layers: skeleton, raises ``NotImplementedError``
 
@@ -698,10 +699,172 @@ def source_matching(text: str, source: str) -> SourceMatching:
 
 # -- Layer 5: Entity provenance -------------------------------------------
 
+# Entities are deduplicated as (type, value) pairs so the same string
+# captured under two different patterns counts as two entries.
+
+
+def _extract_entities(text: str) -> list[dict[str, str]]:
+    """Extract named entities via five regex patterns.
+
+    Patterns (vault-faithful):
+
+    1. Person names following a triggering prefix (``'s ``, ``according
+       to``, ``by ``, comma, em-dash, period). Bare "FirstName LastName"
+       without a prefix does NOT match. Common nouns ("source",
+       "extends", "mechanism", "falsifier", "section") that look like
+       names are filtered out.
+    2. Organisations: Title Case word(s) followed by an org suffix
+       (Labs, Corp, Inc, Foundation, University, Institute, Survey,
+       Report, Association, Group, Research).
+    3. Attributions: ``according to``, ``per``, ``cited by``,
+       ``reported by`` followed by a Title Case name.
+    4. Parenthetical citations: ``(Author, YYYY)`` form.
+    5. CamelCase organisation names (e.g., ``OpenAI``, ``GitHub``).
+
+    Headings (``# ...``) and table rows (``|...|``) are stripped before
+    extraction to avoid false matches in chrome.
+
+    Returns a list of dicts with ``type``, ``value``, and ``context``
+    keys.
+    """
+    body = re.sub(r"^#{1,6}\s+.*$", "", text, flags=re.MULTILINE)
+    body = re.sub(r"\|[^\n]+\|", "", body)
+
+    entities: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    def _push(entity_type: str, value: str, start: int, end: int) -> None:
+        key = (entity_type, value)
+        if key in seen:
+            return
+        seen.add(key)
+        ctx_start = max(0, start - 20)
+        ctx_end = min(len(body), end + 30)
+        entities.append(
+            {
+                "type": entity_type,
+                "value": value,
+                "context": body[ctx_start:ctx_end].strip(),
+            }
+        )
+
+    # Pattern 1: Person names with triggering prefix. The prefix list
+    # avoids falsely catching mid-sentence Title Case noun phrases.
+    person_pattern = (
+        r"(?:(?:['s]\s+)|(?:according to\s+)|(?:by\s+)|(?:,\s+)"
+        r"|(?:—\s*)|(?:\.\s+))"
+        r"([A-Z][a-z]{2,15}\s+(?:[A-Z]\.?\s+)?[A-Z][a-z]{2,15})"
+    )
+    person_blocklist = ("source", "extends", "mechanism", "falsifier", "section")
+    for m in re.finditer(person_pattern, body):
+        name = m.group(1).strip()
+        name_lower = name.lower()
+        if any(w in name_lower for w in person_blocklist):
+            continue
+        _push("PERSON", name, m.start(), m.end())
+
+    # Pattern 2: Organisations with explicit suffix.
+    org_pattern = (
+        r"([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*"
+        r"(?:\s+(?:Labs|Corp|Inc|Foundation|University|Institute"
+        r"|Survey|Report|Association|Group|Research)))"
+    )
+    for m in re.finditer(org_pattern, body):
+        _push("ORG", m.group(1).strip(), m.start(), m.end())
+
+    # Pattern 3: Attributions.
+    attribution_pattern = (
+        r"(?:according to|per|cited by|reported by)\s+"
+        r"([A-Z][a-zA-Z]+(?:[\s/][A-Z]?[a-zA-Z]+){0,4})"
+    )
+    attribution_blocklist = ("source", "the", "this", "one")
+    for m in re.finditer(attribution_pattern, body):
+        name = m.group(1).strip()
+        if name.lower() in attribution_blocklist:
+            continue
+        _push("ATTRIBUTED", name, m.start(), m.end())
+
+    # Pattern 4: Parenthetical citations.
+    citation_pattern = r"\(([A-Z][a-zA-Z/]+(?:\s+[A-Z]?[a-zA-Z]+)*)[,\s]+(\d{4})\)"
+    for m in re.finditer(citation_pattern, body):
+        cite = f"{m.group(1)} {m.group(2)}"
+        if "source" in cite.lower():
+            continue
+        _push("CITATION", cite, m.start(), m.end())
+
+    # Pattern 5: CamelCase organisation names.
+    camel_pattern = r"(?<!\w)([A-Z][a-z]+[A-Z][a-zA-Z]+)(?!\w)"
+    for m in re.finditer(camel_pattern, body):
+        # Note: the keyed type is ORG (vault uses ORG_CAMEL only as the
+        # internal dedup key; the public type is ORG).
+        name = m.group(1)
+        key = ("ORG_CAMEL", name)
+        if key in seen:
+            continue
+        seen.add(key)
+        ctx_start = max(0, m.start() - 20)
+        ctx_end = min(len(body), m.end() + 30)
+        entities.append(
+            {
+                "type": "ORG",
+                "value": name,
+                "context": body[ctx_start:ctx_end].strip(),
+            }
+        )
+
+    return entities
+
+
+def _entity_in_source(entity: dict[str, str], source_text: str) -> bool:
+    """Check whether ``entity['value']`` appears in source.
+
+    Two-pass match (vault-faithful):
+
+    1. Whole-string lowercase substring search (``cat`` matches
+       ``catalog``, mirroring Layer 6's generosity).
+    2. Word-by-word fallback: all content words (>3 chars, not stop
+       words) of the entity value must each be present in source.
+    """
+    val = entity["value"]
+    source_lower = source_text.lower()
+    if val.lower() in source_lower:
+        return True
+    words = [w for w in val.split() if len(w) > 3 and w.lower() not in _STOP_WORDS]
+    return bool(words) and all(w.lower() in source_lower for w in words)
+
 
 def entity_provenance(text: str, source: str) -> EntityProvenance:
-    """Layer 5: unsourced rate of named entities."""
-    raise NotImplementedError
+    """Layer 5 (DIRECTIONAL in v1.0): named-entity provenance.
+
+    Extracts named entities (persons, organisations, attributions,
+    citations) from ``text`` via five regex patterns and reports the
+    fraction not found in ``source``.
+
+    English-centric patterns; non-English names with non-ASCII
+    characters often miss. Substring matching against source is
+    generous (vault-faithful) — see ``_entity_in_source``.
+
+    Output:
+
+    * ``entity_unsourced_rate`` — fraction of extracted entities not
+      found in source. ``0.0`` when no entities extract.
+    * ``n_entities`` — total entities extracted (deduplicated).
+    * ``n_unsourced`` — number not found in source.
+    * ``unsourced_entities`` — list of entity values not in source
+      (strings only; type/context dropped from public output).
+    """
+    entities = _extract_entities(text)
+    not_in_source = [e for e in entities if not _entity_in_source(e, source)]
+
+    total = len(entities)
+    unsourced_rate = len(not_in_source) / total if total > 0 else 0.0
+
+    return {
+        "entity_unsourced_rate": round(unsourced_rate, 3),
+        "n_entities": total,
+        "n_unsourced": len(not_in_source),
+        "unsourced_entities": [e["value"] for e in not_in_source],
+    }
 
 
 # -- Layer 6: Vocabulary proximity ----------------------------------------
@@ -1067,8 +1230,11 @@ def quality_profile(
     * ``source_fidelity`` = 1 - source_matching.unsourced_rate (Layer 4),
       contributed only when ``source`` is provided and the source-matching
       precision is not ``low``.
-    * (entity_grounding, temporal_stability, epistemic_calibration are
-      reserved for Layers 5, 3, 8 once those are extracted)
+    * ``entity_grounding`` = 1 - entity_provenance.entity_unsourced_rate
+      (Layer 5), contributed when ``source`` is provided and at least 5
+      entities were extracted (precision threshold).
+    * (temporal_stability, epistemic_calibration reserved for Layers 3, 8
+      once those are extracted)
 
     Presentation components (always available):
 
@@ -1115,6 +1281,12 @@ def quality_profile(
         sm = source_matching(text, source)
         if sm["precision"] != "low":
             substance["source_fidelity"] = 1.0 - sm["unsourced_rate"]
+
+        # Entity grounding (Layer 5) when at least 5 entities extracted.
+        # The vault's "low" precision threshold for entities is total < 5.
+        ep = entity_provenance(text, source)
+        if ep["n_entities"] >= 5:
+            substance["entity_grounding"] = 1.0 - ep["entity_unsourced_rate"]
 
     # Presentation: surface signals from Layer 7. These are always
     # computable from text alone.
