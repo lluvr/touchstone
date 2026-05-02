@@ -96,18 +96,33 @@ def test_substring_match_is_generous() -> None:
     """Vault behaviour: ``w in source_lower`` is a Python substring check.
 
     A content word ``cat`` is considered grounded if source contains
-    ``catalog``, ``catastrophe``, etc. Pinned because this affects
-    interpretation of the score.
+    ``catalog`` because the substring ``cat`` exists inside ``catalog``.
+    Pinned because this affects interpretation of the score.
     """
-    src = "The catalog contained essential reference data here today."
-    text = "The cat appeared everywhere in the documentation pages here."
+    src = "The catalog contained important data."
+    # Content words (≥3 chars, no stop words) from output:
+    # ['cat', 'appears', 'within', 'documents']
+    # 'cat' substring of 'catalog' → True
+    # 'appears' not in src → False
+    # 'within' not in src → False
+    # 'documents' not in src → False
+    # Score: 1/4 = 0.25
+    text = "The cat appears within the documents."
     result = vocabulary_proximity(text, src)
-    # Content words (≥3 chars, no stop words): 'cat', 'appeared', 'everywhere',
-    # 'documentation', 'pages', 'here', 'today'
-    # 'cat' is substring of 'catalog' → counts as grounded
-    # 'here' is in source ('here today') → counts as grounded (also a substring)
-    # So mean must be > 0
-    assert result["mean_proximity"] > 0
+    assert result["per_sentence_proximity"] == [0.25]
+    assert result["mean_proximity"] == 0.25
+
+
+def test_empty_source_multi_sentence_all_zero() -> None:
+    """Empty source with multiple qualifying sentences: each yields 0.0."""
+    text = (
+        "First valid sentence with multiple content words present here today. "
+        "Second valid sentence has many more distinct content words available. "
+        "Third valid sentence completes the demonstration of multi-sentence input."
+    )
+    result = vocabulary_proximity(text, "")
+    assert result["per_sentence_proximity"] == [0.0, 0.0, 0.0]
+    assert result["mean_proximity"] == 0.0
 
 
 def test_case_insensitive_matching() -> None:

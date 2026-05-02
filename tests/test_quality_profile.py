@@ -9,9 +9,9 @@ In the current build, substance contribution comes only from Layer 4
 contributions come from Layer 7 (assertiveness, formatting_intensity,
 vocabulary_diversity).
 
-Indices are honest only when both substance AND presentation have at
-least one component. Otherwise indices are 0.0 and callers must
-inspect ``components_available``.
+Each index is computed independently when its side has contributors.
+Gap is meaningful only when BOTH sides contributed; otherwise gap is
+0.0 (callers should inspect ``components_available``).
 """
 
 from __future__ import annotations
@@ -69,42 +69,52 @@ def test_components_dict_matches_available_list() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_empty_text_returns_zero_indices() -> None:
-    """Empty input: all indices and gap are 0.0."""
+def test_empty_text_substance_zero_gap_zero() -> None:
+    """Empty input: substance and gap are 0.0; presentation reflects
+    Layer 7's defaults on empty text (assertiveness 0.5 + zeros).
+    """
     result = quality_profile("", source="some source content")
     assert result["substance_index"] == 0.0
-    assert result["presentation_index"] == 0.0
     assert result["gap"] == 0.0
+    # Presentation_index is honestly computed from Layer 7's empty-text defaults:
+    # mean(assertiveness=0.5, formatting=0.0, ttr=0.0) ≈ 0.167
+    assert result["presentation_index"] > 0
 
 
-def test_no_source_falls_back_to_zero_indices() -> None:
-    """Without source, no substance contributors → indices fall to 0.0.
-
-    Presentation components are still computed (and listed in
-    ``components_available``) so callers can recover them, but the
-    composite indices intentionally zero out per the documented
-    contract.
+def test_no_source_keeps_presentation_zeros_substance_and_gap() -> None:
+    """Without source, no substance contributors → substance_index and gap
+    fall to 0.0, but presentation_index remains the honest mean of
+    Layer 7's three contributors.
     """
     result = quality_profile(ADEQUATE_PRECISION_TEXT)
     assert result["substance_index"] == 0.0
-    assert result["presentation_index"] == 0.0
     assert result["gap"] == 0.0
-    # Presentation components still listed
-    assert "assertiveness" in result["components_available"]
-    assert "formatting_intensity" in result["components_available"]
-    assert "vocabulary_diversity" in result["components_available"]
+    # Presentation_index is real (mean of Layer 7's three components)
+    pres_components = ["assertiveness", "formatting_intensity", "vocabulary_diversity"]
+    expected = round(
+        sum(result["components"][k] for k in pres_components) / len(pres_components), 3
+    )
+    # Allow for floating-point round-trip vs the index's own rounding
+    assert abs(result["presentation_index"] - expected) <= 0.001
+    assert result["presentation_index"] > 0
+    # Components_available reflects what actually contributed
+    assert all(k in result["components_available"] for k in pres_components)
     assert "source_fidelity" not in result["components_available"]
 
 
-def test_low_precision_excludes_substance() -> None:
+def test_low_precision_excludes_substance_keeps_presentation() -> None:
     """When source_matching precision is 'low' (<10 numbers), substance
-    contribution is excluded and indices fall to 0.0.
+    contribution is excluded; substance_index = 0.0; presentation_index
+    remains real.
     """
     text = "The product launched yesterday with positive reception widely."
     result = quality_profile(text, source="Product mentioned briefly.")
     # Layer 4 will report n_total=0, precision="low" → substance excluded
     assert "source_fidelity" not in result["components_available"]
     assert result["substance_index"] == 0.0
+    assert result["gap"] == 0.0
+    # Presentation_index is real
+    assert result["presentation_index"] > 0
 
 
 # ---------------------------------------------------------------------------

@@ -1078,11 +1078,20 @@ def quality_profile(
     * (structural_effort from Layer 1a heading_defaultness reserved
       until the LLM-API integration is wired)
 
-    Indices are honest only when at least one substance AND at least one
-    presentation component contributed. When either side is empty,
-    ``substance_index``, ``presentation_index``, and ``gap`` are all
-    ``0.0`` — callers MUST inspect ``components_available`` to determine
-    whether the indices are meaningful.
+    Each index is computed independently when its side has at least one
+    contributor; ``gap`` is meaningful only when BOTH sides contributed
+    (otherwise ``gap`` is ``0.0``). Callers should inspect
+    ``components_available`` to know which contributors ran. When neither
+    side has contributors (e.g. empty text without source), all three
+    values are ``0.0``.
+
+    Validation (vault notes): four studies showed strong d effects.
+    (1) source present vs absent: d=-5.78, N=24.
+    (2) faithful vs embellished on xAI: d=-5.43, N=12.
+    (3) faithful vs embellished on Gemini: d=-2.28, N=12.
+    (4) 4-dose Gemini gradient: monotonic, endpoint d=-2.13, N=24.
+    Cross-generator and dose-response evidence support construct validity.
+    Composite metrics inherit component limitations.
 
     Args:
         text: The output to evaluate.
@@ -1095,10 +1104,6 @@ def quality_profile(
         A ``QualityProfile`` dict with substance / presentation indices,
         gap, the contributing component scores, and the list of
         contributors.
-
-    Validation (vault notes): four studies showed strong d effects
-    (-5.78, -5.43, -2.28; monotonic 4-dose). Composite metrics inherit
-    component limitations.
     """
     substance: dict[str, float] = {}
     presentation: dict[str, float] = {}
@@ -1125,15 +1130,11 @@ def quality_profile(
     }
     components_available = list(substance.keys()) + list(presentation.keys())
 
-    # Indices: honest only when both sides have at least one component.
-    if substance and presentation:
-        sub_idx = sum(substance.values()) / len(substance)
-        pres_idx = sum(presentation.values()) / len(presentation)
-        gap = pres_idx - sub_idx
-    else:
-        sub_idx = 0.0
-        pres_idx = 0.0
-        gap = 0.0
+    # Indices: each side computed independently when it has contributors;
+    # gap is meaningful only when BOTH sides have contributors.
+    sub_idx = sum(substance.values()) / len(substance) if substance else 0.0
+    pres_idx = sum(presentation.values()) / len(presentation) if presentation else 0.0
+    gap = (pres_idx - sub_idx) if (substance and presentation) else 0.0
 
     return {
         "substance_index": round(sub_idx, 3),
