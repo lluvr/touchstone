@@ -6,13 +6,44 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
-## 2026-05-01: Repository initialized
+## 2026-05-03: Library reference implementation feature-complete
+
+All eleven measurement layers from Standard Section 5 are implemented in `clarethium-touchstone`. The top-level `measure()` orchestrator composes them end-to-end.
+
+Layers extracted (in order):
+
+- Layer 4 source matching (number provenance via 8 type-aware regex patterns; 0% FPR on self-source documents validated by EXP-081)
+- Layer 2 claim density (numerical and causal claim counts per 1000 words)
+- Layer 1b mechanism ratio + 1c assertion ratio (1a reserved for LLM injection)
+- Layer 7 presentation features (TTR, FK grade, formatting density, assertiveness, named-concept count)
+- Layer 9 information novelty (cumulative-vocabulary novelty, OLS decay slope)
+- Layer 6 vocabulary proximity (per-sentence content-word overlap with source)
+- Layer 10 quality profile composite (substance vs presentation index + overclaiming gap)
+- Layer 5 entity provenance (5 regex patterns: persons, organisations, attributions, citations, CamelCase orgs)
+- Layer 8 epistemic calibration (cross-layer per-sentence assertion grounding via 3 independent grounds)
+- Layer 3 temporal instability (cross-version number stability across regenerations)
+- Layer 11 grounding decomposition (per-sentence Grounded / Framed / Projected classification with arithmetic-derivation checker)
+- `measure()` orchestrator (composes all 11 layers, returns `MeasureResult` per `types.py`)
+- Layer 1a heading defaultness (vendor-neutral via `BaselineGenerator = Callable[[str], str | None]` — caller supplies their own LLM client)
+
+The library is vault-faithful: regex patterns, thresholds, filtering rules, and validation caveats are preserved from the operator's research vault. Vault-faithful surprises are pinned with explicit tests so future drift is visible.
+
+Test coverage: 338 tests pass on Python 3.10, 3.11, 3.12. Lint (ruff), format (ruff format), type check (mypy strict), and build (`python -m build`) all green in CI.
+
+Outstanding before first PyPI release:
+- PyPI Clarethium organization application approval
+- Operator-authored Standard sections (Terminology, References, Appendices A and B)
+
+## 2026-05-02: Initial bootstrap
 
 Repository created at `Clarethium/touchstone`. Initial structure:
 
 - `README.md` — repository orientation
 - `CHANGELOG.md` (this file)
 - `STANDARDS/touchstone-1.0.md` — Touchstone Standard 1.0 (in drafting)
+- Library scaffold (`src/clarethium_touchstone/`) with TypedDicts in `types.py` and stub functions in `measure.py` / `align.py`
+- CI workflow (lint, type check, test matrix, build distribution)
+- Custom domain `touchstone.clarethium.com` via GitHub Pages
 
 PyPI organization application pending approval. Library extraction from research vault in progress.
 
