@@ -121,6 +121,107 @@ def test_exp_095_canonical_high_p_case_detected(
         )
 
 
+# ===========================================================================
+# EXP-081 adversarial discrimination benchmark
+# ===========================================================================
+
+
+def test_exp_081_benchmark_runs_to_completion() -> None:
+    """The EXP-081 benchmark runs against the bundled 12-doc corpus
+    without raising. Faithful and embellished sets are evenly split.
+    """
+    from benchmarks.exp_081_discrimination.run import aggregate, run_all
+
+    results = run_all()
+    assert len(results) == 12
+
+    agg = aggregate(results)
+    assert agg["n"] == 12
+    assert agg["n_faithful"] == 6
+    assert agg["n_embellished"] == 6
+
+
+def test_exp_081_reproduces_published_effect_size() -> None:
+    """Touchstone reproduces the published d=-5.43 effect size for
+    faithful-vs-embellished gap discrimination. Published CI is
+    [-9.077, -4.681]; current Touchstone result is -5.238.
+
+    The threshold here (-4.0) catches a regression that would
+    meaningfully weaken the discrimination signal but tolerates
+    small drift around the published point estimate. Tightening
+    further than the published CI's upper bound (-4.681) would be
+    fragile.
+    """
+    from benchmarks.exp_081_discrimination.run import aggregate, run_all
+
+    agg = aggregate(run_all())
+    d = agg["cohens_d_faithful_vs_embellished"]
+    # Direction (sign) and substantial-magnitude both required.
+    assert d < -4.0, (
+        f"Cohen's d for faithful-vs-embellished gap regressed to {d}. "
+        f"Published value -5.43 (CI [-9.077, -4.681]); current baseline -5.238."
+    )
+
+
+def test_exp_081_gap_direction_agreement_is_perfect() -> None:
+    """Per-output: predicted gap sign matches the published gap sign
+    for every doc. A faithful doc always has gap < 0; embellished > 0.
+    """
+    from benchmarks.exp_081_discrimination.run import aggregate, run_all
+
+    agg = aggregate(run_all())
+    assert agg["gap_direction_agreement_with_published"] == 1.0
+
+
+def test_exp_081_close_agreement_with_published_metrics() -> None:
+    """MAE per metric vs published values stays under 0.05 across
+    unsourced_rate, gap, substance_index, presentation_index.
+
+    Current baseline: 0.014 on unsourced_rate (driven by a small
+    extraction count drift on rich sources), 0.0097 on gap, 0.0095
+    on substance, 0.0 on presentation. The threshold here detects a
+    real regression but tolerates expected float-rounding drift.
+    """
+    from benchmarks.exp_081_discrimination.run import aggregate, run_all
+
+    agg = aggregate(run_all())
+    mae = agg["mae_vs_published"]
+    for metric in ("unsourced_rate", "gap", "substance_index", "presentation_index"):
+        assert mae[metric] <= 0.05, (
+            f"MAE on {metric} grew to {mae[metric]} — Touchstone is "
+            f"diverging from the EXP-081 published values."
+        )
+
+
+def test_exp_081_snapshot_matches_committed_baseline() -> None:
+    """Per-doc predictions byte-match the committed snapshot (drift
+    detection, same pattern as EXP-095).
+    """
+    import json
+
+    from benchmarks.exp_081_discrimination.run import (
+        BENCHMARK_DIR,
+        aggregate,
+        render_report,
+        run_all,
+    )
+
+    snapshot_path = BENCHMARK_DIR / "results" / "snapshot_2026-05-03.json"
+    if not snapshot_path.exists():
+        pytest.skip(f"baseline snapshot missing: {snapshot_path}")
+
+    fresh = json.loads(render_report(run_all(), aggregate(run_all())))
+    committed = json.loads(snapshot_path.read_text())
+
+    fresh_pred = {p["id"]: p["predicted"] for p in fresh["per_output"]}
+    committed_pred = {p["id"]: p["predicted"] for p in committed["per_output"]}
+    assert fresh_pred == committed_pred, (
+        "Per-doc predictions drifted from committed EXP-081 snapshot.\n"
+        "Update: python -m benchmarks.exp_081_discrimination.run "
+        "--output benchmarks/exp_081_discrimination/results/snapshot_NEWDATE.json"
+    )
+
+
 def test_exp_095_snapshot_matches_committed_baseline() -> None:
     """The committed snapshot file (results/snapshot_2026-05-03.json) must
     byte-match a fresh run. This catches silent drift: if a library
