@@ -1,0 +1,54 @@
+# Touchstone Benchmarks
+
+Empirical validation of the `clarethium-touchstone` library against
+hand-classified ground-truth corpora.
+
+These benchmarks live in the source repository (not in the installed
+package) so anyone with a clone can reproduce the numbers, and so
+detection-accuracy regressions are visible across commits.
+
+## Running
+
+From the repository root:
+
+```bash
+python -m benchmarks.exp_095_grounding.run
+# or write a JSON snapshot:
+python -m benchmarks.exp_095_grounding.run --output benchmarks/exp_095_grounding/results/$(date +%F).json
+```
+
+The benchmark prints a JSON report to stdout. Aggregate statistics
+appear at the top of the output; per-output predictions follow.
+
+## Available benchmarks
+
+### `exp_095_grounding/`
+
+Validates Layer 11 (`grounding_decomposition`) against the EXP-095
+corpus from the operator's research vault. 13 model outputs across
+3 source documents (Apple Q1 FY2026 earnings, BLS March 2026 jobs
+report, Wegovy OASIS-4 trial) and 3 model families (gpt-4o, Gemini
+3 Flash, xAI Grok 4.1 Fast). Each output has either a full manual
+G/F/P classification or a manual P estimate range. The benchmark
+also reports agreement against the original `detector_v0.3.1`
+results (backwards-compat reference).
+
+See `exp_095_grounding/README.md` for methodology and findings.
+
+## Versioning
+
+Benchmark snapshots are dated and kept in `*/results/`. When a
+substantive change to the library affects detection-accuracy
+numbers, the new snapshot is committed alongside the change so the
+diff is visible in code review.
+
+## Licensing
+
+Source documents in `*/sources/` are derivative summaries of public
+data (SEC 10-Q filings, BLS public statistics, published clinical
+trials). Released under CC-BY 4.0 alongside the Touchstone Standard.
+
+Model outputs in `*/outputs/` are responses produced by third-party
+LLM APIs to specific prompts; per provider terms of service, the
+prompting party (the Clarethium operator) owns the outputs and has
+released them for benchmarking under CC-BY 4.0.
