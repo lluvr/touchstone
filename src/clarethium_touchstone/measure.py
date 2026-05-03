@@ -710,31 +710,61 @@ _CAUSAL_MARKERS: tuple[str, ...] = (
 _CAUSAL_COMBINED = "|".join(_CAUSAL_MARKERS)
 
 
+_LIST_MARKER_RE = re.compile(r"^[-*•]\s+|\d+\.\s+")
+_SENT_BOUNDARY_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
+
+
 def _split_sentences(text: str) -> list[tuple[str, str, int]]:
     """Split markdown into ``(heading, sentence, paragraph_index)`` tuples.
 
-    Strips list markers, splits on sentence boundaries, drops sentences
-    shorter than 30 characters. Heading state is carried forward across
-    paragraphs until a new heading line is encountered.
+    Joins consecutive non-heading, non-list-item lines into paragraphs
+    before splitting by sentence boundary, so sentences that wrap
+    across line breaks are preserved as a single sentence rather than
+    fragmented at the wrap. List items (lines starting with ``-``,
+    ``*``, ``•``, or ``N.``) are processed independently — each item
+    contributes its own paragraph.
+
+    Drops sentences shorter than 30 characters. Heading state is
+    carried forward until a new heading line is encountered.
     """
     results: list[tuple[str, str, int]] = []
     current_heading = ""
     para_idx = 0
-    for line in text.split("\n"):
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped.startswith("#"):
-            current_heading = re.sub(r"^#+\s*", "", stripped)
-            continue
-        cleaned = re.sub(r"^[-*•]\s+", "", stripped)
+    pending: list[str] = []
+
+    def _collect(block: str) -> None:
+        cleaned = re.sub(r"^[-*•]\s+", "", block)
         cleaned = re.sub(r"^\d+\.\s+", "", cleaned)
-        parts = re.split(r"(?<=[.!?])\s+(?=[A-Z])", cleaned)
-        for sent in parts:
+        for sent in _SENT_BOUNDARY_RE.split(cleaned):
             sent = sent.strip()
             if len(sent) > 30:
                 results.append((current_heading, sent, para_idx))
+
+    def _flush() -> None:
+        nonlocal para_idx
+        if not pending:
+            return
+        _collect(" ".join(pending))
+        pending.clear()
         para_idx += 1
+
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            _flush()
+            continue
+        if stripped.startswith("#"):
+            _flush()
+            current_heading = re.sub(r"^#+\s*", "", stripped)
+            continue
+        if _LIST_MARKER_RE.match(stripped):
+            _flush()
+            _collect(stripped)
+            para_idx += 1
+        else:
+            pending.append(stripped)
+
+    _flush()
     return results
 
 

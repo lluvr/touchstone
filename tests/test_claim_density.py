@@ -235,6 +235,75 @@ def test_list_markers_stripped() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Paragraph-aware sentence joining (Patch 4)
+# ---------------------------------------------------------------------------
+
+
+def test_line_wrapped_sentence_joined_into_one() -> None:
+    """A sentence wrapped across two lines must be joined into a single
+    sentence rather than fragmented at the line break.
+
+    The pre-Patch-4 splitter processed lines independently; line one
+    "First sentence wraps across" had no sentence boundary so was
+    dropped, line two yielded only the closing fragment. The wrap-aware
+    splitter joins them and treats the result as one sentence
+    containing the numerical claim.
+    """
+    text = "First sentence wraps across\nthe line boundary and contains 12% growth here today."
+    result = claim_density(text)
+    # The joined sentence has one numerical claim (12%) → counted once.
+    assert result["n_numerical"] == 1
+
+
+def test_blank_line_flushes_paragraph_boundary() -> None:
+    """A blank line between two non-heading lines flushes the pending
+    paragraph buffer, so the lines do NOT get joined.
+    """
+    text = (
+        "Revenue grew 12% across all segments globally yesterday.\n"
+        "\n"
+        "Costs declined 8% due to operational efficiency this period."
+    )
+    result = claim_density(text)
+    # Two separate sentences, each with one numerical claim
+    assert result["n_numerical"] == 2
+    assert result["n_causal"] == 1  # 'due to'
+
+
+def test_heading_flushes_paragraph_boundary() -> None:
+    """A heading line flushes the pending paragraph buffer; body before
+    and after the heading are not joined into one paragraph.
+    """
+    text = (
+        "Revenue grew 12% across all segments globally yesterday.\n"
+        "## Section\n"
+        "Costs declined 8% due to operational efficiency this period."
+    )
+    result = claim_density(text)
+    # Two separate sentences, each counted independently
+    assert result["n_numerical"] == 2
+    assert result["n_causal"] == 1
+
+
+def test_list_items_processed_independently() -> None:
+    """List-item lines flush the pending buffer and are each processed
+    as their own paragraph — they are not joined to surrounding prose.
+    """
+    text = (
+        "Some prose introducing the list across the page today.\n"
+        "- First item with 12% growth reported across all segments.\n"
+        "- Second item with 8% decline observed during the period.\n"
+        "Closing prose paragraph follows the list immediately."
+    )
+    result = claim_density(text)
+    # 2 list items + 0 from intro/outro (each <30 chars after split? no,
+    # both prose lines are >30 chars and are joined into the closing
+    # prose paragraph). So 2 numerical claims from list items + 0
+    # numerical from prose = 2.
+    assert result["n_numerical"] == 2
+
+
+# ---------------------------------------------------------------------------
 # Combined behaviour
 # ---------------------------------------------------------------------------
 
