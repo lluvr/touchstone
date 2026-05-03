@@ -46,6 +46,7 @@ class PerOutputResult:
     model: str
     topic: str
     predicted: dict[str, float]
+    scope_assessment: dict[str, object]
     manual_full: dict[str, float] | None
     manual_p_estimate: list[float] | None
     detector_v031: dict[str, float]
@@ -55,12 +56,16 @@ class PerOutputResult:
 def run_single(
     output_path: Path,
     source_path: Path,
-) -> dict[str, float]:
-    """Run Layer 11 on one (output, source) pair, return G/F/P proportions."""
+) -> tuple[dict[str, float], dict[str, object]]:
+    """Run Layer 11 on one (output, source) pair.
+
+    Returns ``(proportions, scope_assessment)`` so the benchmark report
+    can surface the regime classification alongside the predictions.
+    """
     text = output_path.read_text(encoding="utf-8")
     source = source_path.read_text(encoding="utf-8")
     result = grounding_decomposition(text, source)
-    return dict(result["proportions"])
+    return dict(result["proportions"]), dict(result["scope_assessment"])
 
 
 def classify_p_agreement(
@@ -108,7 +113,7 @@ def run_all() -> list[PerOutputResult]:
         if not source_path.exists():
             raise FileNotFoundError(f"missing source: {source_path}")
 
-        predicted = run_single(output_path, source_path)
+        predicted, scope_assessment = run_single(output_path, source_path)
         manual_full = entry.get("manual_full")
         manual_p_estimate = entry.get("manual_p_estimate")
 
@@ -118,6 +123,7 @@ def run_all() -> list[PerOutputResult]:
                 model=entry["model"],
                 topic=entry["topic"],
                 predicted=predicted,
+                scope_assessment=scope_assessment,
                 manual_full=manual_full,
                 manual_p_estimate=manual_p_estimate,
                 detector_v031=entry["detector_v031"],
@@ -207,6 +213,16 @@ def render_report(results: list[PerOutputResult], aggregate_stats: dict) -> str:
                     "model": r.model,
                     "topic": r.topic,
                     "predicted": {k: round(v, 4) for k, v in r.predicted.items()},
+                    "scope_assessment": {
+                        "source_num_count": r.scope_assessment["source_num_count"],
+                        "derivation_regime": r.scope_assessment["derivation_regime"],
+                        "primary_signal_diagnostic": r.scope_assessment[
+                            "primary_signal_diagnostic"
+                        ],
+                        "cross_reference_layer_4_for_numbers": r.scope_assessment[
+                            "cross_reference_layer_4_for_numbers"
+                        ],
+                    },
                     "manual_full": r.manual_full,
                     "manual_p_estimate": r.manual_p_estimate,
                     "detector_v031": r.detector_v031,

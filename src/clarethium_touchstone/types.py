@@ -160,6 +160,35 @@ class GFPSentence(TypedDict, total=False):
     p_markers: list[str]
 
 
+DerivationRegime = Literal["diagnostic", "transition", "saturated"]
+
+
+class ScopeAssessment(TypedDict):
+    """Layer 11 derivation-checker scope classification.
+
+    The derivation checker (``_gfp_is_derivable``) saturates as the
+    source's unique-number count grows. At N≥10 source numbers, false-
+    positive rate approaches 100%. The scope_assessment field tells
+    consumers which P-signal to trust on a given source.
+
+    Boundaries (vault-validated, methodology-doc-aligned):
+    - ``diagnostic``: source_num_count < 5 — primary unsourced_numbers
+      signal is reliable
+    - ``transition``: 5 ≤ source_num_count < 10 — derivation-checker FPR
+      is 50–97%; cross-reference Layer 4 source_matching
+    - ``saturated``: source_num_count ≥ 10 — primary signal is
+      effectively disabled; P falls back to entity / year secondary
+      signals; trust Layer 4 for numerical fabrication
+    """
+
+    source_num_count: int
+    derivation_regime: DerivationRegime
+    primary_signal_diagnostic: bool
+    cross_reference_layer_4_for_numbers: bool
+    note_developer: str
+    note_user_facing: str
+
+
 class GroundingDecomposition(TypedDict):
     """Layer 11 (G/F/P decomposition).
 
@@ -175,6 +204,7 @@ class GroundingDecomposition(TypedDict):
     n_projected: int
     has_projection: bool
     recommendation: str | None
+    scope_assessment: ScopeAssessment
 
 
 class MeasureResult(TypedDict, total=False):
