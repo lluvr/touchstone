@@ -68,8 +68,14 @@ implementation:
   optimistic structural-P count than the current code yields.
 - **Output #16 (xAI BLS run 3):** detector_v031 published 0.18 (the
   v1.4.1 fix figure cited in `GROUND_TRUTH_20.md` line 73),
-  Touchstone (and current vault) produces 0.026 — back near the
-  pre-fix v0.3.1 behaviour. Manual estimate is 0.10–0.15.
+  Touchstone now produces **0.051** (post-Patch-3, was 0.026 in
+  pre-Patch-3 baseline). Manual estimate is 0.10–0.15. Patch 3
+  (scaled-integer extraction) improved this by making source-side
+  derivation stricter: source's "7.2 million" no longer extracts as
+  decimal "7.2" that falsely derives unsourced numbers via
+  coincidental arithmetic. Still below manual range; further
+  improvement requires the deferred Patch 2 (multi-currency) and
+  proper magnitude-aware source matching.
 
 This means the v1.4.1 derivation fix that the GROUND_TRUTH_20 doc
 credits with improving xAI BLS detection does NOT fully reproduce

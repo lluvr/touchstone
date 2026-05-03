@@ -247,6 +247,44 @@ def test_multiplier_uses_substring_match_in_source() -> None:
     assert result["n_unsourced"] == 0
 
 
+def test_scale_word_extraction_with_raw_form_source_match() -> None:
+    """Patch 3: digit + scale word ("1.5 trillion") is extracted as a
+    normalized integer. Source containing the same scale form matches
+    via the raw-form fallback path.
+
+    The cascade fix: extraction normalizes "1.5 trillion" to val="1.5e12";
+    naive matching searches for "1500000000000" in source and fails when
+    source uses scale form. The raw-form fallback also tries the original
+    "1.5 trillion" string.
+    """
+    text = "The total reached 1.5 trillion across all major segments globally."
+    src = "The total reached 1.5 trillion across all major segments globally."
+    result = source_matching(text, src)
+    # Scale-word extracted, found in source via raw-form fallback
+    assert result["unsourced_rate"] == 0.0
+
+
+def test_scale_word_unsourced_when_source_uses_different_scale() -> None:
+    """When doc says "1.5 trillion" and source says "1.5 billion" (different
+    magnitudes), the number is correctly flagged unsourced.
+    """
+    text = "The total reached 1.5 trillion across all major segments globally."
+    src = "The total reached 1.5 billion across all major segments globally."
+    result = source_matching(text, src)
+    assert result["n_unsourced"] >= 1
+
+
+def test_scale_word_dollar_form_preserved() -> None:
+    """Vault-faithful: "$1.5 trillion" is captured by the dollar pattern
+    first (because the negative lookbehind on scaled_integer prevents
+    double-extraction inside currency context). Behavior unchanged.
+    """
+    text = "Total revenue reached $1.5 trillion in the latest reported period."
+    src = "Total revenue reached $1.5 trillion in the latest reported period."
+    result = source_matching(text, src)
+    assert result["unsourced_rate"] == 0.0
+
+
 def test_percentage_decimal_falls_back_to_integer_part() -> None:
     """Vault behaviour: when an output percentage like 10.5% is not found
     verbatim in source, the algorithm searches for the integer part (10%).

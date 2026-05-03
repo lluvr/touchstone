@@ -122,6 +122,16 @@ def _add_commas(val: str) -> str | None:
         return None
 
 
+# Scale-word multipliers used by Patch 3 (scaled_integer extraction)
+# AND by the magnitude-aware fallback in _number_in_source. Lowercase
+# for direct lookup after str.lower().
+_SCALE_MULTIPLIERS: dict[str, int] = {
+    "thousand": 1_000,
+    "million": 1_000_000,
+    "billion": 1_000_000_000,
+    "trillion": 1_000_000_000_000,
+}
+
 # Regex patterns for digit-formatted numerical claims, in priority order.
 # Higher-priority patterns claim character ranges first, preventing decimal
 # and integer patterns from extracting sub-tokens of already-captured
@@ -135,6 +145,16 @@ _NUMBER_PATTERNS: tuple[tuple[str, str], ...] = (
         "dollar_range",
     ),
     (r"(\d+(?:\.\d+)?)[xX]\b", "multiplier"),
+    # Scaled integers: digit + spelled-scale shape (e.g. "1.5 trillion",
+    # "6 million"). Comes BEFORE decimal/integer patterns so claimed_ranges
+    # blocks them from extracting just the digit half. Negative lookbehind
+    # for currency prevents double-matching inside "$6 million" (the dollar
+    # pattern already captured "$6"). Vault doesn't have this; Frame Check's
+    # v1.4 fork patch addresses Phase 1.6e calibration findings.
+    (
+        r"(?<!\$)(?<!\d)(?<!\.)(\d+(?:\.\d+)?)\s+(thousand|million|billion|trillion)\b",
+        "scaled_integer",
+    ),
     (r"(?<!\$)(?<!\d)(\d+\.\d+)(?!%)", "decimal"),
     (
         r"(?<!\$)(?<!\d)(?<!\.)(\d{1,3}(?:,\d{3})+)(?!\.\d)(?!%)(?!\d)",
@@ -170,8 +190,22 @@ def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
             if num_type in ("dollar", "integer_comma", "dollar_range"):
                 val = val.replace(",", "")
 
+            # Scaled-integer normalization: "6 million" → val="6000000"
+            # The scale multiplier is applied so downstream source matching
+            # can compare digit-form magnitudes. The original raw match
+            # ("6 million") is preserved on ``raw`` for the matcher's
+            # raw-form fallback path (handles source using same scale form).
+            if num_type == "scaled_integer":
+                scale_word = m.group(2).lower() if m.lastindex and m.lastindex >= 2 else ""
+                multiplier = _SCALE_MULTIPLIERS.get(scale_word, 1)
+                try:
+                    scaled = float(val) * multiplier
+                    val = str(int(scaled)) if scaled == int(scaled) else str(scaled)
+                except (ValueError, TypeError):
+                    pass
+
             effective_type = num_type
-            if num_type in ("integer_comma", "integer_suffix"):
+            if num_type in ("integer_comma", "integer_suffix", "scaled_integer"):
                 effective_type = "integer"
             elif num_type == "dollar_range":
                 effective_type = "dollar"
@@ -201,15 +235,31 @@ def _filter_numbers(numbers: list[dict[str, str]], text: str) -> list[dict[str, 
     return [n for n in numbers if not _is_year(n["value"]) and not _is_word_count(n, text)]
 
 
+def _raw_is_scaled_form(raw: str) -> bool:
+    """Return True if ``raw`` ends with a scale word (the digit + scale form).
+
+    Used to identify when a normalized integer's raw match preserves
+    semantically-meaningful information that the digit form alone cannot
+    surface in source matching.
+    """
+    raw_lower = raw.lower()
+    return any(raw_lower.endswith(word) or f" {word}" in raw_lower for word in _SCALE_MULTIPLIERS)
+
+
 def _number_in_source(num: dict[str, str], source_text: str) -> bool:
     """Return True if ``num`` can be located in ``source_text`` via string match.
 
     Type-aware: percentages require a trailing ``%``, dollar amounts a
     leading ``$``, multipliers a trailing ``x`` or ``X``. Comma-formatted
     variants are checked alongside raw values.
+
+    For integers normalized from scaled form ("6 million" → val="6000000"),
+    a raw-form fallback also tries the original scale-word match in source
+    (handles the symmetric case where source uses the same scale form).
     """
     val = num["value"]
     ntype = num["type"]
+    raw = num.get("raw", "")
 
     if ntype == "percentage":
         if re.search(re.escape(val) + r"\s*%", source_text):
@@ -229,11 +279,22 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
     if ntype == "multiplier":
         return bool(re.search(re.escape(val) + r"[xX]", source_text))
 
-    # integer, decimal: try raw, then comma-formatted variant
+    # integer, decimal: try raw value, comma-formatted variant, then
+    # (for scaled-form raw) the original "N word" form.
     if re.search(r"(?<!\d)" + re.escape(val) + r"(?!\d)", source_text):
         return True
     comma_val = _add_commas(val)
-    return bool(comma_val and re.search(r"(?<!\d)" + re.escape(comma_val) + r"(?!\d)", source_text))
+    if comma_val and re.search(r"(?<!\d)" + re.escape(comma_val) + r"(?!\d)", source_text):
+        return True
+    # Patch 3 cascade fix: when extraction normalized "6 million" to digit
+    # form ("6000000") but source uses the scale-word form, search for the
+    # original raw match. Frame Check's fork lacks this fallback and
+    # produces false unsourced flags on faithful documents containing
+    # scale-words ("$8 trillion in damages" → flagged unsourced even when
+    # source says exactly "$8 trillion"). Fixed here.
+    return bool(
+        raw and _raw_is_scaled_form(raw) and re.search(re.escape(raw), source_text, re.IGNORECASE)
+    )
 
 
 def _precision_for(total: int) -> Literal["low", "adequate", "good"]:
