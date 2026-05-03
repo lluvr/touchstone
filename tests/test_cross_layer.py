@@ -7,6 +7,7 @@ verify that:
 * Layers using the same helper see consistent output for identical inputs
 * Behaviour at API boundaries (Unicode, all-stop-words, edge characters)
   is documented and pinned
+* All 11 layers compose correctly when run on a single rich input
 """
 
 from __future__ import annotations
@@ -15,8 +16,16 @@ from clarethium_touchstone.measure import (
     _content_words,
     _split_sentences_simple,
     _tokenize_words,
+    claim_density,
+    entity_provenance,
+    epistemic_calibration,
+    grounding_decomposition,
     information_novelty,
     presentation_features,
+    quality_profile,
+    source_matching,
+    structural_profile,
+    temporal_instability,
     vocabulary_proximity,
 )
 
@@ -198,3 +207,133 @@ def test_layer_8_calibration_set_strictly_extends_layer_1c() -> None:
         assert not layer_1c_matches, (
             f"Layer 1c should NOT match {targeted_word!r} (it's a Layer 8-only marker)"
         )
+
+
+# ---------------------------------------------------------------------------
+# All-11-layers integration smoke test
+# ---------------------------------------------------------------------------
+
+
+# Rich text with adequate-precision numbers (≥10), entities (≥5), assertions
+# (≥5 sentences with calibration markers), and markdown structure — meets
+# every layer's precision/threshold gates.
+_INTEGRATION_TEXT = (
+    "## Findings\n\n"
+    "Revenue must always grow by 12% to $143M with 25% margins for the year. "
+    "Costs definitively declined 8% across 5,000 employees over 18 months. "
+    "Headcount must reach 2,500 with $45,000 average compensation paid today. "
+    "Findings according to John Smith of OpenAI, 7.5% gains must continue. "
+    "The Stanford University team and IBM Research clearly will lead innovation. "
+    "Work cited by Carol Brown showed 94% accuracy across studies must hold."
+)
+
+
+def test_all_11_layers_run_on_self_source_input() -> None:
+    """End-to-end: run every implemented layer on a single rich input.
+
+    Self-source + identical regenerations gives the maximum-grounding
+    case. Verifies each layer produces a meaningful result with the
+    expected sign (high grounding, low instability, low fabrication
+    signals).
+    """
+    text = _INTEGRATION_TEXT
+    src = text
+    comps = [text, text]
+
+    # Layer 1
+    l1 = structural_profile(text)
+    assert l1["heading_defaultness"] is None  # 1a not wired
+    assert isinstance(l1["mechanism_ratio"], float)
+    assert isinstance(l1["assertion_ratio"], float)
+
+    # Layer 2
+    l2 = claim_density(text)
+    assert l2["n_numerical"] >= 5
+    assert l2["n_words"] > 0
+
+    # Layer 3 (self-comparisons → all stable)
+    l3 = temporal_instability(text, comps)
+    assert l3["instability_rate"] == 0.0
+    assert l3["versions_compared"] == 3
+
+    # Layer 4 (self-source → all sourced)
+    l4 = source_matching(text, src)
+    assert l4["unsourced_rate"] == 0.0
+    assert l4["n_total"] >= 10  # adequate precision
+
+    # Layer 5 (self-source → all entities grounded)
+    l5 = entity_provenance(text, src)
+    assert l5["entity_unsourced_rate"] == 0.0
+    assert l5["n_entities"] >= 5
+
+    # Layer 6 (self-source → mean_proximity = 1.0)
+    l6 = vocabulary_proximity(text, src)
+    assert l6["mean_proximity"] == 1.0
+
+    # Layer 7 (always available)
+    l7 = presentation_features(text)
+    assert 0.0 <= l7["type_token_ratio"] <= 1.0
+
+    # Layer 8 (self-source → all assertions grounded)
+    l8 = epistemic_calibration(text, src)
+    assert l8["calibration_score"] == 1.0
+    assert l8["n_assertions"] >= 1
+
+    # Layer 9 (always available)
+    l9 = information_novelty(text)
+    assert 0.0 <= l9["mean_novelty"] <= 1.0
+
+    # Layer 10 (composite of L3 + L4 + L5 + L8 + L7)
+    l10 = quality_profile(text, source=src, comparisons=comps)
+    # Substance dominates self-source case (multiple components at 1.0)
+    assert l10["substance_index"] >= 0.9
+    # Gap is non-positive (substance >= presentation)
+    assert l10["gap"] <= 0
+    # All 4 substance contributors should appear with this rich input
+    assert "source_fidelity" in l10["components_available"]
+    assert "entity_grounding" in l10["components_available"]
+    assert "epistemic_calibration" in l10["components_available"]
+    assert "temporal_stability" in l10["components_available"]
+
+    # Layer 11 (self-source → no projection)
+    l11 = grounding_decomposition(text, src)
+    assert l11["has_projection"] is False
+    assert l11["n_projected"] == 0
+    assert l11["proportions"]["G"] >= 0.5  # most sentences classified as G
+
+
+def test_layer_4_and_layer_3_share_same_number_set_on_text() -> None:
+    """Layer 3 and Layer 4 both extract numbers from text via the same
+    helpers. For the same input, Layer 4's n_total and the count of
+    text-side numbers in Layer 3 should match.
+    """
+    text = (
+        "Revenue grew 12% to $143M with 25% margins. "
+        "Costs declined 8% across 5,000 employees over 18 months."
+    )
+    l4 = source_matching(text, text)
+    # Layer 4: number count in text
+    layer_4_text_numbers = l4["n_total"]
+    # Layer 3 with single-comparison-equal-to-text: total unique = text count
+    l3 = temporal_instability(text, [text])
+    assert l3["n_total"] == layer_4_text_numbers
+
+
+def test_layers_4_5_8_all_fire_or_none_on_empty_source() -> None:
+    """When source is empty, source-dependent layers behave
+    consistently: each emits its "no grounding" output without raising.
+    """
+    text = "Revenue grew 12% to $143M with 25% margins reported here today."
+    src = ""
+    l4 = source_matching(text, src)
+    l5 = entity_provenance(text, src)
+    l6 = vocabulary_proximity(text, src)
+    l8 = epistemic_calibration(text, src)
+    l11 = grounding_decomposition(text, src)
+    # All run without raising. None claim grounding to empty source.
+    assert l4["unsourced_rate"] == 1.0 if l4["n_total"] > 0 else l4["unsourced_rate"] == 0.0
+    assert l5["entity_unsourced_rate"] >= 0.0
+    assert l6["mean_proximity"] == 0.0
+    assert l8["calibration_score"] == 0.0
+    # L11 with empty source: every sentence with a number → P
+    assert l11["has_projection"] or l11["n_sentences"] == 0
