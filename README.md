@@ -60,6 +60,19 @@ result["quality_profile"]["gap"]               # negative — substance exceeds 
 result["quality_profile"]["components_available"]  # ["source_fidelity", "assertiveness", ...]
 ```
 
+Layer 11's `scope_assessment` field tells you which signal to trust on a given source. The derivation checker saturates as the source's unique-number count grows; on number-dense sources (≥10 unique numbers), the primary unsourced-numbers P-signal effectively saturates and you should cross-reference Layer 4 source matching for numerical fabrication. The classifier is also exposed standalone:
+
+```python
+from clarethium_touchstone import assess_derivation_regime
+
+assessment = assess_derivation_regime(source_num_count=14)
+assessment["derivation_regime"]                      # "saturated"
+assessment["cross_reference_layer_4_for_numbers"]    # True
+assessment["note_user_facing"]                       # UX-safe explanation
+```
+
+Boundaries are vault-validated against EXP-095 Monte Carlo data: < 5 = diagnostic, [5, 10) = transition, ≥ 10 = saturated.
+
 For Layer 1a (heading defaultness), supply your own LLM client as a callable (vendor-neutral):
 
 ```python
