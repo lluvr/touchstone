@@ -1,0 +1,78 @@
+# Internal Communication as Organizational Infrastructure: Why Communication Satisfaction is the Lowest-Rated Workplace Factor Despite Its Largest Impact on Retention, Satisfaction, and Productivity — and What the Non-Desk Worker Gap Reveals About Systemic Failures
+
+## Executive Summary
+
+Internal communication functions as critical organizational infrastructure, yet the 2025 International Employee Communication Impact Study by Staffbase and YouGov (N=3,574 employees across Australia, Austria, Germany, Switzerland, UK, and US) reveals a stark paradox: communication quality (42% satisfied) and amount (43% satisfied) rank as the *lowest* satisfaction factors among employees, trailing coworker relationships (76%), vacation/time off (71%), and manager support (59%). Despite this, communication exerts the largest influence on outcomes, with 63% of employees (33% major + 30% minor) citing it as a turnover factor, a 56-point retention likelihood gap between "excellent" (76% very likely to stay) and "poor" (20%) communication, and 64-point job satisfaction swings tied to vision clarity (89% vs. 25%). Productivity (63% impacted), motivation (67%), and mission understanding (65%) are also heavily affected.
+
+The non-desk worker gap amplifies these issues: non-desk employees trail desk-based peers by 15-20 percentage points (pp) across metrics, including satisfaction (29% vs. 47% total satisfied), change information (45% vs. 36% not informed), and leadership communication (12% never receive senior comms). This reveals systemic failures in channel equity, feedback loops, and inclusion, particularly for non-desk roles. Organizations must prioritize communication infrastructure to close these gaps and unlock retention, satisfaction, and productivity gains.
+
+(Word count: 248)
+
+## 1. Communication Satisfaction: Consistently the Lowest-Rated Workplace Factor
+
+Communication satisfaction lags far behind other workplace elements, positioning it as the weakest link in employee experience. Only 42% of employees report satisfaction with communication *quality*, and 43% with *amount*—both the lowest-rated factors in the study. In contrast, coworker relationships score highest at 76% satisfied, followed by vacation/time off at 71% and manager support at 59%.
+
+This low satisfaction persists across contexts, underscoring communication's infrastructural role. For instance, only 20% find the company vision and strategy "very clear," with 7% deeming it "very unclear." Clarity in communication correlates strongly: when comms are "easy to understand," 78% rate overall communication as excellent/very good; when "not communicated effectively," this drops to just 3%.
+
+Primary channels reveal overreliance on traditional tools: email/memos (51%) and immediate supervisors (47%) dominate, followed by intranet (39%), newsletters (22%), and employee apps (15%). Trust mirrors this: supervisors (57%) and intranet (51%) lead, but employee apps lag at 41% (rising to 60% among users), and 31% actively *distrust* social media. These patterns indicate satisfaction deficits stem not from absence of channels, but from their inadequacy in delivering timely, trusted, and clear information—core infrastructure for organizational alignment.
+
+(Word count: 218; Cumulative: 466)
+
+## 2. The Paradox of Impact: Lowest Satisfaction, Largest Downstream Effects
+
+Despite rock-bottom satisfaction, communication's influence on retention, satisfaction, and productivity is outsized, explaining why it merits "infrastructure" status. The study quantifies this as a central tension: low quality yields massive ripple effects.
+
+### Retention and Turnover
+Poor communication drives attrition: 33% cite it as a *major* leaving factor, and 30% as *minor* (total 63%). In Germany, this intensifies to 41% major and 29% minor. Quality extremes show a 56-point swing: employees rating communication "excellent" are 76% "very likely" to stay, versus 20% for "poor."
+
+### Job Satisfaction
+Communication clarity fuels satisfaction swings. Vision "very clear" links to 89% job satisfaction; "very unclear" to 25% (64-point gap). Change communication shows similar: 88% happiness when "very well informed," dropping to 36% when "not at all informed." Leadership frequency matters: weekly+ senior comms yield 77% job happiness; "never receive" yields 41%.
+
+### Productivity and Motivation
+63% report communication impacts productivity ("some" or "great" extent), 67% motivation, and 65% understanding of vision/mission. Crisis communication, rated excellent/good by 52%, highlights potential: digital screens score highest at 72%, yet 36% experience gaps, and only 49% feel supported (non-desk: 38%).
+
+These metrics confirm communication's leverage: incremental improvements could yield disproportionate gains, as low satisfaction (42-43%) belies its broadest reach.
+
+(Word count: 248; Cumulative: 714)
+
+## 3. The Non-Desk Worker Gap: Quantifying Inequity
+
+Non-desk workers (e.g., frontline, field-based) consistently underperform desk-based peers by 15-20pp, exposing infrastructure failures tailored to office norms. Communication satisfaction: non-desk "very satisfied" at 9% (vs. 14% desk-based); total satisfied 29% (vs. 47%). Ratings: non-desk "excellent/very good" 28%, "fair/poor" 38%; desk-based "excellent/very good" 48%.
+
+This gap spans domains:
+
+| Metric | Non-Desk | Desk-Based | Gap |
+|--------|----------|------------|-----|
+| Not informed about changes | 45% | 36% | 9pp |
+| Well/very well informed by managers | 48% | 65% | 17pp |
+| Never receive senior comms | 12% (UK: 21%) | Not specified | N/A |
+| Feedback considered "yes" | 12% | 19% | 7pp |
+| Feedback "never" considered | 28% | Not specified | N/A |
+| Feel supported in crisis | 38% | Not specified* | N/A |
+| Employer fostering connections "very good" | 20% (overall) | Not desk-specific | N/A |
+
+*Desk-based inferred higher from patterns.
+
+Non-desk also report less loneliness ("never lonely": 43% vs. 32% desk-based), yet communication exclusion persists: 24% feel excluded from change comms overall, with non-desk leadership concerns addressed poorly/not at all at 34% (vs. 26% overall).
+
+(Word count: 162; Cumulative: 876)
+
+## 4. Systemic Failures Revealed by the Gap
+
+The non-desk gap illuminates structural deficiencies in communication infrastructure, prioritizing desk-accessible channels (e.g., email 51%, intranet 39%) over mobile, on-the-go needs. Low employee app adoption (15%) despite 60% trust among users suggests underinvestment; non-desk likely amplify this, as apps could bridge gaps but aren't scaled.
+
+Feedback asymmetry is acute: non-desk "yes" considered (12%) trails desk-based (19%), with 28% "never" considered—eroding trust and inclusion. Change comms exacerbate: 39% overall "not really/not at all informed," but non-desk at 45%. Senior leadership invisibility (12% non-desk never receive, UK 21%) and manager gaps (48% vs. 65% informed) signal top-down failures.
+
+Crisis and connection metrics reveal further cracks: 36% experience gaps despite 52% excellent/good ratings, with non-desk support at 38%. Loneliness data paradoxically shows non-desk less isolated (43% never lonely), yet only 20% rate employer connection efforts "very good"—indicating communication fails to leverage natural networks.
+
+These patterns denote *systemic* issues: desk-centric design, infrequent leadership engagement, and feedback silos. The source does not specify causes like tech access or training, but data implies equitable channels (e.g., apps, digital screens at 72% crisis efficacy) and inclusive practices could close 15-20pp gaps.
+
+(Word count: 218; Cumulative: 1,094)
+
+## Conclusion: Prioritizing Communication Infrastructure
+
+Communication's paradox—lowest satisfaction (42-43%) amid largest impacts (63% turnover link, 64-point satisfaction swings, 63-67% work effects)—positions it as foundational infrastructure. The non-desk gap (15-20pp deficits) reveals systemic failures: channel inequity, leadership disconnection, and feedback neglect, risking 56-point retention losses.
+
+Organizations should invest in trusted, accessible tools (apps to 60% trust), frequent senior engagement (77% happiness boost), and non-desk inclusion to convert low satisfaction into high performance. The study offers no implementation roadmaps, but data unequivocally links fixes to outcomes.
+
+(Word count: 98; Total: 1,192)
