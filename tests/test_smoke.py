@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 
 def test_package_importable() -> None:
     """The package can be imported."""
@@ -98,16 +96,56 @@ def test_align_layer_functions_present() -> None:
     assert all(callable(f) for f in functions)
 
 
-def test_implementation_pending() -> None:
-    """Skeleton functions raise NotImplementedError until extraction completes.
-
-    This test will be flipped to verify behavior once the operator extracts
-    the reference implementation from the research vault.
+def test_orchestrator_returns_measure_result_without_source() -> None:
+    """``measure()`` runs successfully on text alone. Source-dependent
+    layer keys carry None; text-only layers populate.
     """
     from clarethium_touchstone import measure
 
-    with pytest.raises(NotImplementedError):
-        measure("any text")
+    result = measure("Some text without enough numbers here today.")
+    # Always-available layers
+    assert result["structural_profile"] is not None
+    assert result["claim_density"] is not None
+    assert result["presentation_features"] is not None
+    assert result["information_novelty"] is not None
+    assert result["quality_profile"] is not None
+    # Source-dependent layers: None when no source
+    assert result["source_matching"] is None
+    assert result["entity_provenance"] is None
+    assert result["vocabulary_proximity"] is None
+    assert result["epistemic_calibration"] is None
+    assert result["grounding_decomposition"] is None
+    # Comparisons-dependent: None when no comparisons
+    assert result["temporal_instability"] is None
+    # Version metadata always present
+    assert "standard_version" in result
+    assert "library_version" in result
+
+
+def test_orchestrator_runs_all_layers_with_source_and_comparisons() -> None:
+    """With both ``source`` and ``comparisons``, every layer key holds a
+    non-None result.
+    """
+    from clarethium_touchstone import measure
+
+    text = "Revenue grew 12% to $143M with 25% margins reported here today."
+    result = measure(text, source=text, comparisons=[text])
+    # Every layer key is non-None
+    layer_keys = [
+        "structural_profile",
+        "claim_density",
+        "temporal_instability",
+        "source_matching",
+        "entity_provenance",
+        "vocabulary_proximity",
+        "presentation_features",
+        "epistemic_calibration",
+        "information_novelty",
+        "quality_profile",
+        "grounding_decomposition",
+    ]
+    for key in layer_keys:
+        assert result[key] is not None, f"{key} should be populated"
 
 
 def test_types_module_present() -> None:

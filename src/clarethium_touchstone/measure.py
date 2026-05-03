@@ -229,7 +229,7 @@ def measure(
     *,
     source: str | None = None,
     comparisons: list[str] | None = None,
-    topic: str | None = None,
+    topic: str | None = None,  # noqa: ARG001 (reserved for L1a)
     p_detection_mode: str = "conservative",
 ) -> MeasureResult:
     """Run all applicable measurement layers on ``text``.
@@ -237,29 +237,53 @@ def measure(
     Layers 1b, 1c, 2, 7, 9, 10 run on any text. Layers 4, 5, 6, 8, 11
     require ``source``. Layer 3 requires ``comparisons``. Layer 1a
     (heading defaultness) is optional and requires ``topic`` plus an
-    LLM API.
+    LLM API; currently inert (returns None inside the structural
+    profile).
 
     Args:
         text: The output to measure.
         source: Optional source material the output may reference.
+            When None, layers 4, 5, 6, 8, 11 are not run and their
+            keys carry None in the result.
         comparisons: Optional alternative versions of the output for
-            temporal instability measurement.
+            temporal instability measurement. When None or empty,
+            ``temporal_instability`` carries None.
         topic: Optional topic string for Layer 1a baseline generation.
-        p_detection_mode: ``conservative`` (default) or ``liberal``
-            for Layer 11 P-marker detection.
+            Reserved; currently inert (1a always returns None).
+        p_detection_mode: ``conservative`` (default) for Layer 11 P-marker
+            detection. Standard conformance requires conservative mode.
 
     Returns:
         A ``MeasureResult`` with one key per applicable layer plus
-        version metadata.
-
-    Raises:
-        NotImplementedError: Library extraction in progress; see
-            ``CHANGELOG.md`` for release status.
+        ``standard_version`` and ``library_version``. Layers that
+        weren't run carry ``None``. Quality profile (Layer 10) is
+        always included; it composes whatever substance components
+        their preconditions allow.
     """
-    raise NotImplementedError(
-        "Library extraction in progress. The Touchstone Standard 1.0 is "
-        "the canonical reference; see STANDARDS/touchstone-1.0.md."
-    )
+    result: MeasureResult = {
+        "structural_profile": structural_profile(text),
+        "claim_density": claim_density(text),
+        "presentation_features": presentation_features(text),
+        "information_novelty": information_novelty(text),
+        "quality_profile": quality_profile(text, source=source, comparisons=comparisons),
+        "temporal_instability": (temporal_instability(text, comparisons) if comparisons else None),
+        "source_matching": source_matching(text, source) if source is not None else None,
+        "entity_provenance": entity_provenance(text, source) if source is not None else None,
+        "vocabulary_proximity": (
+            vocabulary_proximity(text, source) if source is not None else None
+        ),
+        "epistemic_calibration": (
+            epistemic_calibration(text, source) if source is not None else None
+        ),
+        "grounding_decomposition": (
+            grounding_decomposition(text, source, p_detection_mode=p_detection_mode)
+            if source is not None
+            else None
+        ),
+        "standard_version": __standard_version__,
+        "library_version": __version__,
+    }
+    return result
 
 
 # -- Layer 1: Structural profile ------------------------------------------

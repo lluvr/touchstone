@@ -184,6 +184,25 @@ def test_ground_3_high_vocab_overlap_grounds() -> None:
     assert result["n_grounded"] == 1
 
 
+def test_ground_3_uses_substring_match_vault_faithful() -> None:
+    """Vault behaviour: Ground 3 vocab check is ``w in source_lower``
+    (Python substring), so a content word ``cat`` is considered
+    grounded when source contains ``catalog``. Same generosity as
+    Layer 6 vocabulary_proximity. Pinned because it can inflate
+    grounding scores on short content words.
+    """
+    # Sentence has 5 content words. If 3+ are substrings of source words
+    # (>0.5 threshold), Ground 3 fires.
+    text = "Performance must always improve catalog methods comprehensively today."
+    # source has 'catalog' (matches 'catalog'), 'methods' (matches 'methods'),
+    # 'comprehensively' (matches), 'today' (matches) — 4 of 5 content words
+    # match substrings → vocab_score > 0.5 → grounded
+    src = "The catalog covered methods comprehensively across all teams today."
+    result = epistemic_calibration(text, src)
+    assert result["n_grounded"] == 1
+    assert result["calibration_score"] == 1.0
+
+
 def test_ground_3_threshold_strictly_greater_than_half() -> None:
     """Vault threshold is ``> 0.5`` (strictly greater than half), not ≥.
 
