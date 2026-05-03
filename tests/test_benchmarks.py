@@ -119,3 +119,46 @@ def test_exp_095_canonical_high_p_case_detected(
             f"output {r.output_id} ({r.model} on {r.topic}) had manual P=48% "
             f"but Touchstone predicts P=0 — significant detection regression"
         )
+
+
+def test_exp_095_snapshot_matches_committed_baseline() -> None:
+    """The committed snapshot file (results/snapshot_2026-05-03.json) must
+    byte-match a fresh run. This catches silent drift: if a library
+    change shifts the per-output predicted proportions, the snapshot
+    diff in code review surfaces it. Re-running the benchmark to
+    update the snapshot is a deliberate act, not an accident.
+
+    To update the snapshot when a change is intentional::
+
+        python -m benchmarks.exp_095_grounding.run \\
+            --output benchmarks/exp_095_grounding/results/snapshot_$(date +%F).json
+        # then review the diff and rename if accepting the change
+
+    The test compares a single canonical filename (the 2026-05-03
+    baseline) to keep the assertion stable; future-dated snapshots
+    can co-exist as historical record.
+    """
+    import json
+
+    from benchmarks.exp_095_grounding.run import (
+        BENCHMARK_DIR,
+        aggregate,
+        render_report,
+        run_all,
+    )
+
+    snapshot_path = BENCHMARK_DIR / "results" / "snapshot_2026-05-03.json"
+    if not snapshot_path.exists():
+        pytest.skip(f"baseline snapshot missing: {snapshot_path}")
+
+    fresh = json.loads(render_report(run_all(), aggregate(run_all())))
+    committed = json.loads(snapshot_path.read_text())
+
+    # Compare per-output predictions; aggregate stats are derived.
+    fresh_pred = {p["id"]: p["predicted"] for p in fresh["per_output"]}
+    committed_pred = {p["id"]: p["predicted"] for p in committed["per_output"]}
+    assert fresh_pred == committed_pred, (
+        "Layer 11 predictions drifted from committed snapshot.\n"
+        "Update: python -m benchmarks.exp_095_grounding.run "
+        "--output benchmarks/exp_095_grounding/results/snapshot_NEWDATE.json"
+    )

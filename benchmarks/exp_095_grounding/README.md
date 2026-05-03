@@ -43,15 +43,47 @@ runs are in the ground-truth set.
 - **P-direction agreement: 100%** — Touchstone never disagrees with
   manual classification on whether projected content (P) exists in
   an output. Either both detect P > 0, or both detect P = 0.
-- **MAE vs detector v0.3.1: 0.02–0.04 across G/F/P categories** —
-  Touchstone Layer 11 closely reproduces the validated detector.
-  This is the key validation: the extraction is faithful.
+- **MAE vs detector v0.3.1 (historical reference): 0.02–0.04 per
+  category in aggregate** — but with significant per-output
+  variance. The aggregate reflects close agreement on the majority
+  of outputs; specific cases drift further (see below).
 - **MAE vs full manual classification (n=7): 0.12–0.13 across G/F/P**
   — pre-existing systematic detector behaviour, documented in
   `GROUND_TRUTH_20.md`. The detector consistently over-counts G
   relative to manual classification because mixed sentences (source
   number + interpretation) are classified as G by the detector but
   as F by manual when the primary function is interpretive.
+
+### Caveats and known drift
+
+The `detector_v031` column in `ground_truth.json` reflects values
+**published in EXP-095** (post-v1.4.1 fix), not what the current
+vault `clarethium_measure.py` produces. Two outputs show measurable
+drift between the published EXP-095 paper and the current
+implementation:
+
+- **Output #7 (xAI BLS run 1):** detector_v031 published 0.21,
+  Touchstone (and current vault) produces 0.10. Both are below the
+  manual P=0.48 baseline, but the detector_v031 figure is a more
+  optimistic structural-P count than the current code yields.
+- **Output #16 (xAI BLS run 3):** detector_v031 published 0.18 (the
+  v1.4.1 fix figure cited in `GROUND_TRUTH_20.md` line 73),
+  Touchstone (and current vault) produces 0.026 — back near the
+  pre-fix v0.3.1 behaviour. Manual estimate is 0.10–0.15.
+
+This means the v1.4.1 derivation fix that the GROUND_TRUTH_20 doc
+credits with improving xAI BLS detection does NOT fully reproduce
+in the current vault implementation; either the fix's effect is
+input-specific or it was partially regressed since the doc was
+written. **Touchstone v0.1 inherits this state from the vault.**
+The drift is real evidence pointing to a follow-up investigation
+(redesign of the derivation checker for small-number sources, per
+the deferred Patches 1-3 plan).
+
+The pytest harness asserts non-fragile invariants (90% direction
+agreement, 0.10 MAE bound) so these per-output drifts pass current
+tests. Tightening assertions before fixing the underlying derivation
+checker would create churn without information value.
 
 ## Pending expansion
 
