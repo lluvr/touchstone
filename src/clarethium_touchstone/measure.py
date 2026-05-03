@@ -25,7 +25,7 @@ Implementation status: progressive extraction in progress.
 * Layer 10 (``quality_profile``): IMPLEMENTED (substance from L3 + L4 + L5 +
   L8, presentation from L7; structural_effort reserved for L1a once the
   LLM-API integration is wired)
-* Layer 11 (``grounding_decomposition``): skeleton, raises ``NotImplementedError``
+* Layer 11 (``grounding_decomposition``): IMPLEMENTED (experimental in v1.0)
 
 See Appendix C of the Standard for layer-by-layer status.
 """
@@ -33,13 +33,15 @@ See Appendix C of the Standard for layer-by-layer status.
 from __future__ import annotations
 
 import re
-from typing import Literal
+from typing import Literal, cast
 
 from clarethium_touchstone._version import __standard_version__, __version__
 from clarethium_touchstone.types import (
     ClaimDensity,
     EntityProvenance,
     EpistemicCalibration,
+    GFPProportions,
+    GFPSentence,
     GroundingDecomposition,
     InformationNovelty,
     MeasureResult,
@@ -1525,30 +1527,337 @@ def quality_profile(
 
 # -- Layer 11: Grounding decomposition (G/F/P) ----------------------------
 
+# External entity P-markers: hard-coded names/concepts not typically in
+# analytical source documents (drugs, companies, products, indices). The
+# list is domain-biased toward the operator's research corpus; extend it
+# for new domains. Vault-faithful; static in v1.0.
+_GFP_EXTERNAL_ENTITIES: tuple[str, ...] = (
+    r"\bSTEP\s+\d\b",
+    r"\bSURMOUNT\b",
+    r"\bSELECT\b",
+    r"\bRybelsus\b",
+    r"\borforglipron\b",
+    r"\btirzepatide\b",
+    r"\bZepbound\b",
+    r"\bphentermine\b",
+    r"\borlistat\b",
+    r"\bHuawei\b",
+    r"\bSamsung\b",
+    r"\bLilly\b",
+    r"\biPhone\s*1[5-9]\b",
+    r"\bVision\s*Pro\b",
+    r"\bSiri\b",
+    r"\bApple\s*Intelligence\b",
+    r"\bM-series\b",
+    r"\bISM\b",
+    r"\bADP\b",
+    r"\bOkun\b",
+    r"\bNAIRU\b",
+    r"\bDMA\b",
+    r"\bNovo\s*Nordisk\b",
+)
+
+
+def _gfp_is_derivable(value: float, source_floats: set[float], tolerance: float = 0.02) -> bool:
+    """Check whether ``value`` is arithmetically derivable from source numbers.
+
+    Handles single-number derivations (``A/100``, ``A*100`` for percent
+    conversion), two-number derivations (``A/B``, ``A/B*100``, ``A*B``,
+    ``A+B``, ``A-B``), and two-step add/subtract intermediates combined
+    with another source number (tighter 1% tolerance).
+
+    Vault-faithful. The derivation checker is known to saturate as the
+    source's number count grows: at N>=10 source floats, false-positive
+    rate approaches 100%, effectively disabling Layer 11's primary P
+    signal for number-dense sources. See Standard Section 5.11 scope
+    boundary and ``_gfp_assess_regime`` below.
+    """
+    if not source_floats:
+        return False
+
+    src = list(source_floats)
+
+    def close(derived: float, target: float) -> bool:
+        if abs(target) < 0.001:
+            return abs(derived) < 0.001
+        return abs(derived - target) / abs(target) < tolerance
+
+    # Single-number derivations: percentage conversion
+    for a in src:
+        if close(a / 100, value) or close(a * 100, value):
+            return True
+
+    # Two-number derivations: ratios, products
+    for a in src:
+        if a == 0:
+            continue
+        for b in src:
+            if b == 0:
+                continue
+            if close(a / b * 100, value) or close(a / b, value) or close(a * b, value):
+                return True
+
+    # Two-number additive forms
+    for i in range(len(src)):
+        for j in range(i, len(src)):
+            a, b = src[i], src[j]
+            if close(a + b, value):
+                return True
+            for diff in (a - b, b - a):
+                if abs(diff) > 0.001 and close(diff, value):
+                    return True
+
+    # Two-step add/subtract intermediates combined with a source number.
+    # Multiplication/division intermediates are excluded because they
+    # produce coincidental matches on small-number sources. Tighter 1%
+    # tolerance for these to limit the combinatorial false-positive rate.
+    add_sub_intermediates: set[float] = set()
+    for i in range(len(src)):
+        for j in range(i, len(src)):
+            a, b = src[i], src[j]
+            add_sub_intermediates.add(a + b)
+            if a != b:
+                add_sub_intermediates.add(a - b)
+                add_sub_intermediates.add(b - a)
+
+    def close_tight(derived: float, target: float) -> bool:
+        if abs(target) < 0.001:
+            return abs(derived) < 0.001
+        return abs(derived - target) / abs(target) < 0.01
+
+    for inter in add_sub_intermediates:
+        if close_tight(inter, value):
+            return True
+        for s in src:
+            if s != 0:
+                if close_tight(inter / s * 100, value):
+                    return True
+                if close_tight(inter / s, value):
+                    return True
+            if close_tight(inter + s, value):
+                return True
+            if abs(inter - s) > 0.001 and close_tight(inter - s, value):
+                return True
+
+    # Percentage application: (a/100) * b — Revenue * Margin%, Total *
+    # Share%, Base * Rate%. Only percentage-to-decimal intermediates
+    # participate in multiplication to avoid larger intermediate sets.
+    for a in src:
+        if a == 0:
+            continue
+        pct = a / 100
+        for b in src:
+            if close(pct * b, value):
+                return True
+
+    return False
+
 
 def grounding_decomposition(
     text: str,
     source: str,
     *,
-    p_detection_mode: str = "conservative",
+    p_detection_mode: str = "conservative",  # noqa: ARG001 (reserved)
 ) -> GroundingDecomposition:
-    """Layer 11: per-sentence Grounded / Framed / Projected classification.
+    """Layer 11 (EXPERIMENTAL in v1.0): per-sentence Grounded / Framed /
+    Projected classification.
 
-    REQUIRED per Standard Section 5.11 when source material is provided.
-    Reports document-level proportions and per-sentence classifications.
+    For each sentence, classify the primary information provenance:
+
+    * **G (Grounded)** — restates or mechanically derives from source data.
+    * **F (Framed)** — interprets, evaluates, or assigns significance.
+    * **P (Projected)** — introduces external data, predictions, or
+      unsourced specifics.
+
+    P decision uses three signals:
+
+    1. **Unsourced numbers** (primary): sentence contains a digit-formatted
+       number that is neither in source verbatim nor derivable via
+       ``_gfp_is_derivable`` from source numbers.
+    2. **External entities** (secondary): sentence matches a hard-coded
+       pattern from ``_GFP_EXTERNAL_ENTITIES`` (drug names, companies,
+       indices). Domain-biased; extend for new corpora.
+    3. **Unsourced years** (gated): year (19xx/20xx) absent from source,
+       gated on either an unsourced number being present OR cleaned
+       sentence length > 50 chars.
+
+    G score (when not P): ``0.5 × has_sourced_or_derived + 0.3 ×
+    vocab_overlap + 0.2 × all_nums_sourced_bonus``. Threshold 0.4.
+
+    F is the residual.
+
+    Sentences cleaned to <20 chars (markdown stripped) are skipped.
+
+    Scope boundary (vault Standard 5.11): the primary unsourced-number
+    signal saturates as source number count grows. At ≥10 source numbers,
+    derivation-checker false-positive rate approaches 100%. P falls back
+    to secondary signals (external entities, gated years). Cross-reference
+    Layer 4 for digit-level fabrication detection on number-dense
+    sources.
 
     Args:
-        text: The output to classify.
-        source: The source material against which grounding is measured.
-        p_detection_mode: ``conservative`` (default) or ``liberal``.
-            Conservative is required for conformance.
+        text: Output to classify.
+        source: Source material.
+        p_detection_mode: Reserved for future ``conservative`` /
+            ``liberal`` differentiation. Currently inert; only conservative
+            is implemented and is required for Standard conformance.
 
     Returns:
-        A ``GroundingDecomposition`` with proportions, per-sentence
-        classifications, projection presence flag, and recommendation
-        string when projection is detected.
+        ``GroundingDecomposition`` with proportions, per-sentence
+        classifications, projection flag, and prohibition recommendation
+        when projection is detected.
     """
-    raise NotImplementedError
+    sentences = _split_sentences_simple(text)
+
+    # Source numbers as floats for derivation checking.
+    src_nums = _filter_numbers(_extract_numbers_for_matching(source), source)
+    source_floats: set[float] = set()
+    for nd in src_nums:
+        try:
+            source_floats.add(float(nd["value"]))
+        except (ValueError, KeyError):
+            continue
+
+    # Source years for unsourced-year gating.
+    source_years = {int(m.group(1)) for m in re.finditer(r"\b((?:19|20)\d{2})\b", source)}
+
+    classifications: list[dict[str, object]] = []
+
+    for sent in sentences:
+        # Clean for length check (drop markdown markers).
+        clean = re.sub(r"[#*|_\-]", "", sent).strip()
+        if len(clean) < 20:
+            classifications.append({"_skip": True})
+            continue
+
+        # Number provenance: sourced / derived / unsourced.
+        sent_nums = _filter_numbers(_extract_numbers_for_matching(sent), sent)
+        sourced: list[dict[str, str]] = []
+        derived: list[dict[str, str]] = []
+        unsourced: list[dict[str, str]] = []
+
+        for nd in sent_nums:
+            if _number_in_source(nd, source):
+                sourced.append(nd)
+                continue
+            try:
+                fval = float(nd["value"])
+            except (ValueError, KeyError):
+                unsourced.append(nd)
+                continue
+            if _gfp_is_derivable(fval, source_floats):
+                derived.append(nd)
+            else:
+                unsourced.append(nd)
+
+        # Filter unsourced of small ints (1-10) and explicit ranges.
+        filtered_unsourced: list[dict[str, str]] = []
+        for nd in unsourced:
+            try:
+                fval = float(nd["value"])
+            except (ValueError, KeyError):
+                filtered_unsourced.append(nd)
+                continue
+            if fval == int(fval) and 1 <= fval <= 10:
+                continue
+            raw = nd.get("raw", "")
+            if re.search(r"\b" + re.escape(raw) + r"\s*-\s*\d+\b", sent):
+                continue
+            filtered_unsourced.append(nd)
+        unsourced = filtered_unsourced
+
+        # External entity matches.
+        ext_entities: list[str] = []
+        for pat in _GFP_EXTERNAL_ENTITIES:
+            for m in re.finditer(pat, sent, re.IGNORECASE):
+                ext_entities.append(m.group())
+
+        # Unsourced years (gated on additional evidence).
+        sent_years = {int(m.group(1)) for m in re.finditer(r"\b((?:19|20)\d{2})\b", sent)}
+        unsourced_yrs = sent_years - source_years
+
+        # P decision.
+        p_markers: list[str] = []
+        if unsourced:
+            p_markers.append("unsourced_numbers")
+        if ext_entities:
+            p_markers.append("external_entities")
+        if unsourced_yrs and (unsourced or len(clean) > 50):
+            p_markers.append("unsourced_years")
+
+        if p_markers:
+            classifications.append(
+                {
+                    "sentence": sent,
+                    "primary": "P",
+                    "p_markers": p_markers,
+                }
+            )
+            continue
+
+        # G score (only when not P).
+        has_sourced = bool(sourced) or bool(derived)
+        sent_words = set(_content_words(sent))
+        src_words = set(_content_words(source))
+        vocab_overlap = len(sent_words & src_words) / len(sent_words) if sent_words else 0.0
+
+        grounding = 0.0
+        if has_sourced:
+            grounding += 0.5
+        grounding += vocab_overlap * 0.3
+        total_nums = len(sourced) + len(derived) + len(unsourced)
+        if total_nums > 0 and not unsourced and (sourced or derived):
+            grounding += 0.2
+
+        primary: str = "G" if grounding >= 0.4 else "F"
+        classifications.append(
+            {
+                "sentence": sent,
+                "primary": primary,
+                "grounding_score": round(grounding, 3),
+            }
+        )
+
+    # Aggregate.
+    n_g = sum(1 for c in classifications if c.get("primary") == "G")
+    n_f = sum(1 for c in classifications if c.get("primary") == "F")
+    n_p = sum(1 for c in classifications if c.get("primary") == "P")
+    n_classified = n_g + n_f + n_p
+    proportions: GFPProportions = {
+        "G": round(n_g / n_classified, 3) if n_classified > 0 else 0.0,
+        "F": round(n_f / n_classified, 3) if n_classified > 0 else 0.0,
+        "P": round(n_p / n_classified, 3) if n_classified > 0 else 0.0,
+    }
+
+    # The internal classifications list uses dict[str, object] (which is
+    # a structural superset of GFPSentence). Cast at the boundary; runtime
+    # shape matches the TypedDict.
+    sentence_classifications: list[GFPSentence] = cast(
+        "list[GFPSentence]",
+        [c for c in classifications if not c.get("_skip")],
+    )
+
+    has_projection = n_p > 0
+    recommendation: str | None = None
+    if has_projection:
+        recommendation = (
+            "Projected content detected. To eliminate, add to your prompt: "
+            '"Do not use any numbers that are not in the provided source." '
+            "This reduces projected content by 84-100% while preserving "
+            "grounded analysis (EXP-095, 30 prohibition outputs, 3 models)."
+        )
+
+    return {
+        "proportions": proportions,
+        "sentence_classifications": sentence_classifications,
+        "p_detection_mode": "conservative",
+        "n_sentences": n_classified,
+        "n_grounded": n_g,
+        "n_framed": n_f,
+        "n_projected": n_p,
+        "has_projection": has_projection,
+        "recommendation": recommendation,
+    }
 
 
 # -- Re-exports for the public API ----------------------------------------
