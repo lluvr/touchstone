@@ -148,6 +148,39 @@ def test_orchestrator_runs_all_layers_with_source_and_comparisons() -> None:
         assert result[key] is not None, f"{key} should be populated"
 
 
+def test_orchestrator_threads_baseline_generator_to_layer_1a() -> None:
+    """``measure(..., topic=..., baseline_generator=...)`` runs Layer 1a;
+    the heading_defaultness sub-dict is populated rather than None.
+    """
+    from clarethium_touchstone import measure
+
+    def stub_gen(_prompt: str) -> str | None:
+        return "## My Topic\n## Another Section\nBaseline body."
+
+    result = measure(
+        "## My Topic\nDoc body content here today.",
+        topic="my topic",
+        baseline_generator=stub_gen,
+        n_baselines=2,
+    )
+    hd = result["structural_profile"]["heading_defaultness"]
+    assert hd is not None
+    assert hd["n_baseline_documents"] == 2
+
+
+def test_orchestrator_layer_1a_inert_without_generator() -> None:
+    """Without a ``baseline_generator``, Layer 1a stays inert even if a
+    topic is supplied — heading_defaultness is None.
+    """
+    from clarethium_touchstone import measure
+
+    result = measure(
+        "## My Section\nContent.",
+        topic="some topic",
+    )
+    assert result["structural_profile"]["heading_defaultness"] is None
+
+
 def test_types_module_present() -> None:
     """Public type definitions are accessible."""
     from clarethium_touchstone import types

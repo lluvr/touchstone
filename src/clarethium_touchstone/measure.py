@@ -13,7 +13,8 @@ LLM API for baseline generation.
 
 Implementation status: progressive extraction in progress.
 
-* Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c; 1a returns None)
+* Layer 1 (``structural_profile``): IMPLEMENTED (1b, 1c always; 1a runs
+  when both ``topic`` and a ``baseline_generator`` callable are provided)
 * Layer 2 (``claim_density``): IMPLEMENTED
 * Layer 3 (``temporal_instability``): IMPLEMENTED
 * Layer 4 (``source_matching``): IMPLEMENTED
@@ -33,6 +34,7 @@ See Appendix C of the Standard for layer-by-layer status.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from typing import Literal, cast
 
 from clarethium_touchstone._version import __standard_version__, __version__
@@ -43,6 +45,7 @@ from clarethium_touchstone.types import (
     GFPProportions,
     GFPSentence,
     GroundingDecomposition,
+    HeadingDefaultness,
     InformationNovelty,
     MeasureResult,
     PresentationFeatures,
@@ -53,6 +56,22 @@ from clarethium_touchstone.types import (
     UnsourcedNumber,
     VocabularyProximity,
 )
+
+# ---------------------------------------------------------------------------
+# Public type aliases
+# ---------------------------------------------------------------------------
+
+BaselineGenerator = Callable[[str], str | None]
+"""Callable that generates a baseline document given a prompt.
+
+Layer 1a (heading defaultness) requires an LLM to produce baseline
+documents on the same topic. Touchstone is vendor-neutral: callers
+supply their own callable. The generator returns the model's output
+text or ``None`` on failure (rate limit, timeout, etc.).
+"""
+
+# Number of baseline documents to generate for Layer 1a (vault default).
+_DEFAULT_N_BASELINES = 3
 
 # ---------------------------------------------------------------------------
 # Internal helpers shared across measurement layers
@@ -229,16 +248,18 @@ def measure(
     *,
     source: str | None = None,
     comparisons: list[str] | None = None,
-    topic: str | None = None,  # noqa: ARG001 (reserved for L1a)
+    topic: str | None = None,
+    baseline_generator: BaselineGenerator | None = None,
+    n_baselines: int = _DEFAULT_N_BASELINES,
     p_detection_mode: str = "conservative",
 ) -> MeasureResult:
     """Run all applicable measurement layers on ``text``.
 
     Layers 1b, 1c, 2, 7, 9, 10 run on any text. Layers 4, 5, 6, 8, 11
     require ``source``. Layer 3 requires ``comparisons``. Layer 1a
-    (heading defaultness) is optional and requires ``topic`` plus an
-    LLM API; currently inert (returns None inside the structural
-    profile).
+    (heading defaultness) requires both ``topic`` AND
+    ``baseline_generator`` (a vendor-neutral callable that invokes
+    an LLM to produce baseline documents).
 
     Args:
         text: The output to measure.
@@ -249,7 +270,11 @@ def measure(
             temporal instability measurement. When None or empty,
             ``temporal_instability`` carries None.
         topic: Optional topic string for Layer 1a baseline generation.
-            Reserved; currently inert (1a always returns None).
+            Required for 1a (paired with ``baseline_generator``).
+        baseline_generator: Optional callable
+            ``(prompt: str) -> str | None`` that runs the LLM. When
+            both this and ``topic`` are provided, 1a runs.
+        n_baselines: Number of baseline documents to request for 1a.
         p_detection_mode: ``conservative`` (default) for Layer 11 P-marker
             detection. Standard conformance requires conservative mode.
 
@@ -261,7 +286,12 @@ def measure(
         their preconditions allow.
     """
     result: MeasureResult = {
-        "structural_profile": structural_profile(text),
+        "structural_profile": structural_profile(
+            text,
+            topic=topic,
+            baseline_generator=baseline_generator,
+            n_baselines=n_baselines,
+        ),
         "claim_density": claim_density(text),
         "presentation_features": presentation_features(text),
         "information_novelty": information_novelty(text),
@@ -482,29 +512,126 @@ def _assertion_ratio(text: str) -> tuple[float, Literal["adequate", "low"]]:
     return round(ratio, 4), precision
 
 
-def structural_profile(text: str, *, topic: str | None = None) -> StructuralProfile:
+# Threshold above which the heading set is considered "default" — the
+# fraction of the document's headings whose tokens overlap a corpus of
+# baseline LLM-generated headings on the same topic. Vault-faithful
+# (gate_0 exploratory threshold = 0.40).
+_HEADING_DEFAULTNESS_THRESHOLD = 0.40
+
+# Word-overlap threshold per heading: a heading "matches the baseline"
+# when more than this fraction of its tokens are present in the
+# baseline-heading word union.
+_HEADING_WORD_OVERLAP_THRESHOLD = 0.5
+
+# Default LLM prompt for baseline generation. Vault-faithful.
+_BASELINE_PROMPT_TEMPLATE = (
+    "Write a thorough analysis of: {topic}\n\nWrite 600-800 words with 5-7 sections (## headings)."
+)
+
+
+def _heading_words(heading: str) -> set[str]:
+    """Tokenise a heading into a lowercase word set, dropping numbering
+    and emphasis (vault-faithful: ``re.sub(r'[\\*\\d\\.\\s]+', ' ', h)``).
+    """
+    cleaned = re.sub(r"[\*\d\.\s]+", " ", heading).lower()
+    return set(cleaned.split())
+
+
+def _compute_heading_defaultness(
+    text: str,
+    topic: str,
+    baseline_generator: BaselineGenerator,
+    n_baselines: int,
+) -> HeadingDefaultness | None:
+    """Layer 1a: heading-baseline Jaccard-style overlap.
+
+    For each heading in ``text``, compute the fraction of tokens
+    appearing in the union of words from baseline headings (LLM-
+    generated outputs on the same topic). A heading "matches the
+    baseline" when overlap > 0.5. The returned score is the fraction
+    of doc headings that match — higher = more default.
+
+    NON-DETERMINISTIC: the generator is typically called at temperature
+    > 0 to surface diverse defaults. Repeated calls produce different
+    baselines and different scores.
+
+    Returns ``None`` when:
+    - The document has no level-2/3 headings to score
+    - All baseline-generation calls fail (return None)
+    """
+    doc_headings = _extract_headings_simple(text)
+    if not doc_headings:
+        return None
+
+    prompt = _BASELINE_PROMPT_TEMPLATE.format(topic=topic)
+    baseline_word_union: set[str] = set()
+    n_baselines_succeeded = 0
+    for _ in range(n_baselines):
+        baseline_text = baseline_generator(prompt)
+        if baseline_text is None:
+            continue
+        n_baselines_succeeded += 1
+        for h in _extract_headings_simple(baseline_text):
+            baseline_word_union.update(_heading_words(h))
+
+    if n_baselines_succeeded == 0:
+        return None
+
+    matches = 0
+    for h in doc_headings:
+        hw = _heading_words(h)
+        if not hw:
+            continue
+        overlap = len(hw & baseline_word_union) / len(hw)
+        if overlap > _HEADING_WORD_OVERLAP_THRESHOLD:
+            matches += 1
+
+    score = round(matches / len(doc_headings), 4)
+    return {
+        "jaccard_overlap": score,
+        "is_default": score > _HEADING_DEFAULTNESS_THRESHOLD,
+        "n_baseline_documents": n_baselines_succeeded,
+    }
+
+
+def structural_profile(
+    text: str,
+    *,
+    topic: str | None = None,
+    baseline_generator: BaselineGenerator | None = None,
+    n_baselines: int = _DEFAULT_N_BASELINES,
+) -> StructuralProfile:
     """Layer 1: structural profile (1a heading defaultness, 1b mechanism
     ratio, 1c assertion ratio).
 
-    Layer 1a (``heading_defaultness``) requires both a ``topic`` argument
-    and an LLM-API integration to generate baseline documents. The
-    integration is not yet wired in this build, so 1a always returns
-    ``None`` even when a topic is supplied. 1b and 1c run on any text.
+    Layer 1a (``heading_defaultness``) is OPTIONAL and requires both a
+    ``topic`` argument AND a ``baseline_generator`` callable that
+    invokes an LLM to produce baseline documents on the same topic.
+    Touchstone is vendor-neutral: supply your own client. When either
+    is missing, 1a returns None. 1b and 1c run on any text.
 
     Args:
         text: The output to measure.
-        topic: Optional topic string for 1a baseline generation
-            (currently inert; reserved for the LLM-API integration).
+        topic: Optional topic string for 1a baseline generation. Required
+            for 1a to run.
+        baseline_generator: Optional callable
+            ``(prompt: str) -> str | None`` that runs the LLM and returns
+            the generated text (or None on failure). Required for 1a.
+        n_baselines: Number of baseline documents to request (default 3).
 
     Returns:
-        A ``StructuralProfile`` with ``heading_defaultness`` (None until
-        1a is wired), ``mechanism_ratio``, ``assertion_ratio``, and
-        ``assertion_precision``.
+        A ``StructuralProfile`` with ``heading_defaultness`` (HeadingDefaultness
+        dict when 1a runs, else None), ``mechanism_ratio``,
+        ``assertion_ratio``, and ``assertion_precision``.
     """
-    del topic  # Reserved for Layer 1a; not used until LLM API is wired.
+    heading_defaultness: HeadingDefaultness | None = None
+    if topic is not None and baseline_generator is not None:
+        heading_defaultness = _compute_heading_defaultness(
+            text, topic, baseline_generator, n_baselines
+        )
     ratio, precision = _assertion_ratio(text)
     return {
-        "heading_defaultness": None,
+        "heading_defaultness": heading_defaultness,
         "mechanism_ratio": _mechanism_ratio(text),
         "assertion_ratio": ratio,
         "assertion_precision": precision,

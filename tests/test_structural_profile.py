@@ -32,10 +32,139 @@ def test_output_shape_is_well_formed() -> None:
     assert result["assertion_precision"] in ("high", "adequate", "low")
 
 
-def test_layer_1a_returns_none_until_llm_wired() -> None:
-    """Heading defaultness is None even when topic is provided (LLM not wired)."""
+def test_layer_1a_returns_none_when_only_topic_provided() -> None:
+    """Heading defaultness is None when topic is supplied but no
+    baseline_generator (the LLM injection point) is.
+    """
     result = structural_profile("Some text.", topic="machine learning")
     assert result["heading_defaultness"] is None
+
+
+def test_layer_1a_returns_none_when_only_generator_provided() -> None:
+    """Heading defaultness is None when baseline_generator is supplied
+    but no topic is.
+    """
+    result = structural_profile(
+        "## Section\nBody content here.",
+        baseline_generator=lambda _p: "## Default\nBody.",
+    )
+    assert result["heading_defaultness"] is None
+
+
+def test_layer_1a_returns_none_when_doc_has_no_headings() -> None:
+    """When the document has no level-2/3 headings, 1a has nothing to
+    score and returns None.
+    """
+    result = structural_profile(
+        "Body text without any markdown headings whatsoever today.",
+        topic="topic",
+        baseline_generator=lambda _p: "## Some Heading\nText.",
+    )
+    assert result["heading_defaultness"] is None
+
+
+def test_layer_1a_returns_none_when_all_baselines_fail() -> None:
+    """When every baseline_generator call returns None, 1a returns None."""
+    result = structural_profile(
+        "## My Heading\nBody content here today.",
+        topic="topic",
+        baseline_generator=lambda _p: None,
+        n_baselines=3,
+    )
+    assert result["heading_defaultness"] is None
+
+
+def test_layer_1a_full_overlap_yields_max_default_score() -> None:
+    """Document heading words fully present in baseline word union →
+    100% overlap → all doc headings match → score = 1.0; is_default True.
+    """
+    result = structural_profile(
+        "## My Heading\nDoc content.",
+        topic="topic",
+        baseline_generator=lambda _p: "## My Heading\nBaseline body.",
+        n_baselines=3,
+    )
+    hd = result["heading_defaultness"]
+    assert hd is not None
+    assert hd["jaccard_overlap"] == 1.0
+    assert hd["is_default"] is True
+    assert hd["n_baseline_documents"] == 3
+
+
+def test_layer_1a_disjoint_yields_zero_score() -> None:
+    """Doc heading words completely disjoint from baseline → 0% overlap →
+    no doc headings match → score = 0.0; is_default False.
+    """
+    result = structural_profile(
+        "## Unique Words Here\nDoc content.",
+        topic="topic",
+        baseline_generator=lambda _p: "## Completely Other Topic\nBody.",
+    )
+    hd = result["heading_defaultness"]
+    assert hd is not None
+    assert hd["jaccard_overlap"] == 0.0
+    assert hd["is_default"] is False
+
+
+def test_layer_1a_threshold_strictly_greater_than_half() -> None:
+    """A heading with exactly 50% word overlap does NOT count as matching
+    the baseline (vault threshold is strict ``> 0.5``).
+    """
+    # Doc heading 'Common Words' has 2 words: common, words.
+    # Baseline word union: {common, heading} (1 of 2 doc words present).
+    # Per-heading overlap = 0.5 → NOT > 0.5 → doesn't match → score = 0.0.
+    result = structural_profile(
+        "## Common Words\nDoc content.",
+        topic="topic",
+        baseline_generator=lambda _p: "## Common Heading\nBody.",
+    )
+    hd = result["heading_defaultness"]
+    assert hd is not None
+    assert hd["jaccard_overlap"] == 0.0
+
+
+def test_layer_1a_n_baseline_documents_reflects_successes_only() -> None:
+    """``n_baseline_documents`` counts only successful baseline-generator
+    calls (None returns are skipped).
+    """
+    call_count = [0]
+
+    def flaky(_p: str) -> str | None:
+        call_count[0] += 1
+        # Succeed on calls 1 and 3, fail on call 2
+        if call_count[0] == 2:
+            return None
+        return "## Some Heading\nText."
+
+    result = structural_profile(
+        "## My Heading\nDoc.",
+        topic="topic",
+        baseline_generator=flaky,
+        n_baselines=3,
+    )
+    hd = result["heading_defaultness"]
+    assert hd is not None
+    # 2 of 3 baseline calls succeeded
+    assert hd["n_baseline_documents"] == 2
+
+
+def test_layer_1a_baseline_generator_invoked_with_topic_in_prompt() -> None:
+    """The default baseline prompt includes the topic verbatim."""
+    received_prompts: list[str] = []
+
+    def capturing(p: str) -> str | None:
+        received_prompts.append(p)
+        return "## H\nBody."
+
+    structural_profile(
+        "## My Heading\nDoc.",
+        topic="quantum computing",
+        baseline_generator=capturing,
+        n_baselines=2,
+    )
+    assert len(received_prompts) == 2
+    for p in received_prompts:
+        assert "quantum computing" in p
 
 
 def test_empty_text_returns_zeros() -> None:
