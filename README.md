@@ -15,7 +15,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Pre-launch on PyPI; reference implementation is feature-complete on `main`. All eleven measurement layers from Standard 1.0 are implemented and tested (338 tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12, build distribution).
+Pre-launch on PyPI; reference implementation is feature-complete on `main`. All eleven measurement layers from Standard 1.0 are implemented and tested (365 tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12, build distribution). Two reproducible validation benchmarks ship with the source; results are reproducible by anyone who clones the repo.
 
 PyPI organization application pending approval. Until then, install from source:
 
@@ -113,6 +113,39 @@ The reference implementation covers every layer in Standard Section 5:
 The top-level `measure()` orchestrator runs every layer whose preconditions are met. Layers without preconditions return `None` for that key in the `MeasureResult` dict.
 
 Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `align()` and `profile()` APIs are reserved for a future release; the canonical research reference lives in the operator's vault as `clarethium_align.py` and is not yet packaged. Touchstone v0.1 ships measurement only.
+
+## Empirical validation
+
+Two reproducible benchmarks ship in `benchmarks/`. Anyone with a repo clone can run `python -m benchmarks.exp_081_discrimination.run` and `python -m benchmarks.exp_095_grounding.run` and reproduce the published numbers exactly.
+
+### EXP-081 adversarial discrimination
+
+The methodology's core claim — that the composed `quality_profile` gap signal discriminates faithful AI outputs from embellished ones — is testable. The original EXP-081 paper measured this on a 12-document corpus and reported **Cohen's d = -5.43** (CI [-9.077, -4.681]).
+
+Touchstone reproduces this with **d = -5.238** on the same corpus:
+
+| Metric | Faithful (N=6) | Embellished (N=6) |
+|---|---|---|
+| Mean gap (Touchstone) | -0.4377 | +0.1585 |
+| Mean gap (published) | -0.443 | +0.169 |
+| Cohen's d | **-5.238** vs published **-5.43** | |
+| Per-doc gap-direction agreement with published | 100% (12/12) | |
+| MAE on unsourced_rate / gap / substance / presentation | 0.014 / 0.010 / 0.010 / 0.000 | |
+
+End-to-end empirical evidence that Layers 4, 5, 7, 8 composed via Layer 10 (`quality_profile`) reproduce the published validation result with no LLM calls.
+
+### EXP-095 grounding decomposition
+
+Layer 11 (`grounding_decomposition`) classifies each sentence as Grounded / Framed / Projected. Validated against 13 hand-classified outputs across 3 source documents and 3 model families:
+
+- **P-direction agreement: 100%** — Touchstone never disagrees with manual classification on whether projected content (P) exists in an output
+- **MAE vs documented detector v0.3.1: 0.02–0.04 across G/F/P categories** in aggregate
+
+Per-output drift between Touchstone and published `detector_v031` figures is documented honestly in `benchmarks/exp_095_grounding/README.md` — including a known case where the v1.4.1 derivation fix doesn't fully reproduce in current implementation.
+
+### Snapshot drift detection
+
+Both benchmarks pin a dated JSON snapshot via byte-match pytest assertion. CI catches silent regression on any future change affecting per-doc predictions.
 
 ## Use cases
 
