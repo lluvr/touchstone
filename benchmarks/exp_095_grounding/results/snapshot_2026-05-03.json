@@ -20,9 +20,9 @@
       "P": 0.122
     },
     "mae_vs_detector_v031": {
-      "G": 0.0412,
+      "G": 0.0392,
       "F": 0.0252,
-      "P": 0.0245
+      "P": 0.0225
     }
   },
   "per_output": [
@@ -176,7 +176,7 @@
         "P": 0.107
       },
       "scope_assessment": {
-        "source_num_count": 14,
+        "source_num_count": 13,
         "derivation_regime": "saturated",
         "primary_signal_diagnostic": false,
         "cross_reference_layer_4_for_numbers": true
@@ -204,7 +204,7 @@
         "P": 0.105
       },
       "scope_assessment": {
-        "source_num_count": 14,
+        "source_num_count": 13,
         "derivation_regime": "saturated",
         "primary_signal_diagnostic": false,
         "cross_reference_layer_4_for_numbers": true
@@ -335,12 +335,12 @@
       "model": "grok-4-1-fast",
       "topic": "bls",
       "predicted": {
-        "G": 0.436,
+        "G": 0.41,
         "F": 0.538,
-        "P": 0.026
+        "P": 0.051
       },
       "scope_assessment": {
-        "source_num_count": 14,
+        "source_num_count": 13,
         "derivation_regime": "saturated",
         "primary_signal_diagnostic": false,
         "cross_reference_layer_4_for_numbers": true
@@ -367,7 +367,7 @@
         "P": 0.074
       },
       "scope_assessment": {
-        "source_num_count": 14,
+        "source_num_count": 13,
         "derivation_regime": "saturated",
         "primary_signal_diagnostic": false,
         "cross_reference_layer_4_for_numbers": true
