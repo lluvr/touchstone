@@ -6,6 +6,31 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-03: v0.1 scope locked to Section 5 measurement; align/profile dropped from public API
+
+- Frame Check fork-patch port: paragraph-aware sentence splitter for
+  Layer 2 (Patch 4 from CLARETHIUM_MEASURE_SYNC.md)
+- Greenfield cleanup: ``fabrication_rate`` legacy alias removed
+  (Patch 5; no v0.x deprecation window to honour)
+- Public API trimmed: ``align()``, ``profile()``, and the entire
+  ``clarethium_touchstone.align`` module dropped from v0.1.
+  Standard Section 6 (Specification Compliance) is reserved for a
+  future release. The pre-port stubs raised ``NotImplementedError``
+  on every call; cleaner to remove the API surface than ship
+  misleading entry points. Section 6 will return when the
+  vault's ``clarethium_align.py`` (3,124 lines, currently unused
+  by any production tool) is properly extracted with the same
+  vault-fidelity discipline as Section 5.
+
+Multi-currency, scaled-integer, and Layer 11 ``scope_assessment``
+fork patches (Patches 1, 2, 3 from the diff) are deferred. Each
+requires a deeper redesign than a direct port: currency and scale
+should be first-class fields on extracted numbers (not lossy
+type-tag overloads), and the regime classifier should be a
+standalone function with documented constants. A discrimination
+benchmark suite (separate session) precedes any further detection-
+accuracy patches.
+
 ## 2026-05-03: Library reference implementation feature-complete
 
 All eleven measurement layers from Standard Section 5 are implemented in `clarethium-touchstone`. The top-level `measure()` orchestrator composes them end-to-end.

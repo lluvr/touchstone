@@ -97,7 +97,9 @@ The reference implementation covers every layer in Standard Section 5:
 | 10 quality profile composite | `quality_profile` | text (substance from L3/L4/L5/L8) |
 | 11 grounding decomposition | `grounding_decomposition` | text + `source` |
 
-The top-level `measure()` orchestrator runs every layer whose preconditions are met. Layers without preconditions return `None` for that key in the `MeasureResult` dict. Specification compliance (Standard Section 6) is reachable via `align()`; combined output via `profile()`.
+The top-level `measure()` orchestrator runs every layer whose preconditions are met. Layers without preconditions return `None` for that key in the `MeasureResult` dict.
+
+Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `align()` and `profile()` APIs are reserved for a future release; the canonical research reference lives in the operator's vault as `clarethium_align.py` and is not yet packaged. Touchstone v0.1 ships measurement only.
 
 ## Use cases
 
