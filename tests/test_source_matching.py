@@ -274,6 +274,27 @@ def test_scale_word_unsourced_when_source_uses_different_scale() -> None:
     assert result["n_unsourced"] >= 1
 
 
+def test_known_limitation_cross_scale_false_negative() -> None:
+    """Pinned limitation: doc and source expressing the same magnitude in
+    different scale forms (e.g. doc "1500 billion" vs source "1.5 trillion")
+    are NOT yet matched. Both encode 1.5e12 but the matcher does string
+    search, not magnitude comparison.
+
+    A proper magnitude-aware redesign (deferred Patch 2 design pass)
+    would close this gap. Pinned here so future work knows when it's
+    actually been fixed: this test should be flipped to assert match
+    when the redesign lands.
+    """
+    text = "Total reached 1500 billion globally yesterday today."
+    src = "Total reached 1.5 trillion globally yesterday today."
+    result = source_matching(text, src)
+    # Same magnitude (1.5e12), different scale form → currently unsourced
+    assert result["n_unsourced"] == 1, (
+        "If this test fails because n_unsourced == 0, the magnitude-aware "
+        "matching has been implemented — flip this test to assert match."
+    )
+
+
 def test_scale_word_dollar_form_preserved() -> None:
     """Vault-faithful: "$1.5 trillion" is captured by the dollar pattern
     first (because the negative lookbehind on scaled_integer prevents
