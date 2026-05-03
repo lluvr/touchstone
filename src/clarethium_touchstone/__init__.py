@@ -6,9 +6,13 @@ Section 5 (Output Measurement) of the Touchstone Standard. See
 
 Public API (v0.1):
 
-    from clarethium_touchstone import measure
+    from clarethium_touchstone import measure, assess_derivation_regime
 
     result = measure(text, source=source_text)
+
+    # Standalone Layer 11 regime classifier — useful for UIs that
+    # display "trust this signal" hints before measurement begins.
+    assessment = assess_derivation_regime(source_num_count=14)
 
 The ``measure()`` orchestrator runs every measurement layer whose
 preconditions are met. Layer functions are also accessible
@@ -25,9 +29,10 @@ the Standard takes precedence.
 """
 
 from clarethium_touchstone._version import __version__
-from clarethium_touchstone.measure import measure
+from clarethium_touchstone.measure import assess_derivation_regime, measure
 
 __all__ = [
     "__version__",
+    "assess_derivation_regime",
     "measure",
 ]

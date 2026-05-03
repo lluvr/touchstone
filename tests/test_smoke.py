@@ -15,6 +15,7 @@ def test_public_api_exports() -> None:
     import clarethium_touchstone
 
     assert hasattr(clarethium_touchstone, "measure")
+    assert hasattr(clarethium_touchstone, "assess_derivation_regime")
     assert hasattr(clarethium_touchstone, "__version__")
 
 
