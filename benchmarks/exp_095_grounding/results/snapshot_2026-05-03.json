@@ -1,0 +1,310 @@
+{
+  "experiment": "EXP-095 grounding decomposition",
+  "library": "clarethium-touchstone",
+  "n_outputs": 13,
+  "aggregate": {
+    "n": 13,
+    "n_with_full_manual": 7,
+    "p_agreement_breakdown": {
+      "exact": 3,
+      "close": 0,
+      "off": 4,
+      "in_range": 2,
+      "outside_range": 4,
+      "no_baseline": 0
+    },
+    "p_direction_agreement_rate": 1.0,
+    "mae_vs_manual_full": {
+      "G": 0.1281,
+      "F": 0.1161,
+      "P": 0.122
+    },
+    "mae_vs_detector_v031": {
+      "G": 0.0412,
+      "F": 0.0252,
+      "P": 0.0245
+    }
+  },
+  "per_output": [
+    {
+      "id": 1,
+      "model": "gpt-4o",
+      "topic": "apple",
+      "predicted": {
+        "G": 0.63,
+        "F": 0.37,
+        "P": 0.0
+      },
+      "manual_full": {
+        "G": 0.54,
+        "F": 0.46,
+        "P": 0.0
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.59,
+        "F": 0.41,
+        "P": 0.0
+      },
+      "p_agreement": "exact"
+    },
+    {
+      "id": 2,
+      "model": "gemini-3-flash-preview",
+      "topic": "apple",
+      "predicted": {
+        "G": 0.629,
+        "F": 0.314,
+        "P": 0.057
+      },
+      "manual_full": {
+        "G": 0.44,
+        "F": 0.37,
+        "P": 0.2
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.6,
+        "F": 0.34,
+        "P": 0.06
+      },
+      "p_agreement": "off"
+    },
+    {
+      "id": 3,
+      "model": "grok-4-1-fast",
+      "topic": "apple",
+      "predicted": {
+        "G": 0.609,
+        "F": 0.239,
+        "P": 0.152
+      },
+      "manual_full": {
+        "G": 0.34,
+        "F": 0.37,
+        "P": 0.29
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.61,
+        "F": 0.24,
+        "P": 0.15
+      },
+      "p_agreement": "off"
+    },
+    {
+      "id": 4,
+      "model": "gpt-4o",
+      "topic": "wegovy",
+      "predicted": {
+        "G": 0.368,
+        "F": 0.632,
+        "P": 0.0
+      },
+      "manual_full": {
+        "G": 0.48,
+        "F": 0.52,
+        "P": 0.0
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.32,
+        "F": 0.68,
+        "P": 0.0
+      },
+      "p_agreement": "exact"
+    },
+    {
+      "id": 5,
+      "model": "grok-4-1-fast",
+      "topic": "wegovy",
+      "predicted": {
+        "G": 0.447,
+        "F": 0.404,
+        "P": 0.149
+      },
+      "manual_full": {
+        "G": 0.29,
+        "F": 0.37,
+        "P": 0.34
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.4,
+        "F": 0.43,
+        "P": 0.17
+      },
+      "p_agreement": "off"
+    },
+    {
+      "id": 6,
+      "model": "gemini-3-flash-preview",
+      "topic": "bls",
+      "predicted": {
+        "G": 0.464,
+        "F": 0.429,
+        "P": 0.107
+      },
+      "manual_full": {
+        "G": 0.41,
+        "F": 0.48,
+        "P": 0.1
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.43,
+        "F": 0.46,
+        "P": 0.11
+      },
+      "p_agreement": "exact"
+    },
+    {
+      "id": 7,
+      "model": "grok-4-1-fast",
+      "topic": "bls",
+      "predicted": {
+        "G": 0.316,
+        "F": 0.579,
+        "P": 0.105
+      },
+      "manual_full": {
+        "G": 0.29,
+        "F": 0.24,
+        "P": 0.48
+      },
+      "manual_p_estimate": null,
+      "detector_v031": {
+        "G": 0.18,
+        "F": 0.6,
+        "P": 0.21
+      },
+      "p_agreement": "off"
+    },
+    {
+      "id": 12,
+      "model": "grok-4-1-fast",
+      "topic": "apple",
+      "predicted": {
+        "G": 0.6,
+        "F": 0.289,
+        "P": 0.111
+      },
+      "manual_full": null,
+      "manual_p_estimate": [
+        0.08,
+        0.12
+      ],
+      "detector_v031": {
+        "G": 0.6,
+        "F": 0.29,
+        "P": 0.11
+      },
+      "p_agreement": "in_range"
+    },
+    {
+      "id": 13,
+      "model": "grok-4-1-fast",
+      "topic": "wegovy",
+      "predicted": {
+        "G": 0.49,
+        "F": 0.373,
+        "P": 0.137
+      },
+      "manual_full": null,
+      "manual_p_estimate": [
+        0.12,
+        0.15
+      ],
+      "detector_v031": {
+        "G": 0.51,
+        "F": 0.37,
+        "P": 0.12
+      },
+      "p_agreement": "in_range"
+    },
+    {
+      "id": 14,
+      "model": "gemini-3-flash-preview",
+      "topic": "wegovy",
+      "predicted": {
+        "G": 0.385,
+        "F": 0.5,
+        "P": 0.115
+      },
+      "manual_full": null,
+      "manual_p_estimate": [
+        0.03,
+        0.05
+      ],
+      "detector_v031": {
+        "G": 0.35,
+        "F": 0.54,
+        "P": 0.12
+      },
+      "p_agreement": "outside_range"
+    },
+    {
+      "id": 15,
+      "model": "gemini-3-flash-preview",
+      "topic": "wegovy",
+      "predicted": {
+        "G": 0.417,
+        "F": 0.417,
+        "P": 0.167
+      },
+      "manual_full": null,
+      "manual_p_estimate": [
+        0.04,
+        0.06
+      ],
+      "detector_v031": {
+        "G": 0.42,
+        "F": 0.42,
+        "P": 0.17
+      },
+      "p_agreement": "outside_range"
+    },
+    {
+      "id": 16,
+      "model": "grok-4-1-fast",
+      "topic": "bls",
+      "predicted": {
+        "G": 0.436,
+        "F": 0.538,
+        "P": 0.026
+      },
+      "manual_full": null,
+      "manual_p_estimate": [
+        0.1,
+        0.15
+      ],
+      "detector_v031": {
+        "G": 0.33,
+        "F": 0.49,
+        "P": 0.18
+      },
+      "p_agreement": "outside_range"
+    },
+    {
+      "id": 17,
+      "model": "gemini-3-flash-preview",
+      "topic": "bls",
+      "predicted": {
+        "G": 0.556,
+        "F": 0.37,
+        "P": 0.074
+      },
+      "manual_full": null,
+      "manual_p_estimate": [
+        0.03,
+        0.05
+      ],
+      "detector_v031": {
+        "G": 0.52,
+        "F": 0.41,
+        "P": 0.07
+      },
+      "p_agreement": "outside_range"
+    }
+  ]
+}
