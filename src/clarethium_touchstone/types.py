@@ -55,17 +55,22 @@ class TemporalInstability(TypedDict):
     versions_compared: int
 
 
-class UnsourcedNumber(TypedDict):
+class UnsourcedNumber(TypedDict, total=False):
     """A digit-formatted number from the output not found in the source.
 
     Contains the literal value, the recognised type (percentage, dollar,
     multiplier, integer, decimal), and a short context window from the
     output to aid debugging and review.
+
+    The ``currency`` field is populated for ``dollar``-type numbers and
+    holds the matched currency symbol (one of ``$ € £ ¥ ₹``). It is
+    absent on non-currency types.
     """
 
     value: str
     type: str
     context: str
+    currency: str
 
 
 class SourceMatching(TypedDict):

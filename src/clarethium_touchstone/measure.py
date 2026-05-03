@@ -132,15 +132,25 @@ _SCALE_MULTIPLIERS: dict[str, int] = {
     "trillion": 1_000_000_000_000,
 }
 
+# Currency symbols supported by the multi-currency extraction (Patch 2).
+# Reused in dollar/dollar_range patterns (positive matches) and in the
+# scaled_integer / decimal / integer / integer_suffix patterns
+# (negative lookbehinds, so currency-prefixed numbers stay in the dollar
+# path and don't double-extract).
+_CURRENCY_CHARS = "$€£¥₹"
+
 # Regex patterns for digit-formatted numerical claims, in priority order.
 # Higher-priority patterns claim character ranges first, preventing decimal
 # and integer patterns from extracting sub-tokens of already-captured
 # percentages or dollar amounts (e.g. "2.58%" must not yield phantom "2.5").
 _NUMBER_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"(\d+(?:\.\d+)?)\s*%", "percentage"),
-    (r"\$(\d+(?:\.\d+)?(?:,\d{3})*)", "dollar"),
+    # Multi-currency dollar (Patch 2): match any of 5 major currency
+    # symbols. The matched currency stays on raw[0] for currency-aware
+    # source matching downstream.
+    (r"[$€£¥₹]\s*(\d+(?:\.\d+)?(?:,\d{3})*)", "dollar"),
     (
-        r"\$(\d+(?:\.\d+)?(?:,\d{3})*)\s*[-–]\s*\$?(\d+(?:\.\d+)?(?:,\d{3})*)\s*"
+        r"[$€£¥₹](\d+(?:\.\d+)?(?:,\d{3})*)\s*[-–]\s*[$€£¥₹]?(\d+(?:\.\d+)?(?:,\d{3})*)\s*"
         r"([MBKmillion|billion|thousand]*)",
         "dollar_range",
     ),
@@ -148,21 +158,21 @@ _NUMBER_PATTERNS: tuple[tuple[str, str], ...] = (
     # Scaled integers: digit + spelled-scale shape (e.g. "1.5 trillion",
     # "6 million"). Comes BEFORE decimal/integer patterns so claimed_ranges
     # blocks them from extracting just the digit half. Negative lookbehind
-    # for currency prevents double-matching inside "$6 million" (the dollar
-    # pattern already captured "$6"). Vault doesn't have this; Frame Check's
-    # v1.4 fork patch addresses Phase 1.6e calibration findings.
+    # for any currency symbol prevents double-matching inside currency-
+    # prefixed scaled forms (e.g. "$6 million", "€6 million") which the
+    # dollar pattern claims first.
     (
-        r"(?<!\$)(?<!\d)(?<!\.)(\d+(?:\.\d+)?)\s+(thousand|million|billion|trillion)\b",
+        r"(?<![$€£¥₹])(?<!\d)(?<!\.)(\d+(?:\.\d+)?)\s+(thousand|million|billion|trillion)\b",
         "scaled_integer",
     ),
-    (r"(?<!\$)(?<!\d)(\d+\.\d+)(?!%)", "decimal"),
+    (r"(?<![$€£¥₹])(?<!\d)(\d+\.\d+)(?!%)", "decimal"),
     (
-        r"(?<!\$)(?<!\d)(?<!\.)(\d{1,3}(?:,\d{3})+)(?!\.\d)(?!%)(?!\d)",
+        r"(?<![$€£¥₹])(?<!\d)(?<!\.)(\d{1,3}(?:,\d{3})+)(?!\.\d)(?!%)(?!\d)",
         "integer_comma",
     ),
-    (r"(?<!\$)(?<!\d)(?<!\.)(\d+)\s*[MBK]\b", "integer_suffix"),
+    (r"(?<![$€£¥₹])(?<!\d)(?<!\.)(\d+)\s*[MBK]\b", "integer_suffix"),
     (
-        r"(?<!\$)(?<!\d)(?<!\.)(\d{2,6})(?!\.\d)(?!%)(?!\d)(?!,\d{3})",
+        r"(?<![$€£¥₹])(?<!\d)(?<!\.)(\d{2,6})(?!\.\d)(?!%)(?!\d)(?!,\d{3})",
         "integer",
     ),
 )
@@ -219,14 +229,23 @@ def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
             ctx_start = max(0, m.start() - 50)
             ctx_end = min(len(text), m.end() + 50)
             context = re.sub(r"\s+", " ", text[ctx_start:ctx_end].strip())
-            numbers.append(
-                {
-                    "value": val,
-                    "raw": m.group(0),
-                    "context": context,
-                    "type": effective_type,
-                }
-            )
+
+            # Patch 2: capture the matched currency symbol for dollar-class
+            # types so source matching can verify same-currency identity
+            # (avoids €30 in doc spuriously matching $30 in source). The
+            # raw match starts with the currency symbol because the dollar
+            # pattern is anchored on [$€£¥₹] in position 0.
+            entry: dict[str, str] = {
+                "value": val,
+                "raw": m.group(0),
+                "context": context,
+                "type": effective_type,
+            }
+            if effective_type == "dollar" and m.group(0):
+                first_char = m.group(0)[0]
+                if first_char in _CURRENCY_CHARS:
+                    entry["currency"] = first_char
+            numbers.append(entry)
     return numbers
 
 
@@ -271,10 +290,17 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
         return False
 
     if ntype == "dollar":
-        if re.search(r"\$" + re.escape(val), source_text):
+        # Patch 2: currency-aware matching. When extraction captured a
+        # currency symbol, require the same symbol in source (so doc "€30"
+        # does NOT spuriously match source "$30"). For backward compat with
+        # callers that don't supply currency, fall back to "$" (the
+        # vault-faithful USD-only behaviour).
+        currency = num.get("currency", "$")
+        currency_re = re.escape(currency) + r"\s*"
+        if re.search(currency_re + re.escape(val), source_text):
             return True
         comma_val = _add_commas(val)
-        return bool(comma_val and re.search(r"\$" + re.escape(comma_val), source_text))
+        return bool(comma_val and re.search(currency_re + re.escape(comma_val), source_text))
 
     if ntype == "multiplier":
         return bool(re.search(re.escape(val) + r"[xX]", source_text))
@@ -972,9 +998,16 @@ def source_matching(text: str, source: str) -> SourceMatching:
     total = len(in_source) + len(not_in_source)
     unsourced_rate = len(not_in_source) / total if total > 0 else 0.0
 
-    unsourced_details: list[UnsourcedNumber] = [
-        {"value": n["value"], "type": n["type"], "context": n["context"]} for n in not_in_source
-    ]
+    unsourced_details: list[UnsourcedNumber] = []
+    for n in not_in_source:
+        detail: UnsourcedNumber = {
+            "value": n["value"],
+            "type": n["type"],
+            "context": n["context"],
+        }
+        if "currency" in n:
+            detail["currency"] = n["currency"]
+        unsourced_details.append(detail)
 
     return {
         "unsourced_rate": round(unsourced_rate, 3),
