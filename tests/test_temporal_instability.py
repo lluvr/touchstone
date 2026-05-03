@@ -59,13 +59,31 @@ def test_empty_text_and_empty_comparisons() -> None:
 
 
 def test_text_with_no_numbers_returns_zero() -> None:
-    """Text without digit-formatted numbers: zero unstable."""
+    """Text without digit-formatted numbers: zero unstable, versions counted."""
     result = temporal_instability(
         "The product launched yesterday.",
         ["The product was released yesterday."],
     )
     assert result["n_total"] == 0
     assert result["instability_rate"] == 0.0
+    # versions_compared still reflects what was supplied
+    assert result["versions_compared"] == 2
+
+
+def test_empty_string_comparison_treats_as_zero_numbers_in_that_version() -> None:
+    """An empty-string comparison contributes no numbers. Numbers from text
+    that only exist there → unstable (in some but not all versions).
+
+    Pinned because empty strings are easy to pass accidentally and the
+    behaviour is intuitively unsurprising once seen but worth verifying.
+    """
+    text = "Revenue 12%, $100M, 25% margins."
+    result = temporal_instability(text, [""])
+    assert result["versions_compared"] == 2
+    # All 3 text numbers are absent from the empty version → all unstable
+    assert result["n_total"] == 3
+    assert result["n_unstable"] == 3
+    assert result["instability_rate"] == 1.0
 
 
 def test_no_comparisons_yields_all_stable() -> None:

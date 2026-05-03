@@ -468,6 +468,43 @@ def test_short_comparisons_do_not_qualify_for_layer_3() -> None:
     assert "temporal_stability" not in r_with_short_comp["components_available"]
 
 
+def test_temporal_only_substance_when_no_source() -> None:
+    """Without ``source`` but WITH ``comparisons``, Layer 3 is the sole
+    substance contributor (Layers 4/5/8 require source).
+
+    Self-comparison → temporal_stability = 1.0 → substance_index = 1.0
+    even though source-based components are absent.
+    """
+    result = quality_profile(ADEQUATE_PRECISION_TEXT, comparisons=[ADEQUATE_PRECISION_TEXT])
+    assert "temporal_stability" in result["components_available"]
+    assert "source_fidelity" not in result["components_available"]
+    assert "entity_grounding" not in result["components_available"]
+    assert "epistemic_calibration" not in result["components_available"]
+    assert result["components"]["temporal_stability"] == 1.0
+    assert result["substance_index"] == 1.0
+
+
+def test_layer_3_threshold_independent_of_layer_4_threshold() -> None:
+    """Layer 3 (cross-version unique-number total ≥ 10) and Layer 4
+    (text precision ≥ adequate, ≥ 10 numbers in text alone) have
+    independent thresholds. A short text combined with a number-rich
+    comparison can qualify for Layer 3 substance contribution while
+    failing the Layer 4 precision threshold.
+    """
+    text_short = "Revenue grew 12%, costs declined."  # 1 number in text
+    comp_long = (
+        "Revenue grew 12% to $143M with 25% margins. "
+        "Costs declined 8% across 5,000 employees over 18 months. "
+        "Headcount reached 2,500 with $45,000 average pay. "
+        "Customer cost dropped to $1,200. Retention improved 7.5% to 94.2%."
+    )
+    result = quality_profile(text_short, source=text_short, comparisons=[comp_long])
+    # Union has ≥10 unique numbers → Layer 3 contributes
+    assert "temporal_stability" in result["components_available"]
+    # Text alone has 1 number → precision="low" → Layer 4 excluded
+    assert "source_fidelity" not in result["components_available"]
+
+
 # ---------------------------------------------------------------------------
 # Index range invariants
 # ---------------------------------------------------------------------------
