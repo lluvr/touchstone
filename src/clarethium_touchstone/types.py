@@ -198,81 +198,9 @@ class MeasureResult(TypedDict, total=False):
     library_version: str
 
 
-# -- Specification compliance (Standard Section 6) -------------------------
-
-
-RequirementType = Literal[
-    "TOPIC",
-    "IMPERATIVE",
-    "CONSTRAINT",
-    "FORMAT",
-    "STRUCTURAL_LABEL",
-    "QUALITY_CRITERION",
-    "META_INSTRUCTION",
-    "BEHAVIORAL",
-]
-
-
-CoverageStatus = Literal["ADDRESSED", "PARTIAL", "MISSING", "UNVERIFIABLE"]
-
-
-class Requirement(TypedDict):
-    text: str
-    type: RequirementType
-    extraction_method: str
-
-
-class CoverageEntry(TypedDict, total=False):
-    requirement: Requirement
-    status: CoverageStatus
-    score: float
-    matched_section: str | None
-    semantic_upgraded: bool
-    substance_warning: bool
-
-
-class DriftSection(TypedDict):
-    section_text: str
-    section_index: int
-    keyword_overlap_with_spec: float
-    semantic_similarity: float | None
-
-
-class AlignSummary(TypedDict):
-    coverage_rate: float
-    concrete_coverage_rate: float
-    structural_compliance_rate: float
-    n_unverifiable: int
-    n_total: int
-    n_addressed: int
-    n_partial: int
-    n_missing: int
-    n_output_words: int
-    n_total_sections: int
-    n_drifted_sections: int
-
-
-class AlignResult(TypedDict, total=False):
-    """Top-level align() output."""
-
-    requirements: list[Requirement]
-    coverage: list[CoverageEntry]
-    drift: list[DriftSection]
-    emphasis_correlation: float
-    summary: AlignSummary
-    semantic_used: bool
-    standard_version: str
-    library_version: str
-
-
-# -- Combined profile ------------------------------------------------------
-
-
-class CombinedProfile(TypedDict, total=False):
-    """profile() output combining measure and align."""
-
-    quality: MeasureResult
-    alignment: AlignResult
-    combined_summary: dict[str, float]
-    standard_version: str
-    library_version: str
+# Standard Section 6 (Specification Compliance) types and the
+# ``CombinedProfile`` are reserved for a future release. They were
+# present in pre-v0.1 stubs but are removed until alignment is properly
+# implemented (a band-aid TypedDict ahead of implementation calcifies
+# decisions that should be made once code exists). See ``CHANGELOG.md``
+# entry for v0.1 scope.

@@ -11,13 +11,25 @@ def test_package_importable() -> None:
 
 
 def test_public_api_exports() -> None:
-    """Top-level public API functions are exported."""
+    """Top-level public API functions are exported (v0.1: measurement only)."""
     import clarethium_touchstone
 
     assert hasattr(clarethium_touchstone, "measure")
-    assert hasattr(clarethium_touchstone, "align")
-    assert hasattr(clarethium_touchstone, "profile")
     assert hasattr(clarethium_touchstone, "__version__")
+
+
+def test_align_and_profile_not_exported_in_v0_1() -> None:
+    """``align`` and ``profile`` are NOT part of the v0.1 public API.
+
+    Standard Section 6 (Specification Compliance) is reserved for a
+    future release. The pre-port stubs raised NotImplementedError; the
+    cleanup removes the API surface entirely so first-contact callers
+    see a clean ImportError rather than a misleading runtime crash.
+    """
+    import clarethium_touchstone
+
+    assert not hasattr(clarethium_touchstone, "align")
+    assert not hasattr(clarethium_touchstone, "profile")
 
 
 def test_version_strings() -> None:
@@ -68,30 +80,15 @@ def test_measure_layer_functions_present() -> None:
     assert all(callable(f) for f in functions)
 
 
-def test_align_layer_functions_present() -> None:
-    """All Standard Section 6 layer functions are accessible from align module."""
-    from clarethium_touchstone.align import (
-        align,
-        analyze_spec,
-        coverage_mapping,
-        emphasis_balance,
-        extract_requirements,
-        pipeline_check,
-        scope_drift,
-        semantic_coverage,
-    )
+def test_align_module_does_not_exist_in_v0_1() -> None:
+    """The ``clarethium_touchstone.align`` module is not part of v0.1.
 
-    functions = (
-        align,
-        extract_requirements,
-        coverage_mapping,
-        scope_drift,
-        emphasis_balance,
-        semantic_coverage,
-        analyze_spec,
-        pipeline_check,
-    )
-    assert all(callable(f) for f in functions)
+    Importing it raises ModuleNotFoundError (the file is absent).
+    """
+    import pytest
+
+    with pytest.raises(ModuleNotFoundError):
+        import clarethium_touchstone.align  # noqa: F401
 
 
 def test_orchestrator_returns_measure_result_without_source() -> None:
@@ -180,12 +177,13 @@ def test_orchestrator_layer_1a_inert_without_generator() -> None:
 
 
 def test_types_module_present() -> None:
-    """Public type definitions are accessible."""
+    """Public type definitions are accessible (v0.1: measurement types only)."""
     from clarethium_touchstone import types
 
     assert hasattr(types, "MeasureResult")
-    assert hasattr(types, "AlignResult")
     assert hasattr(types, "GroundingDecomposition")
-    assert hasattr(types, "Requirement")
-    assert hasattr(types, "RequirementType")
     assert hasattr(types, "GFPCategory")
+    # Section 6 alignment types are not in v0.1
+    assert not hasattr(types, "AlignResult")
+    assert not hasattr(types, "Requirement")
+    assert not hasattr(types, "RequirementType")
