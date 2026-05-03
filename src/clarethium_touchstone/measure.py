@@ -40,6 +40,7 @@ from typing import Literal, cast
 from clarethium_touchstone._version import __standard_version__, __version__
 from clarethium_touchstone.types import (
     ClaimDensity,
+    DerivationRegime,
     EntityProvenance,
     EpistemicCalibration,
     GFPProportions,
@@ -50,6 +51,7 @@ from clarethium_touchstone.types import (
     MeasureResult,
     PresentationFeatures,
     QualityProfile,
+    ScopeAssessment,
     SourceMatching,
     StructuralProfile,
     TemporalInstability,
@@ -1735,6 +1737,87 @@ _GFP_EXTERNAL_ENTITIES: tuple[str, ...] = (
 )
 
 
+# Layer 11 derivation-regime boundaries. Sourced from EXP-095 Monte Carlo
+# data: at N=5 source floats the derivation checker has 53% false-positive
+# rate; at N=10 it reaches 97%; at N=15+ it saturates at 100%. The
+# boundaries below match the methodology doc (LAYER_11_SCOPE_BOUNDARY.md):
+# < 5 = diagnostic (primary signal reliable); [5,10) = transition (50-97%
+# FPR; cross-reference Layer 4); >= 10 = saturated (primary signal
+# effectively disabled). These constants are intentionally hardcoded in
+# v0.1; configurability is reserved until real calibration data emerges
+# from non-default number-target distributions.
+_DERIVATION_REGIME_DIAGNOSTIC_MAX = 5
+_DERIVATION_REGIME_TRANSITION_MAX = 10
+
+
+def assess_derivation_regime(source_num_count: int) -> ScopeAssessment:
+    """Classify Layer 11's derivation-checker reliability for a given source.
+
+    Returns a structured ``ScopeAssessment`` consumers can use to
+    decide which P-signal to trust:
+
+    * ``diagnostic`` (< 5 source numbers): primary unsourced_numbers
+      signal is reliable.
+    * ``transition`` ([5, 10) source numbers): derivation-checker FPR
+      is 50–97%; cross-reference Layer 4 source_matching for
+      numerical-fabrication detection.
+    * ``saturated`` (≥ 10 source numbers): primary signal is effectively
+      disabled; P falls back to secondary signals (external entities,
+      gated unsourced years); trust Layer 4 for numerical claims.
+
+    The function is exposed publicly so callers can compute the
+    assessment from any source number count without running the full
+    layer (e.g., to display a "trust this signal" UI hint before
+    measurement begins).
+    """
+    if source_num_count < _DERIVATION_REGIME_DIAGNOSTIC_MAX:
+        regime: DerivationRegime = "diagnostic"
+        note_dev = (
+            "Primary unsourced_numbers signal is in its diagnostic regime. "
+            "Layer 11 P-count is reliable for numerical fabrication detection."
+        )
+        note_user = (
+            f"This source has {source_num_count} numerical values. Projection "
+            "detection is reliable for both external references and numerical "
+            "fabrication."
+        )
+    elif source_num_count < _DERIVATION_REGIME_TRANSITION_MAX:
+        regime = "transition"
+        note_dev = (
+            "Primary unsourced_numbers signal is in its transition regime. "
+            "Derivation-checker false-positive rate is 50-97%. Cross-reference "
+            "Layer 4 (source_matching) for reliable number-fabrication detection."
+        )
+        note_user = (
+            f"This source has {source_num_count} numerical values. Projection "
+            "detection is partial; for a complete view of numerical fabrication, "
+            "check the Source Fidelity signal alongside."
+        )
+    else:
+        regime = "saturated"
+        note_dev = (
+            "Primary unsourced_numbers signal is saturated. Derivation-checker "
+            "false-positive rate approaches 100%. Layer 11 P-count on this source "
+            "reflects secondary signals (external entities, unsourced years) only. "
+            "For numerical fabrication, consult Layer 4 (source_matching)."
+        )
+        note_user = (
+            f"This source has {source_num_count} numerical values. Projection "
+            "detection here reflects external references (entities, forecasts), "
+            "not numerical fabrication. For numerical claims, check the Source "
+            "Fidelity signal."
+        )
+
+    return {
+        "source_num_count": source_num_count,
+        "derivation_regime": regime,
+        "primary_signal_diagnostic": regime == "diagnostic",
+        "cross_reference_layer_4_for_numbers": regime != "diagnostic",
+        "note_developer": note_dev,
+        "note_user_facing": note_user,
+    }
+
+
 def _gfp_is_derivable(value: float, source_floats: set[float], tolerance: float = 0.02) -> bool:
     """Check whether ``value`` is arithmetically derivable from source numbers.
 
@@ -2034,6 +2117,7 @@ def grounding_decomposition(
         "n_projected": n_p,
         "has_projection": has_projection,
         "recommendation": recommendation,
+        "scope_assessment": assess_derivation_regime(len(source_floats)),
     }
 
 
@@ -2052,6 +2136,7 @@ __all__ = [
     "information_novelty",
     "quality_profile",
     "grounding_decomposition",
+    "assess_derivation_regime",
 ]
 
 

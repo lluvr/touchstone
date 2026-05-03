@@ -6,6 +6,34 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-03: scope_assessment for Layer 11 + EXP-095 benchmark suite
+
+- **Patch 1 landed (deferred from earlier session):** Layer 11
+  ``grounding_decomposition`` now returns a ``scope_assessment`` field
+  classifying the source's derivation-checker regime. Boundaries are
+  vault-validated (< 5 diagnostic, [5,10) transition, ≥ 10 saturated)
+  and align with the methodology doc and Monte Carlo FPR data
+  (53% at N=5, 97% at N=10). New public helper
+  ``assess_derivation_regime(source_num_count)`` returns the same
+  ``ScopeAssessment`` dict for any caller wanting the regime
+  classification standalone (e.g., a UI that displays "trust this
+  signal" guidance before measurement begins).
+
+  This addresses the documented EXP-095 output #16 drift case: when
+  Touchstone reports P=0.026 for a 14-number source (saturated
+  regime), the scope_assessment field now explicitly tells consumers
+  to cross-reference Layer 4 for numerical fabrication. The drift is
+  no longer silent.
+
+- **EXP-095 benchmark suite shipped:** ``benchmarks/exp_095_grounding/``
+  validates Layer 11 against 13 hand-classified outputs from the
+  research vault. Results: P-direction agreement with manual
+  classification is 100%; MAE vs documented detector v0.3.1 is
+  0.02-0.04 in aggregate (with documented per-output drift surfaced
+  honestly in the README). Snapshot file pinned via byte-match
+  pytest assertion; CI catches silent drift on any future change
+  affecting Layer 11 predictions.
+
 ## 2026-05-03: v0.1 scope locked to Section 5 measurement; align/profile dropped from public API
 
 - Frame Check fork-patch port: paragraph-aware sentence splitter for

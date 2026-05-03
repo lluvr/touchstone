@@ -21,6 +21,7 @@ import pytest
 
 from clarethium_touchstone.measure import (
     _gfp_is_derivable,
+    assess_derivation_regime,
     grounding_decomposition,
 )
 
@@ -66,7 +67,97 @@ def test_output_keys_are_exact_set() -> None:
         "n_projected",
         "has_projection",
         "recommendation",
+        "scope_assessment",
     }
+
+
+# ---------------------------------------------------------------------------
+# Scope assessment (Patch 1)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "n,expected_regime,expected_primary_diagnostic,expected_cross_ref",
+    [
+        (0, "diagnostic", True, False),
+        (4, "diagnostic", True, False),
+        (5, "transition", False, True),
+        (9, "transition", False, True),
+        (10, "saturated", False, True),
+        (23, "saturated", False, True),
+        (50, "saturated", False, True),
+    ],
+)
+def test_assess_derivation_regime_boundaries(
+    n: int,
+    expected_regime: str,
+    expected_primary_diagnostic: bool,
+    expected_cross_ref: bool,
+) -> None:
+    """Vault-validated boundaries: < 5 = diagnostic, [5,10) = transition,
+    >= 10 = saturated. Pinned per LAYER_11_SCOPE_BOUNDARY.md and
+    Monte Carlo data (FPR 53% at N=5, 97% at N=10).
+    """
+    result = assess_derivation_regime(n)
+    assert result["derivation_regime"] == expected_regime
+    assert result["primary_signal_diagnostic"] == expected_primary_diagnostic
+    assert result["cross_reference_layer_4_for_numbers"] == expected_cross_ref
+    assert result["source_num_count"] == n
+
+
+def test_assess_derivation_regime_returns_full_typed_shape() -> None:
+    """All ScopeAssessment fields populated for any input."""
+    result = assess_derivation_regime(7)
+    expected_keys = {
+        "source_num_count",
+        "derivation_regime",
+        "primary_signal_diagnostic",
+        "cross_reference_layer_4_for_numbers",
+        "note_developer",
+        "note_user_facing",
+    }
+    assert set(result.keys()) == expected_keys
+    assert isinstance(result["note_developer"], str)
+    assert isinstance(result["note_user_facing"], str)
+    assert len(result["note_developer"]) > 0
+    assert len(result["note_user_facing"]) > 0
+
+
+def test_grounding_decomposition_includes_scope_assessment() -> None:
+    """The returned ``scope_assessment`` field reflects the source's
+    derivation regime, computed from its unique number count.
+    """
+    text = "Performance reached 12% growth across all major segments globally."
+    source_few = "Brief source mentioning revenue growth without numbers."
+    source_many = (
+        "Numbers: 12%, 25%, 8%, 5,000, 18, 2,500, $45,000, 7.5%, 94%, 3.2%, 47.3%, 88, 2024, 1995."
+    )
+    r_few = grounding_decomposition(text, source_few)
+    r_many = grounding_decomposition(text, source_many)
+    # Few-number source: diagnostic regime
+    assert r_few["scope_assessment"]["derivation_regime"] in (
+        "diagnostic",
+        "transition",
+    )
+    # Many-number source: saturated
+    assert r_many["scope_assessment"]["derivation_regime"] == "saturated"
+
+
+def test_scope_assessment_user_facing_note_mentions_count() -> None:
+    """The user-facing note includes the source number count so UIs can
+    surface "this source has N numerical values" without reformatting.
+    """
+    result = assess_derivation_regime(14)
+    assert "14" in result["note_user_facing"]
+
+
+def test_scope_assessment_saturated_recommends_layer_4() -> None:
+    """Saturated regime explicitly directs consumers to Layer 4 for
+    numerical fabrication detection (the scope-boundary doc finding).
+    """
+    result = assess_derivation_regime(20)
+    assert "Source Fidelity" in result["note_user_facing"] or "Layer 4" in result["note_developer"]
+    assert result["cross_reference_layer_4_for_numbers"] is True
 
 
 # ---------------------------------------------------------------------------
