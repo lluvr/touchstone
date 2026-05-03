@@ -274,6 +274,80 @@ def test_scale_word_unsourced_when_source_uses_different_scale() -> None:
     assert result["n_unsourced"] >= 1
 
 
+# ---------------------------------------------------------------------------
+# Multi-currency (Patch 2)
+# ---------------------------------------------------------------------------
+
+
+def test_euro_extracted_and_matched_against_same_currency_source() -> None:
+    """Patch 2: €30M in doc with €30M in source matches correctly."""
+    text = "Revenue grew to €30M reported reliably across all major segments."
+    src = "Revenue grew to €30M reported reliably across all major segments."
+    result = source_matching(text, src)
+    assert result["unsourced_rate"] == 0.0
+
+
+def test_pound_extracted_and_matched() -> None:
+    """Patch 2: £ symbol extraction and matching."""
+    text = "Revenue grew to £30M reported reliably across all major segments."
+    src = "Revenue grew to £30M reported reliably across all major segments."
+    result = source_matching(text, src)
+    assert result["unsourced_rate"] == 0.0
+
+
+def test_yen_rupee_extracted_and_matched() -> None:
+    """Patch 2: ¥ and ₹ extraction."""
+    for currency in ("¥", "₹"):
+        text = f"Revenue grew to {currency}30M reported reliably across all major segments."
+        src = f"Revenue grew to {currency}30M reported reliably across all major segments."
+        result = source_matching(text, src)
+        assert result["unsourced_rate"] == 0.0, f"{currency} matching failed"
+
+
+def test_different_currency_does_not_spuriously_match() -> None:
+    """Patch 2 substrate-quality: doc "€30" and source "$30" express
+    DIFFERENT amounts (different currencies). The matcher must NOT treat
+    them as equivalent. This is the key correctness improvement over
+    Frame Check's currency-blind cascade.
+    """
+    text = "Revenue grew to €30M reported reliably across all major segments."
+    src = "Revenue grew to $30M reported reliably across all major segments."
+    result = source_matching(text, src)
+    # €30 not in source as "€30" → unsourced
+    assert result["n_unsourced"] == 1
+    assert result["unsourced_details"][0]["currency"] == "€"
+
+
+def test_usd_baseline_unchanged_after_multi_currency_patch() -> None:
+    """Backward compatibility: USD-only documents behave identically to
+    pre-Patch-2 baseline. The vault-faithful $-only matching path is
+    preserved when extraction sees ``currency="$"``.
+    """
+    # Self-source with USD numbers (Vault-style)
+    text = "Revenue grew $100M with $200M in margins reported across the period."
+    result = source_matching(text, text)
+    assert result["unsourced_rate"] == 0.0
+    # All extracted dollars should have currency="$"
+    text2 = "Revenue grew $100M with no source overlap whatsoever globally yesterday."
+    result2 = source_matching(text2, "Brief unrelated source content here today.")
+    assert result2["n_unsourced"] >= 1
+    for detail in result2["unsourced_details"]:
+        if detail["type"] == "dollar":
+            assert detail.get("currency") == "$"
+
+
+def test_unsourced_details_preserve_currency_field_for_dollar() -> None:
+    """The unsourced_details list surfaces currency for dollar-type
+    entries so downstream consumers (UI, MCP server) can display the
+    correct symbol with the value.
+    """
+    text = "Revenue grew €30M, £40M, and ¥500M reported across all segments."
+    src = "Brief unrelated source with no currency overlap whatsoever."
+    result = source_matching(text, src)
+    currencies = {d.get("currency") for d in result["unsourced_details"] if d["type"] == "dollar"}
+    assert currencies == {"€", "£", "¥"}
+
+
 def test_known_limitation_cross_scale_false_negative() -> None:
     """Pinned limitation: doc and source expressing the same magnitude in
     different scale forms (e.g. doc "1500 billion" vs source "1.5 trillion")

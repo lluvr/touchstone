@@ -6,6 +6,39 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-03: Patch 2 (multi-currency) + Patch 3 (scaled-integer) shipped
+
+After two earlier sessions deferring these patches (concerned that
+Frame Check's port introduced cascade bugs), the benchmarks shipped
+mid-session provide regression cover. Both patches landed with the
+proper substrate-quality designs:
+
+- **Patch 3 (scaled-integer):** "1.5 trillion", "6 million" forms
+  now extract correctly. Cascade bug Frame Check ships (extracted
+  "8 trillion" gets normalized to "8000000000000" string, then
+  source matching searches that exact digit string in source text
+  and fails when source uses the same scale form) is FIXED in
+  Touchstone via a raw-form fallback path. See test_source_matching::
+  test_scale_word_extraction_with_raw_form_source_match.
+- **Patch 2 (multi-currency):** ``[$€£¥₹]`` symbols now match. Doc
+  "€30" + source "€30" → grounded; doc "€30" + source "$30" →
+  unsourced (DIFFERENT currencies, correct flag). UnsourcedNumber
+  TypedDict gains optional ``currency`` field surfaced in
+  unsourced_details for downstream consumers.
+
+Both patches are backward-compatible with USD-only corpora (EXP-081
+benchmark unchanged: Cohen's d=-5.238). EXP-095 output #16 (xAI BLS
+run 3) moved P 0.026 → 0.051 toward manual estimate [0.10, 0.15] —
+direct evidence that stricter source-side derivation (now that
+"7.2 million" extracts as 7200000 instead of decimal 7.2) reduces
+the derivation-checker false-positive rate documented in the
+methodology.
+
+Cross-scale matching (doc "1500 billion" vs source "1.5 trillion",
+same magnitude) is pinned as a known limitation in
+test_known_limitation_cross_scale_false_negative; proper
+magnitude-aware redesign is a future patch.
+
 ## 2026-05-03: scope_assessment for Layer 11 + EXP-095 benchmark suite
 
 - **Patch 1 landed (deferred from earlier session):** Layer 11
