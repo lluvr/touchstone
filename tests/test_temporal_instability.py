@@ -14,10 +14,7 @@ Cannot detect stable fabrication (consistently wrong numbers).
 
 from __future__ import annotations
 
-from clarethium_touchstone.measure import (
-    fabrication_rate,
-    temporal_instability,
-)
+from clarethium_touchstone.measure import temporal_instability
 
 # ---------------------------------------------------------------------------
 # Output shape contract
@@ -200,19 +197,18 @@ def test_type_aware_dedup_distinct_from_value_alone() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Deprecated alias
+# Removed legacy alias
 # ---------------------------------------------------------------------------
 
 
-def test_fabrication_rate_alias_still_works() -> None:
-    """Deprecated ``fabrication_rate`` alias (slated for v2.0 removal)
-    forwards to ``temporal_instability``.
+def test_fabrication_rate_alias_removed() -> None:
+    """The deprecated ``fabrication_rate`` alias is NOT exported. Touchstone
+    is greenfield; shipping a deprecated form on day one was unnecessary
+    debt. New code uses ``temporal_instability``.
     """
-    text = "Revenue 12%."
-    comp = "Revenue 14%."
-    via_alias = fabrication_rate(text, [comp])
-    via_canonical = temporal_instability(text, [comp])
-    assert via_alias == via_canonical
+    import clarethium_touchstone.measure as measure_module
+
+    assert not hasattr(measure_module, "fabrication_rate")
 
 
 # ---------------------------------------------------------------------------

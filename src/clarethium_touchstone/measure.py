@@ -863,10 +863,6 @@ def temporal_instability(text: str, comparisons: list[str]) -> TemporalInstabili
     }
 
 
-# Deprecated alias, removed in v2.0
-fabrication_rate = temporal_instability
-
-
 # -- Layer 4: Source matching ---------------------------------------------
 
 
@@ -2048,7 +2044,6 @@ __all__ = [
     "structural_profile",
     "claim_density",
     "temporal_instability",
-    "fabrication_rate",  # deprecated alias
     "source_matching",
     "entity_provenance",
     "vocabulary_proximity",
