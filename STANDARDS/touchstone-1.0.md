@@ -360,7 +360,7 @@ Implementations declare conformance to a specific Standard version (e.g., "Touch
 The Standard follows semantic versioning:
 
 - **Major (1.0 → 2.0):** Breaking changes to required layers, methodology, layer definitions, or normative threshold values. Existing implementations require updates to remain conformant.
-- **Minor (1.0 → 1.1):** Additive changes — new optional layers, new requirement types, additional threshold defaults. Existing implementations remain conformant for the previous version.
+- **Minor (1.0 → 1.1):** Additive changes - new optional layers, new requirement types, additional threshold defaults. Existing implementations remain conformant for the previous version.
 - **Patch (1.0 → 1.0.1):** Editorial changes, clarifications, expanded examples. No methodology changes.
 
 The deprecated `fabrication_rate` alias for `instability_rate` is retained at v1.0 for backwards compatibility and MUST be removed in v2.0.
@@ -463,11 +463,11 @@ Sections substantially complete (operator review only):
 
 Sections requiring operator-authored finalization:
 
-- Section 2 (Terminology — define key terms)
-- Section 4 (Output structure — confirm scope)
-- Section 7 (Threshold values — finalize specific numerical thresholds)
-- Section 8 (Reference test cases — extract minimal compliance suite)
-- Section 11 (Conformance — specify formal process)
-- Section 12 (References — add EXP citations and AIRP coupling)
+- Section 2 (Terminology - define key terms)
+- Section 4 (Output structure - confirm scope)
+- Section 7 (Threshold values - finalize specific numerical thresholds)
+- Section 8 (Reference test cases - extract minimal compliance suite)
+- Section 11 (Conformance - specify formal process)
+- Section 12 (References - add EXP citations and AIRP coupling)
 - Appendix A (Worked examples)
 - Appendix B (FAQ)

@@ -166,7 +166,7 @@ def test_orchestrator_threads_baseline_generator_to_layer_1a() -> None:
 
 def test_orchestrator_layer_1a_inert_without_generator() -> None:
     """Without a ``baseline_generator``, Layer 1a stays inert even if a
-    topic is supplied — heading_defaultness is None.
+    topic is supplied - heading_defaultness is None.
     """
     from clarethium_touchstone import measure
 

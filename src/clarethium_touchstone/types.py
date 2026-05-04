@@ -184,11 +184,11 @@ class ScopeAssessment(TypedDict):
     consumers which P-signal to trust on a given source.
 
     Boundaries (vault-validated, methodology-doc-aligned):
-    - ``diagnostic``: source_num_count < 5 — primary unsourced_numbers
+    - ``diagnostic``: source_num_count < 5 - primary unsourced_numbers
       signal is reliable
-    - ``transition``: 5 ≤ source_num_count < 10 — derivation-checker FPR
-      is 50–97%; cross-reference Layer 4 source_matching
-    - ``saturated``: source_num_count ≥ 10 — primary signal is
+    - ``transition``: 5 ≤ source_num_count < 10 - derivation-checker FPR
+      is 50-97%; cross-reference Layer 4 source_matching
+    - ``saturated``: source_num_count ≥ 10 - primary signal is
       effectively disabled; P falls back to entity / year secondary
       signals; trust Layer 4 for numerical fabrication
     """

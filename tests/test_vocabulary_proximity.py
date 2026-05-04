@@ -1,7 +1,7 @@
 """Tests for Layer 6 vocabulary proximity (Touchstone Standard Section 5.6).
 
 Layer 6 measures per-sentence content-word overlap with source text.
-Marked DIRECTIONAL in v1.0 (Standard Section 5.6) — surfaces lexical
+Marked DIRECTIONAL in v1.0 (Standard Section 5.6) - surfaces lexical
 overlap but cannot distinguish original analysis from fabrication.
 
 Note: ``w in source_lower`` uses Python substring matching, so a

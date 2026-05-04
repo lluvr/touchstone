@@ -6,10 +6,10 @@ A Clarethium project. Standards and reference implementation for measuring AI ou
 
 ## Start here
 
-- [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) — the canonical specification (CC-BY 4.0)
-- [Getting started](getting-started.md) — install and first measurement
-- [Contributing](../CONTRIBUTING.md) — how to propose changes
-- [Suggestion process](../SUGGESTIONS/PROCESS.md) — how Standard and library evolve
+- [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) - the canonical specification (CC-BY 4.0)
+- [Getting started](getting-started.md) - install and first measurement
+- [Contributing](../CONTRIBUTING.md) - how to propose changes
+- [Suggestion process](../SUGGESTIONS/PROCESS.md) - how Standard and library evolve
 
 ## Why model-independent
 
@@ -68,8 +68,8 @@ See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full speci
 
 ## Related projects
 
-- [Clarethium](https://clarethium.com) — methodology umbrella, mothership
-- [Frame Check](https://frame.clarethium.com) — applied tool for frame validation
+- [Clarethium](https://clarethium.com) - methodology umbrella, mothership
+- [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
 
 ## Status
 
@@ -77,7 +77,7 @@ Pre-launch on PyPI; reference implementation feature-complete on `main`.
 All eleven Section 5 measurement layers implemented and tested (375
 tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12,
 build distribution). Two reproducible validation benchmarks
-(`benchmarks/`) — Touchstone reproduces the published EXP-081 Cohen's
+(`benchmarks/`) - Touchstone reproduces the published EXP-081 Cohen's
 d = -5.43 with d = -5.238 on the same corpus.
 
 Section 6 (Specification Compliance) is reserved for a future release.

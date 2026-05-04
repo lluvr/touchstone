@@ -10,7 +10,7 @@ Public API (v0.1):
 
     result = measure(text, source=source_text)
 
-    # Standalone Layer 11 regime classifier — useful for UIs that
+    # Standalone Layer 11 regime classifier - useful for UIs that
     # display "trust this signal" hints before measurement begins.
     assessment = assess_derivation_regime(source_num_count=14)
 

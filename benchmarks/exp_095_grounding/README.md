@@ -22,11 +22,11 @@ by detector v0.3.1 with manual P-verification on disagreement cases
 
 ## Sources
 
-- `apple_q1_fy2026.md` — derived from Apple's Q1 FY2026 10-Q SEC
+- `apple_q1_fy2026.md` - derived from Apple's Q1 FY2026 10-Q SEC
   filing and press release (January 30, 2026)
-- `bls_march2026.md` — derived from BLS March 2026 employment
+- `bls_march2026.md` - derived from BLS March 2026 employment
   situation public release
-- `wegovy_oasis4.md` — derived from the published OASIS-4 clinical
+- `wegovy_oasis4.md` - derived from the published OASIS-4 clinical
   trial results
 
 All source documents are derivative summaries of public data.
@@ -40,15 +40,15 @@ runs are in the ground-truth set.
 
 ## Findings (2026-05-03 baseline)
 
-- **P-direction agreement: 100%** — Touchstone never disagrees with
+- **P-direction agreement: 100%** - Touchstone never disagrees with
   manual classification on whether projected content (P) exists in
   an output. Either both detect P > 0, or both detect P = 0.
-- **MAE vs detector v0.3.1 (historical reference): 0.02–0.04 per
-  category in aggregate** — but with significant per-output
+- **MAE vs detector v0.3.1 (historical reference): 0.02-0.04 per
+  category in aggregate** - but with significant per-output
   variance. The aggregate reflects close agreement on the majority
   of outputs; specific cases drift further (see below).
-- **MAE vs full manual classification (n=7): 0.12–0.13 across G/F/P**
-  — pre-existing systematic detector behaviour, documented in
+- **MAE vs full manual classification (n=7): 0.12-0.13 across G/F/P**
+  - pre-existing systematic detector behaviour, documented in
   `GROUND_TRUTH_20.md`. The detector consistently over-counts G
   relative to manual classification because mixed sentences (source
   number + interpretation) are classified as G by the detector but
@@ -69,7 +69,7 @@ implementation:
 - **Output #16 (xAI BLS run 3):** detector_v031 published 0.18 (the
   v1.4.1 fix figure cited in `GROUND_TRUTH_20.md` line 73),
   Touchstone now produces **0.051** (post-Patch-3, was 0.026 in
-  pre-Patch-3 baseline). Manual estimate is 0.10–0.15. Patch 3
+  pre-Patch-3 baseline). Manual estimate is 0.10-0.15. Patch 3
   (scaled-integer extraction) improved this by making source-side
   derivation stricter: source's "7.2 million" no longer extracts as
   decimal "7.2" that falsely derives unsourced numbers via
@@ -100,13 +100,13 @@ this benchmark is future work.
 
 ## Files
 
-- `ground_truth.json` — machine-readable corpus index with manual
+- `ground_truth.json` - machine-readable corpus index with manual
   classifications and detector v0.3.1 reference
-- `sources/` — three source documents
-- `outputs/` — 49 model output text files (covering all 3 vendors
+- `sources/` - three source documents
+- `outputs/` - 49 model output text files (covering all 3 vendors
   × 3 topics × 5 runs, plus pilot files)
-- `run.py` — benchmark runner; `python -m benchmarks.exp_095_grounding.run`
-- `results/` — dated JSON snapshots
+- `run.py` - benchmark runner; `python -m benchmarks.exp_095_grounding.run`
+- `results/` - dated JSON snapshots
 
 ## Citation
 

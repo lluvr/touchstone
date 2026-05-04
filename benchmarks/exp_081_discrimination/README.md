@@ -1,7 +1,7 @@
 # EXP-081 adversarial discrimination benchmark
 
 Validates Touchstone's ability to discriminate faithful from embellished
-AI outputs on the same source material — the published EXP-081
+AI outputs on the same source material - the published EXP-081
 adversarial-validity finding.
 
 ## Methodology
@@ -43,13 +43,13 @@ with 100% accuracy on this corpus; the gap signal is consequential.
 
 | Metric | Faithful | Embellished | Touchstone | Published |
 |---|---|---|---|---|
-| Mean gap | -0.4377 | +0.1585 | — | — |
+| Mean gap | -0.4377 | +0.1585 | - | - |
 | **Cohen's d** | | | **-5.238** | -5.43 |
-| Gap direction agreement | | | **100% (12/12)** | — |
+| Gap direction agreement | | | **100% (12/12)** | - |
 | MAE vs published | unsourced_rate | gap | substance | presentation |
 | | 0.014 | 0.0097 | 0.0095 | 0.0 |
 
-Touchstone reproduces the published d=-5.43 with d=-5.238 — well within
+Touchstone reproduces the published d=-5.43 with d=-5.238 - well within
 the published CI, and the MAE on every per-doc metric is under 0.014.
 This is end-to-end empirical validation: Layers 4 (source_matching),
 5 (entity_provenance), 7 (presentation_features), and 8 (epistemic_calibration)
@@ -68,14 +68,14 @@ provides that evidence.
 
 ## Files
 
-- `ground_truth.json` — machine-readable corpus index with the published
+- `ground_truth.json` - machine-readable corpus index with the published
   per-doc expected metrics
-- `sources/` — 3 source documents (Owl Labs hybrid work survey,
+- `sources/` - 3 source documents (Owl Labs hybrid work survey,
   communication research, AI workflows research)
-- `outputs/` — 12 model outputs (3 topics × 2 conditions × 2 versions)
-- `run.py` — benchmark runner;
+- `outputs/` - 12 model outputs (3 topics × 2 conditions × 2 versions)
+- `run.py` - benchmark runner;
   `python -m benchmarks.exp_081_discrimination.run`
-- `results/` — dated JSON snapshots
+- `results/` - dated JSON snapshots
 
 ## Citation
 

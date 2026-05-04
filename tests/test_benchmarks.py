@@ -52,7 +52,7 @@ def test_exp_095_p_direction_agreement_is_perfect() -> None:
     rate = agg["p_direction_agreement_rate"]
     assert rate is not None
     assert rate >= 0.9, (
-        f"P-direction agreement dropped to {rate} — Touchstone "
+        f"P-direction agreement dropped to {rate} - Touchstone "
         f"started disagreeing with manual on whether P > 0. Investigate."
     )
 
@@ -72,7 +72,7 @@ def test_exp_095_close_agreement_with_detector_v031() -> None:
     mae = agg["mae_vs_detector_v031"]
     for category in ("G", "F", "P"):
         assert mae[category] <= 0.10, (
-            f"MAE vs detector v0.3.1 on {category} grew to {mae[category]} — "
+            f"MAE vs detector v0.3.1 on {category} grew to {mae[category]} - "
             f"the extraction has drifted beyond the documented detector."
         )
 
@@ -117,7 +117,7 @@ def test_exp_095_canonical_high_p_case_detected(
     if expected_high_p:
         assert r.predicted["P"] > 0, (
             f"output {r.output_id} ({r.model} on {r.topic}) had manual P=48% "
-            f"but Touchstone predicts P=0 — significant detection regression"
+            f"but Touchstone predicts P=0 - significant detection regression"
         )
 
 
@@ -188,7 +188,7 @@ def test_exp_081_close_agreement_with_published_metrics() -> None:
     mae = agg["mae_vs_published"]
     for metric in ("unsourced_rate", "gap", "substance_index", "presentation_index"):
         assert mae[metric] <= 0.05, (
-            f"MAE on {metric} grew to {mae[metric]} — Touchstone is "
+            f"MAE on {metric} grew to {mae[metric]} - Touchstone is "
             f"diverging from the EXP-081 published values."
         )
 

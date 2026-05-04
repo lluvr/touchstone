@@ -193,7 +193,7 @@ def test_word_count_via_word_boundary() -> None:
 
 def test_short_sentences_filtered() -> None:
     """Sentences shorter than 30 characters are dropped from analysis."""
-    # "Yes. 10%." is too short — both fragments under 30 chars
+    # "Yes. 10%." is too short - both fragments under 30 chars
     text = "Yes. 10%."
     result = claim_density(text)
     assert result["n_numerical"] == 0
@@ -287,7 +287,7 @@ def test_heading_flushes_paragraph_boundary() -> None:
 
 def test_list_items_processed_independently() -> None:
     """List-item lines flush the pending buffer and are each processed
-    as their own paragraph — they are not joined to surrounding prose.
+    as their own paragraph - they are not joined to surrounding prose.
     """
     text = (
         "Some prose introducing the list across the page today.\n"

@@ -98,7 +98,7 @@ def test_identical_repeated_sentences_yield_decay() -> None:
 
 def test_fully_novel_sentences_minimal_decay() -> None:
     """Sentences with entirely disjoint vocabularies have near-1.0 mean
-    novelty. (Common words like 'across' may still get reused — exact
+    novelty. (Common words like 'across' may still get reused - exact
     1.0 is hard, but the mean must be near 1.0.)
     """
     text = (

@@ -29,11 +29,11 @@ The document content goes here, or in a separate file linked from this Suggestio
 
 Informational documents typically cover:
 
-- **Integration guides** — how to use Touchstone with specific frameworks, AI tools, or workflows
-- **Best practices** — recommended approaches for common use cases
-- **Position papers** — argued positions on technical or methodological questions
-- **Tutorials** — step-by-step learning material
-- **Comparisons** — how Touchstone relates to adjacent tools or methodologies
+- **Integration guides** - how to use Touchstone with specific frameworks, AI tools, or workflows
+- **Best practices** - recommended approaches for common use cases
+- **Position papers** - argued positions on technical or methodological questions
+- **Tutorials** - step-by-step learning material
+- **Comparisons** - how Touchstone relates to adjacent tools or methodologies
 
 ## Relationship to Standard and library
 

@@ -75,14 +75,14 @@ def test_zero_assertions_distinguishable_from_zero_grounded() -> None:
     via ``n_assertions``: (1) no assertions found at all (no data), and
     (2) assertions found but none grounded (true overclaiming).
     """
-    # Case 1: no data — no assertion markers in text
+    # Case 1: no data - no assertion markers in text
     no_data = epistemic_calibration(
         "The product launched yesterday and customers were satisfied.", "Some source."
     )
     assert no_data["n_assertions"] == 0
     assert no_data["calibration_score"] == 0.0  # but means "no data"
 
-    # Case 2: real overclaiming — assertions present, none grounded
+    # Case 2: real overclaiming - assertions present, none grounded
     overclaim = epistemic_calibration(
         "The system clearly always must definitively work without exception.",
         "Brief unrelated source content.",
@@ -159,7 +159,7 @@ def test_ground_2_sourced_title_case_entity_grounds() -> None:
 
 def test_ground_2_requires_multi_word_capitalised() -> None:
     """Single Title Case word does NOT trigger ground 2 (pattern requires
-    ``[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)+`` — at least two Title Case words).
+    ``[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)+`` - at least two Title Case words).
     """
     # Single Title Case word in source: NOT enough for ground 2
     text = "Performance must always improve through xyzzy methods absolutely."
@@ -195,7 +195,7 @@ def test_ground_3_uses_substring_match_vault_faithful() -> None:
     # (>0.5 threshold), Ground 3 fires.
     text = "Performance must always improve catalog methods comprehensively today."
     # source has 'catalog' (matches 'catalog'), 'methods' (matches 'methods'),
-    # 'comprehensively' (matches), 'today' (matches) — 4 of 5 content words
+    # 'comprehensively' (matches), 'today' (matches) - 4 of 5 content words
     # match substrings → vocab_score > 0.5 → grounded
     src = "The catalog covered methods comprehensively across all teams today."
     result = epistemic_calibration(text, src)
@@ -343,7 +343,7 @@ def test_multiple_markers_in_sentence_count_as_one() -> None:
     """Each sentence is counted once regardless of how many assertion
     markers it contains.
     """
-    # Sentence has 'must', 'always', 'clearly', 'definitively' — 4 markers
+    # Sentence has 'must', 'always', 'clearly', 'definitively' - 4 markers
     text = "It must always clearly work definitively in production today."
     result = epistemic_calibration(text, "")
     # One sentence → one assertion (not four)
