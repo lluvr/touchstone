@@ -471,5 +471,3 @@ Sections requiring operator-authored finalization:
 - Section 12 (References — add EXP citations and AIRP coupling)
 - Appendix A (Worked examples)
 - Appendix B (FAQ)
-
-The 12-week drafting target aligns with completion of the operator-authored sections.

@@ -153,7 +153,7 @@ Resolution is one of:
 - **Deferred.** The proposal is closed but tagged for later reconsideration. Common reasons: dependency on other in-progress work, or the proposal is good but lacks priority.
 - **Withdrawn.** The champion closes the proposal voluntarily.
 
-Resolution is by editor body consensus. If editors disagree, the founder casts the deciding vote until governance evolution (Year 3+) replaces this with community-confirmed editor selection per the Standard.
+Resolution is by editor body consensus. Editor selection and tie-breaking follow the governance evolution specified in the Standard.
 
 ---
 
@@ -168,7 +168,7 @@ The editor body is responsible for:
 - Releasing library versions
 - Documenting the project's reasoning record
 
-Editor body composition follows the Standard Section 10 governance evolution timeline. At project initialization, the founder is the sole editor; deputy editors are added by Day 90 and Day 180 of project Year 1.
+Editor body composition follows the Standard Section 10 governance evolution timeline.
 
 ---
 
@@ -182,9 +182,7 @@ The CHANGELOG.md records merged Suggestions in the version entry where they ship
 
 ## Conflict of interest
 
-Editors who have a direct commercial interest in a specific Suggestion (financial, employment, or significant relationship) MUST disclose the conflict and recuse from reviewing or voting on that Suggestion. Recusal is documented in the pull request thread.
-
-The founder's commercial vehicles (consulting, AIRP Substack) are public. Suggestions that affect those vehicles directly trigger founder recusal until alternative editors review.
+Editors who have a commercial interest that could be affected by a Suggestion MUST disclose the interest and recuse from reviewing or voting on that Suggestion. Recusal is documented in the pull request thread.
 
 ---
 
