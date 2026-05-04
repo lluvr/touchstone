@@ -4,9 +4,14 @@ title: "Touchstone"
 abstract: >
   Touchstone is a model-independent verification methodology and reference
   implementation for AI-coupled work. The Standard defines eleven measurement
-  layers for output profiling and five layers for specification compliance
-  verification, all designed to operate without depending on AI models to
-  judge AI outputs. The library is the canonical reference implementation.
+  layers for output profiling (Section 5) and five layers for specification
+  compliance verification (Section 6), all designed to operate without
+  depending on AI models to judge AI outputs. The library is the canonical
+  reference implementation; v0.1 ships Section 5 measurement only,
+  empirically validated against the published EXP-081 adversarial-validity
+  finding (Cohen's d=-5.43 reproduction) and the EXP-095 grounding
+  decomposition corpus. Section 6 (Specification Compliance) is reserved
+  for a future release.
 type: software
 authors:
   - name: "Clarethium"
