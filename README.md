@@ -151,7 +151,7 @@ Both benchmarks pin a dated JSON snapshot via byte-match pytest assertion. CI ca
 
 - AI integrity research and benchmarking
 - Internal AI quality verification at organizations
-- Substrate enforcement for AI-coupled work platforms (used by [FieldReceipts](https://fieldreceipts.com))
+- Substrate enforcement for AI-coupled work platforms
 - Independent third-party verification of AI vendor claims
 - Educational use in AI methodology courses
 
@@ -166,9 +166,8 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 
 ## Related
 
-- [Clarethium](https://clarethium.com) — methodology umbrella, mothership
+- [Clarethium](https://blog.clarethium.com) — methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) — applied tool for frame validation
-- [FieldReceipts](https://fieldreceipts.com) — community platform using Touchstone substrate
 - Documentation: https://touchstone.clarethium.com
 
 ## Contributing
