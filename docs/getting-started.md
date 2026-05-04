@@ -206,5 +206,3 @@ CI catches silent regression on any change affecting per-doc predictions.
 - Read [CONTRIBUTING.md](../CONTRIBUTING.md) if you want to contribute
 - Watch the [GitHub repository](https://github.com/Clarethium/touchstone)
   for updates
-- Watch [FieldReceipts](https://fieldreceipts.com) for the community platform
-  built on Touchstone
