@@ -184,7 +184,7 @@ The CHANGELOG.md records merged Suggestions in the version entry where they ship
 
 Editors who have a direct commercial interest in a specific Suggestion (financial, employment, or significant relationship) MUST disclose the conflict and recuse from reviewing or voting on that Suggestion. Recusal is documented in the pull request thread.
 
-The founder's commercial vehicles (consulting, AIRP Substack, FieldReceipts cooperative future) are public. Suggestions that affect those vehicles directly trigger founder recusal until alternative editors review.
+The founder's commercial vehicles (consulting, AIRP Substack) are public. Suggestions that affect those vehicles directly trigger founder recusal until alternative editors review.
 
 ---
 

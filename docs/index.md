@@ -62,7 +62,7 @@ See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full speci
 
 - AI integrity research and benchmarking
 - Internal AI quality verification at organizations
-- Substrate enforcement for AI-coupled work platforms (used by FieldReceipts)
+- Substrate enforcement for AI-coupled work platforms
 - Independent third-party verification of AI vendor claims
 - Educational use in AI methodology courses
 
@@ -70,7 +70,6 @@ See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full speci
 
 - [Clarethium](https://clarethium.com) — methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) — applied tool for frame validation
-- [FieldReceipts](https://fieldreceipts.com) — community platform using Touchstone substrate
 
 ## Status
 

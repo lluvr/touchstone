@@ -55,7 +55,7 @@ This Standard targets:
 - Researchers studying AI output quality and methodology
 - Auditors and compliance professionals working with AI-generated work
 - Educational institutions teaching AI methodology
-- Platforms hosting AI-coupled work (such as FieldReceipts)
+- Platforms hosting AI-coupled work
 
 ### 1.5 Status of this document
 
@@ -472,4 +472,4 @@ Sections requiring operator-authored finalization:
 - Appendix A (Worked examples)
 - Appendix B (FAQ)
 
-The 12-week drafting target from FieldReceipts strategy aligns with completion of the operator-authored sections.
+The 12-week drafting target aligns with completion of the operator-authored sections.
