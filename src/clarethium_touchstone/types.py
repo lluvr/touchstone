@@ -55,21 +55,28 @@ class TemporalInstability(TypedDict):
     versions_compared: int
 
 
-class UnsourcedNumber(TypedDict, total=False):
-    """A digit-formatted number from the output not found in the source.
-
-    Contains the literal value, the recognised type (percentage, dollar,
-    multiplier, integer, decimal), and a short context window from the
-    output to aid debugging and review.
-
-    The ``currency`` field is populated for ``dollar``-type numbers and
-    holds the matched currency symbol (one of ``$ € £ ¥ ₹``). It is
-    absent on non-currency types.
-    """
+class _UnsourcedNumberBase(TypedDict):
+    """Required fields for UnsourcedNumber (always populated)."""
 
     value: str
     type: str
     context: str
+
+
+class UnsourcedNumber(_UnsourcedNumberBase, total=False):
+    """A digit-formatted number from the output not found in the source.
+
+    Required fields (always populated): ``value``, ``type``, ``context``.
+
+    Optional ``currency`` field populated for ``dollar``-type numbers,
+    holding the matched currency symbol (one of ``$ € £ ¥ ₹``).
+    Absent on non-currency types.
+
+    The base/extension split (3.10-compatible alternative to
+    ``NotRequired``) keeps the required fields enforced by type checkers
+    while allowing currency to be conditionally present.
+    """
+
     currency: str
 
 
