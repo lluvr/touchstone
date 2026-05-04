@@ -24,7 +24,10 @@ In scope:
 Out of scope:
 
 - Library behavior on adversarial AI outputs designed to evade structural detection. The Standard documents known gaming vectors (Section 9 of the methodology); evasion of structural detection by design is a research problem, not a security vulnerability.
-- Third-party AI tools or APIs the library integrates with (e.g., Gemini for Layer 1a)
+- Third-party LLM clients the user supplies via the
+  ``BaselineGenerator`` callable for Layer 1a. The library imports no
+  specific provider SDK; security of the user-supplied client is the
+  user's responsibility.
 - Misuse of the library for purposes outside its intended scope
 
 ## Supported versions
@@ -35,7 +38,12 @@ Post-1.0: the latest minor version on each supported major version is supported.
 
 ## Security model
 
-The library is designed to operate offline (Layers 1b, 1c, 2-7, 9, 10, 11) without making network requests. Optional Gemini integration (Layer 1a, semantic alignment Layer 5) makes outbound API calls only when explicitly enabled.
+The library is designed to operate offline. All eleven measurement layers
+in v0.1 run without making any network requests EXCEPT Layer 1a (heading
+defaultness), which only runs when the caller supplies both a ``topic``
+argument AND a ``BaselineGenerator`` callable. The library imports no
+specific provider SDK; the network call (if any) happens inside the
+caller-supplied callable.
 
 The library does not handle authentication, secrets, or persistent storage. Users are responsible for securing API keys and managing data the library processes.
 

@@ -15,7 +15,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Pre-launch on PyPI; reference implementation is feature-complete on `main`. All eleven measurement layers from Standard 1.0 are implemented and tested (365 tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12, build distribution). Two reproducible validation benchmarks ship with the source; results are reproducible by anyone who clones the repo.
+Pre-launch on PyPI; reference implementation is feature-complete on `main`. All eleven measurement layers from Standard 1.0 are implemented and tested (375 tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12, build distribution). Two reproducible validation benchmarks ship with the source; results are reproducible by anyone who clones the repo.
 
 PyPI organization application pending approval. Until then, install from source:
 

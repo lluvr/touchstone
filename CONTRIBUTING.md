@@ -25,7 +25,7 @@ mypy src
 
 ## Proposing changes to the Standard
 
-Changes to the Standard go through the Suggestion process (modeled on Python Enhancement Proposals and Bitcoin Improvement Proposals). The process document will live at `SUGGESTIONS/PROCESS.md` once ratified.
+Changes to the Standard go through the Suggestion process (modeled on Python Enhancement Proposals and Bitcoin Improvement Proposals). The process is documented at [`SUGGESTIONS/PROCESS.md`](SUGGESTIONS/PROCESS.md).
 
 In the interim, propose Standard changes by:
 
@@ -92,7 +92,9 @@ The library's value depends on being correct. Specifically:
 - All public functions MUST have unit tests
 - The reference test suite under `tests/reference/` (when populated) is versioned with the Standard; do not modify it without a corresponding Standard change
 - Synthetic edge cases SHOULD have tests
-- Integration tests SHOULD verify combined `profile()` behavior
+- Cross-layer integration tests SHOULD verify behaviour across the
+  measurement layers that share helpers (see `tests/test_cross_layer.py`)
+  and the empirical-validation benchmarks under `benchmarks/`.
 
 ## Conduct
 
@@ -102,7 +104,7 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for the full Contributor Code of Co
 
 ## Recognition
 
-Contributors are acknowledged in the changelog and on the Touchstone documentation site once it exists. Substantial contributions to the Standard receive co-author recognition where appropriate per editor body discretion.
+Contributors are acknowledged in the changelog and on the Touchstone [documentation site](https://touchstone.clarethium.com). Substantial contributions to the Standard receive co-author recognition where appropriate per editor body discretion.
 
 ## Questions
 
