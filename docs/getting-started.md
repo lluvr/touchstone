@@ -48,7 +48,7 @@ source = "Revenue grew 12% to $143M with 25% margins."
 result = measure(text, source=source)
 
 # Layer 4: number provenance
-result["source_matching"]["unsourced_rate"]   # 0.0 — every number in source
+result["source_matching"]["unsourced_rate"]   # 0.0 - every number in source
 
 # Layer 11: per-sentence Grounded / Framed / Projected decomposition
 result["grounding_decomposition"]["proportions"]   # {"G": 1.0, "F": 0.0, "P": 0.0}
@@ -116,7 +116,7 @@ Boundaries are validated against the EXP-095 Monte Carlo data:
 | Source unique numbers | Regime | Primary P-signal |
 |---|---|---|
 | < 5 | diagnostic | Reliable |
-| 5–9 | transition | Cross-reference Layer 4 |
+| 5-9 | transition | Cross-reference Layer 4 |
 | ≥ 10 | saturated | Trust Layer 4 for numerical fabrication |
 
 The same dict is returned as `result["grounding_decomposition"]["scope_assessment"]`
@@ -175,7 +175,7 @@ The most common interpretive defaults:
 - `quality_profile.gap > 0.0` indicates overclaiming risk (presentation
   exceeds substance)
 - `scope_assessment.derivation_regime == "saturated"` indicates Layer 11's
-  primary number-based P signal is unreliable on this source — trust Layer 4
+  primary number-based P signal is unreliable on this source - trust Layer 4
   instead
 
 Adjust thresholds for your domain with documented justification per

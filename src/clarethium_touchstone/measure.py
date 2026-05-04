@@ -601,7 +601,7 @@ def _assertion_ratio(text: str) -> tuple[float, Literal["adequate", "low"]]:
     return round(ratio, 4), precision
 
 
-# Threshold above which the heading set is considered "default" — the
+# Threshold above which the heading set is considered "default" - the
 # fraction of the document's headings whose tokens overlap a corpus of
 # baseline LLM-generated headings on the same topic. Vault-faithful
 # (gate_0 exploratory threshold = 0.40).
@@ -638,7 +638,7 @@ def _compute_heading_defaultness(
     appearing in the union of words from baseline headings (LLM-
     generated outputs on the same topic). A heading "matches the
     baseline" when overlap > 0.5. The returned score is the fraction
-    of doc headings that match — higher = more default.
+    of doc headings that match - higher = more default.
 
     NON-DETERMINISTIC: the generator is typically called at temperature
     > 0 to surface diverse defaults. Repeated calls produce different
@@ -810,7 +810,7 @@ def _split_sentences(text: str) -> list[tuple[str, str, int]]:
     before splitting by sentence boundary, so sentences that wrap
     across line breaks are preserved as a single sentence rather than
     fragmented at the wrap. List items (lines starting with ``-``,
-    ``*``, ``•``, or ``N.``) are processed independently — each item
+    ``*``, ``•``, or ``N.``) are processed independently - each item
     contributes its own paragraph.
 
     Drops sentences shorter than 30 characters. Heading state is
@@ -923,7 +923,7 @@ def temporal_instability(text: str, comparisons: list[str]) -> TemporalInstabili
         comparisons: List of one or more alternative regenerations of
             the same task. May be empty: with no comparisons, every
             number in text is "stable" (appears in all 1 versions),
-            so instability_rate is 0.0 (uninformative — supply at
+            so instability_rate is 0.0 (uninformative - supply at
             least one comparison for a meaningful signal).
 
     Returns:
@@ -1164,15 +1164,15 @@ def entity_provenance(text: str, source: str) -> EntityProvenance:
 
     English-centric patterns; non-English names with non-ASCII
     characters often miss. Substring matching against source is
-    generous (vault-faithful) — see ``_entity_in_source``.
+    generous (vault-faithful) - see ``_entity_in_source``.
 
     Output:
 
-    * ``entity_unsourced_rate`` — fraction of extracted entities not
+    * ``entity_unsourced_rate`` - fraction of extracted entities not
       found in source. ``0.0`` when no entities extract.
-    * ``n_entities`` — total entities extracted (deduplicated).
-    * ``n_unsourced`` — number not found in source.
-    * ``unsourced_entities`` — list of entity values not in source
+    * ``n_entities`` - total entities extracted (deduplicated).
+    * ``n_unsourced`` - number not found in source.
+    * ``unsourced_entities`` - list of entity values not in source
       (strings only; type/context dropped from public output).
     """
     entities = _extract_entities(text)
@@ -1209,14 +1209,14 @@ def vocabulary_proximity(text: str, source: str) -> VocabularyProximity:
     Vault behaviour preserved: word-in-source check is a substring
     match (``w in source_lower``), so a content word ``cat`` is
     considered present if the source contains ``catalog``. This is
-    generous and intentional — surfaces lexical overlap without
+    generous and intentional - surfaces lexical overlap without
     requiring exact tokenisation parity.
 
     Output:
 
-    * ``mean_proximity`` — mean across qualifying sentences. 0.0 when
+    * ``mean_proximity`` - mean across qualifying sentences. 0.0 when
       no sentence qualifies.
-    * ``per_sentence_proximity`` — raw per-sentence scores (rounded to
+    * ``per_sentence_proximity`` - raw per-sentence scores (rounded to
       3 decimals for storage parity with the mean).
     """
     sentences = _split_sentences_simple(text)
@@ -1315,7 +1315,7 @@ def _tokenize_words(text: str) -> list[str]:
     """Lowercased alphabetic words (with internal apostrophes).
 
     Strips markdown first, then extracts ``[a-zA-Z']+`` runs. Numerical
-    tokens are excluded by design — Layer 7 measures language registers
+    tokens are excluded by design - Layer 7 measures language registers
     and lexical diversity, not numerical content.
     """
     return re.findall(r"[a-zA-Z']+", _strip_markdown(text).lower())
@@ -1364,15 +1364,15 @@ def presentation_features(text: str) -> PresentationFeatures:
 
     Components:
 
-    * ``type_token_ratio`` — unique words / total words. Higher = more
+    * ``type_token_ratio`` - unique words / total words. Higher = more
       lexical diversity.
-    * ``fk_grade`` — Flesch-Kincaid grade level (US schooling years).
+    * ``fk_grade`` - Flesch-Kincaid grade level (US schooling years).
       0.0 for empty input.
-    * ``formatting_density`` — (bold runs + list items + headings) per
+    * ``formatting_density`` - (bold runs + list items + headings) per
       100 words. High values indicate heavy markdown formatting.
-    * ``assertiveness_ratio`` — assertive markers / (assertive +
+    * ``assertiveness_ratio`` - assertive markers / (assertive +
       hedging markers). 0.5 default when neither register fires.
-    * ``named_concept_count`` — count of "Title Case <Concept Noun>"
+    * ``named_concept_count`` - count of "Title Case <Concept Noun>"
       patterns (e.g., "Sunk Cost Fallacy"). Proxy for rhetorical
       authority signalling.
     """
@@ -1480,12 +1480,12 @@ def epistemic_calibration(text: str, source: str) -> EpistemicCalibration:
     (broader set than Layer 1c), checks whether grounding evidence
     exists via three independent paths:
 
-    1. **Sourced number** — sentence contains a digit-formatted number
+    1. **Sourced number** - sentence contains a digit-formatted number
        (Layer 4 extraction) verified present in source.
-    2. **Sourced entity** — sentence contains a Title Case multi-word
+    2. **Sourced entity** - sentence contains a Title Case multi-word
        phrase (e.g., ``Stanford University``) found in source via
        lowercase substring search.
-    3. **High vocabulary overlap** — sentence's content words (Layer 9
+    3. **High vocabulary overlap** - sentence's content words (Layer 9
        extraction) have >50% substring presence in source.
 
     A sentence with at least one ground is GROUNDED; otherwise it is
@@ -1494,7 +1494,7 @@ def epistemic_calibration(text: str, source: str) -> EpistemicCalibration:
 
     The expanded assertion set (v1.3 calibration-only) catches phrases
     like "it is clear that", "indisputable", "conclusively",
-    "definitive(ly)", "inevitable", "demonstrates that" — vault-faithful
+    "definitive(ly)", "inevitable", "demonstrates that" - vault-faithful
     augmentation that Layer 1c's structural ratio omits to preserve
     validated reference distributions.
 
@@ -1608,12 +1608,12 @@ def information_novelty(text: str) -> InformationNovelty:
 
     Output:
 
-    * ``mean_novelty`` — mean per-sentence novelty (0 to 1)
-    * ``repetition_rate`` — fraction of sentences with novelty < 0.2
-    * ``decay`` — OLS slope of novelty over sentence position. Negative
+    * ``mean_novelty`` - mean per-sentence novelty (0 to 1)
+    * ``repetition_rate`` - fraction of sentences with novelty < 0.2
+    * ``decay`` - OLS slope of novelty over sentence position. Negative
       decay is natural; steep negative + high repetition = padding.
-    * ``q1_novelty`` — mean novelty of the first quarter of sentences
-    * ``q4_novelty`` — mean novelty of the last quarter of sentences
+    * ``q1_novelty`` - mean novelty of the first quarter of sentences
+    * ``q4_novelty`` - mean novelty of the last quarter of sentences
 
     All fields are 0.0 for input with no qualifying sentences.
     """
@@ -1705,9 +1705,9 @@ def quality_profile(
 
     Presentation components (always available):
 
-    * ``assertiveness`` — Layer 7 assertiveness_ratio
-    * ``formatting_intensity`` — Layer 7 formatting_density / 3, capped at 1.0
-    * ``vocabulary_diversity`` — Layer 7 type_token_ratio
+    * ``assertiveness`` - Layer 7 assertiveness_ratio
+    * ``formatting_intensity`` - Layer 7 formatting_density / 3, capped at 1.0
+    * ``vocabulary_diversity`` - Layer 7 type_token_ratio
     * (structural_effort from Layer 1a heading_defaultness reserved
       until the LLM-API integration is wired)
 
@@ -1853,7 +1853,7 @@ def assess_derivation_regime(source_num_count: int) -> ScopeAssessment:
     * ``diagnostic`` (< 5 source numbers): primary unsourced_numbers
       signal is reliable.
     * ``transition`` ([5, 10) source numbers): derivation-checker FPR
-      is 50–97%; cross-reference Layer 4 source_matching for
+      is 50-97%; cross-reference Layer 4 source_matching for
       numerical-fabrication detection.
     * ``saturated`` (≥ 10 source numbers): primary signal is effectively
       disabled; P falls back to secondary signals (external entities,
@@ -1993,7 +1993,7 @@ def _gfp_is_derivable(value: float, source_floats: set[float], tolerance: float 
             if abs(inter - s) > 0.001 and close_tight(inter - s, value):
                 return True
 
-    # Percentage application: (a/100) * b — Revenue * Margin%, Total *
+    # Percentage application: (a/100) * b - Revenue * Margin%, Total *
     # Share%, Base * Rate%. Only percentage-to-decimal intermediates
     # participate in multiplication to avoid larger intermediate sets.
     for a in src:
@@ -2018,9 +2018,9 @@ def grounding_decomposition(
 
     For each sentence, classify the primary information provenance:
 
-    * **G (Grounded)** — restates or mechanically derives from source data.
-    * **F (Framed)** — interprets, evaluates, or assigns significance.
-    * **P (Projected)** — introduces external data, predictions, or
+    * **G (Grounded)** - restates or mechanically derives from source data.
+    * **F (Framed)** - interprets, evaluates, or assigns significance.
+    * **P (Projected)** - introduces external data, predictions, or
       unsourced specifics.
 
     P decision uses three signals:

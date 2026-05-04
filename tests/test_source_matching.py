@@ -365,7 +365,7 @@ def test_known_limitation_cross_scale_false_negative() -> None:
     # Same magnitude (1.5e12), different scale form → currently unsourced
     assert result["n_unsourced"] == 1, (
         "If this test fails because n_unsourced == 0, the magnitude-aware "
-        "matching has been implemented — flip this test to assert match."
+        "matching has been implemented - flip this test to assert match."
     )
 
 

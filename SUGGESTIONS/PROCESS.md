@@ -227,8 +227,8 @@ Copy the appropriate template, fill in the sections, and submit as a pull reques
 
 ## References
 
-- [PEP 1 — PEP Purpose and Guidelines](https://peps.python.org/pep-0001/)
-- [BIP 1 — BIP Purpose and Guidelines](https://github.com/bitcoin/bips/blob/master/bip-0001.mediawiki)
+- [PEP 1 - PEP Purpose and Guidelines](https://peps.python.org/pep-0001/)
+- [BIP 1 - BIP Purpose and Guidelines](https://github.com/bitcoin/bips/blob/master/bip-0001.mediawiki)
 - Standard Section 10 (Versioning and evolution)
 - Standard Section 11 (Conformance)
 

@@ -215,7 +215,7 @@ def test_layer_8_calibration_set_strictly_extends_layer_1c() -> None:
 
 
 # Rich text with adequate-precision numbers (≥10), entities (≥5), assertions
-# (≥5 sentences with calibration markers), and markdown structure — meets
+# (≥5 sentences with calibration markers), and markdown structure - meets
 # every layer's precision/threshold gates.
 _INTEGRATION_TEXT = (
     "## Findings\n\n"

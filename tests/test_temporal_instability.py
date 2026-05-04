@@ -8,7 +8,7 @@ regenerations, classify as stable (in all versions) or unstable
 Construct caveat (Standard Section 5.3 + methodology Construct
 Honesty A): instability is a PROXY for fabrication, not a direct
 measurement. EXP-081c showed ~46% of unstable numbers coincidentally
-match source material — instability overcounts true fabrication.
+match source material - instability overcounts true fabrication.
 Cannot detect stable fabrication (consistently wrong numbers).
 """
 
@@ -117,8 +117,8 @@ def test_one_changed_number_yields_partial_instability() -> None:
     comp = "Revenue grew 12% to $200M."
     result = temporal_instability(text, [comp])
     # All numbers across versions: 12 (percentage), 100 (dollar), 200 (dollar)
-    # Stable: 12 (percentage) — in both versions
-    # Unstable: 100 (dollar), 200 (dollar) — only in one each
+    # Stable: 12 (percentage) - in both versions
+    # Unstable: 100 (dollar), 200 (dollar) - only in one each
     assert result["n_total"] == 3
     assert result["n_unstable"] == 2
     assert result["instability_rate"] == round(2 / 3, 3)

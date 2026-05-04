@@ -250,7 +250,7 @@ def test_short_sentences_are_skipped_not_classified() -> None:
     text = "We will go we will go. The cat the dog the fish."
     result = grounding_decomposition(text, "any source")
     # Both sentences cleaned would be very short (<20 chars after strip)
-    # — the "We will go we will go." cleaned is "We will go we will go" (21 chars)
+    # - the "We will go we will go." cleaned is "We will go we will go" (21 chars)
     # so likely ≥20 → not skipped. Just verify n_sentences <= 2.
     assert 0 <= result["n_sentences"] <= 2
 
@@ -298,9 +298,9 @@ def test_derivation_empty_source_floats_yields_false() -> None:
 def test_derivation_within_tolerance() -> None:
     """The 2% tolerance allows close-but-not-exact matches."""
     src = {100.0, 0.3}
-    # 100 * 0.3 = 30, but our value is 30.5 (1.67% off — within 2%)
+    # 100 * 0.3 = 30, but our value is 30.5 (1.67% off - within 2%)
     assert _gfp_is_derivable(30.5, src)
-    # 31 is 3.3% off — outside 2% tolerance
+    # 31 is 3.3% off - outside 2% tolerance
     assert not _gfp_is_derivable(31.0, src)
 
 

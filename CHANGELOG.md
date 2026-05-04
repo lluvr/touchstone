@@ -28,7 +28,7 @@ proper substrate-quality designs:
 
 Both patches are backward-compatible with USD-only corpora (EXP-081
 benchmark unchanged: Cohen's d=-5.238). EXP-095 output #16 (xAI BLS
-run 3) moved P 0.026 → 0.051 toward manual estimate [0.10, 0.15] —
+run 3) moved P 0.026 → 0.051 toward manual estimate [0.10, 0.15] -
 direct evidence that stricter source-side derivation (now that
 "7.2 million" extracts as 7200000 instead of decimal 7.2) reduces
 the derivation-checker false-positive rate documented in the
@@ -110,7 +110,7 @@ Layers extracted (in order):
 - Layer 3 temporal instability (cross-version number stability across regenerations)
 - Layer 11 grounding decomposition (per-sentence Grounded / Framed / Projected classification with arithmetic-derivation checker)
 - `measure()` orchestrator (composes all 11 layers, returns `MeasureResult` per `types.py`)
-- Layer 1a heading defaultness (vendor-neutral via `BaselineGenerator = Callable[[str], str | None]` — caller supplies their own LLM client)
+- Layer 1a heading defaultness (vendor-neutral via `BaselineGenerator = Callable[[str], str | None]` - caller supplies their own LLM client)
 
 The library is vault-faithful: regex patterns, thresholds, filtering rules, and validation caveats are preserved from the operator's research vault. Vault-faithful surprises are pinned with explicit tests so future drift is visible.
 
@@ -124,9 +124,9 @@ Outstanding before first PyPI release:
 
 Repository created at `Clarethium/touchstone`. Initial structure:
 
-- `README.md` — repository orientation
+- `README.md` - repository orientation
 - `CHANGELOG.md` (this file)
-- `STANDARDS/touchstone-1.0.md` — Touchstone Standard 1.0 (in drafting)
+- `STANDARDS/touchstone-1.0.md` - Touchstone Standard 1.0 (in drafting)
 - Library scaffold (`src/clarethium_touchstone/`) with TypedDicts in `types.py` and stub functions in `measure.py` / `align.py`
 - CI workflow (lint, type check, test matrix, build distribution)
 - Custom domain `touchstone.clarethium.com` via GitHub Pages
@@ -145,7 +145,7 @@ Architecture committed:
 Touchstone Standard follows semantic versioning:
 
 - **Major (1.0 → 2.0):** Breaking changes to required fields, methodology, or thresholds. Existing implementations require updates to remain conformant.
-- **Minor (1.0 → 1.1):** Additive changes — new optional layers, new requirement types, new measurement dimensions. Existing implementations remain conformant for the previous version.
+- **Minor (1.0 → 1.1):** Additive changes - new optional layers, new requirement types, new measurement dimensions. Existing implementations remain conformant for the previous version.
 - **Patch (1.0 → 1.0.1):** Editorial changes, clarifications, typo corrections, expanded examples. No methodology changes.
 
 ## Library versioning policy
@@ -161,5 +161,5 @@ The `clarethium-touchstone` library follows semantic versioning independently:
 
 ## Pending releases
 
-- **Standard 1.0** — drafting in progress (May 2026 target)
-- **`clarethium-touchstone` 0.1.0** — initial library release (Q3 2026 target, dependent on PyPI approval and substrate extraction)
+- **Standard 1.0** - drafting in progress (May 2026 target)
+- **`clarethium-touchstone` 0.1.0** - initial library release (Q3 2026 target, dependent on PyPI approval and substrate extraction)

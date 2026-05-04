@@ -1,9 +1,9 @@
 """Tests for Layer 1 structural profile (Touchstone Standard Section 5.1).
 
 Layer 1 has three sublayers:
-* 1a heading_defaultness — optional, returns None until LLM-API wired
-* 1b mechanism_ratio — causal markers / (causal + buzzword) markers
-* 1c assertion_ratio — fraction of register matches in ASSERTION category
+* 1a heading_defaultness - optional, returns None until LLM-API wired
+* 1b mechanism_ratio - causal markers / (causal + buzzword) markers
+* 1c assertion_ratio - fraction of register matches in ASSERTION category
 """
 
 from __future__ import annotations

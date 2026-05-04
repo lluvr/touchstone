@@ -42,7 +42,7 @@ classifiers = [
 # operate on regex, structural analysis, source matching, and arithmetic.
 # Layer 1a (heading defaultness) accepts a vendor-neutral
 # ``BaselineGenerator`` callable so the user supplies their own LLM
-# client (Gemini, Claude, OpenAI, etc.) — the library imports no
+# client (Gemini, Claude, OpenAI, etc.) - the library imports no
 # specific provider SDK.
 dependencies = []
 

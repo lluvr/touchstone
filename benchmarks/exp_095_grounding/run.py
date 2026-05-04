@@ -76,12 +76,12 @@ def classify_p_agreement(
     """Compare predicted P% to manual baseline.
 
     Returns:
-        "exact" — manual_full present and predicted within ±2pp
-        "close" — manual_full present and predicted within ±5pp
-        "off" — manual_full present and predicted outside ±5pp
-        "in_range" — only manual_p_estimate available and predicted within range
-        "outside_range" — only manual_p_estimate available and predicted outside range
-        "no_baseline" — neither manual signal available (should not occur)
+        "exact" - manual_full present and predicted within ±2pp
+        "close" - manual_full present and predicted within ±5pp
+        "off" - manual_full present and predicted outside ±5pp
+        "in_range" - only manual_p_estimate available and predicted within range
+        "outside_range" - only manual_p_estimate available and predicted outside range
+        "no_baseline" - neither manual signal available (should not occur)
     """
     if manual_full is not None:
         manual_p = manual_full["P"]

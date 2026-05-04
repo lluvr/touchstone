@@ -66,7 +66,7 @@ def test_person_pattern_requires_trigger_prefix() -> None:
     as a Person. The pattern requires 's, 'according to', 'by ', comma,
     em-dash, or period before the name.
     """
-    # Bare "John Smith said" — no triggering prefix
+    # Bare "John Smith said" - no triggering prefix
     no_trigger = _extract_entities("John Smith said it would work.")
     assert not any(e["type"] == "PERSON" for e in no_trigger)
 
@@ -299,7 +299,7 @@ def test_entity_match_is_case_insensitive_both_directions() -> None:
 def test_substring_match_inflates_short_entity_values() -> None:
     """Vault behaviour: entity 'Smith' is grounded by source containing
     'Smithsonian' because Python ``in`` is a substring check, not a
-    word-boundary check. Pinned because this affects interpretation —
+    word-boundary check. Pinned because this affects interpretation -
     short entity values can match unrelated longer words.
     """
     e = {"value": "Smith", "type": "PERSON", "context": ""}
@@ -339,7 +339,7 @@ def test_org_suffix_and_camelcase_coexist() -> None:
     """Vault behaviour: when text contains 'OpenAI Foundation', the ORG
     suffix pattern captures 'OpenAI Foundation' AND the CamelCase
     pattern separately captures 'OpenAI'. Both are stored because the
-    dedup key for CamelCase is ('ORG_CAMEL', value) — distinct from
+    dedup key for CamelCase is ('ORG_CAMEL', value) - distinct from
     ('ORG', 'OpenAI Foundation'). This inflates entity counts when
     CamelCase orgs appear inside larger ORG-suffix phrases.
     """

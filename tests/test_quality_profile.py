@@ -232,7 +232,7 @@ def test_source_fidelity_appears_only_with_adequate_precision_and_source() -> No
 
 
 # Text with ≥5 entities AND ≥10 numbers. Note: vault entity patterns are
-# CASE-SENSITIVE — sentence-start "According to" does not trigger; only
+# CASE-SENSITIVE - sentence-start "According to" does not trigger; only
 # mid-sentence lowercase "according to" / "by" / "per" / "cited by" do.
 ENTITY_RICH_TEXT = (
     "Revenue grew 12% to $143M with 25% margins for the year. "

@@ -8,8 +8,8 @@ A Clarethium project. Standards and reference implementation for measuring AI ou
 
 This repository contains:
 
-- **Touchstone Standard** — the canonical specification (CC-BY 4.0) at `STANDARDS/touchstone-1.0.md`
-- **`clarethium-touchstone`** — Python reference implementation (Apache 2.0)
+- **Touchstone Standard** - the canonical specification (CC-BY 4.0) at `STANDARDS/touchstone-1.0.md`
+- **`clarethium-touchstone`** - Python reference implementation (Apache 2.0)
 
 The Standard defines the methodology. The library implements it. Other implementations conforming to the Standard are welcome.
 
@@ -36,7 +36,7 @@ source = "Revenue grew 12% to $143M with 25% margins."
 result = measure(text, source=source)
 
 # Layer 4: number provenance
-result["source_matching"]["unsourced_rate"]   # 0.0 — every number in source
+result["source_matching"]["unsourced_rate"]   # 0.0 - every number in source
 
 # Layer 11: per-sentence Grounded / Framed / Projected decomposition
 result["grounding_decomposition"]["proportions"]   # {"G": 1.0, "F": 0.0, "P": 0.0}
@@ -56,7 +56,7 @@ text = (
 
 result = measure(text, source=text)
 result["quality_profile"]["substance_index"]   # 1.0 (self-source, all numbers grounded)
-result["quality_profile"]["gap"]               # negative — substance exceeds presentation
+result["quality_profile"]["gap"]               # negative - substance exceeds presentation
 result["quality_profile"]["components_available"]  # ["source_fidelity", "assertiveness", ...]
 ```
 
@@ -120,7 +120,7 @@ Two reproducible benchmarks ship in `benchmarks/`. Anyone with a repo clone can 
 
 ### EXP-081 adversarial discrimination
 
-The methodology's core claim — that the composed `quality_profile` gap signal discriminates faithful AI outputs from embellished ones — is testable. The original EXP-081 paper measured this on a 12-document corpus and reported **Cohen's d = -5.43** (CI [-9.077, -4.681]).
+The methodology's core claim - that the composed `quality_profile` gap signal discriminates faithful AI outputs from embellished ones - is testable. The original EXP-081 paper measured this on a 12-document corpus and reported **Cohen's d = -5.43** (CI [-9.077, -4.681]).
 
 Touchstone reproduces this with **d = -5.238** on the same corpus:
 
@@ -138,10 +138,10 @@ End-to-end empirical evidence that Layers 4, 5, 7, 8 composed via Layer 10 (`qua
 
 Layer 11 (`grounding_decomposition`) classifies each sentence as Grounded / Framed / Projected. Validated against 13 hand-classified outputs across 3 source documents and 3 model families:
 
-- **P-direction agreement: 100%** — Touchstone never disagrees with manual classification on whether projected content (P) exists in an output
-- **MAE vs documented detector v0.3.1: 0.02–0.04 across G/F/P categories** in aggregate
+- **P-direction agreement: 100%** - Touchstone never disagrees with manual classification on whether projected content (P) exists in an output
+- **MAE vs documented detector v0.3.1: 0.02-0.04 across G/F/P categories** in aggregate
 
-Per-output drift between Touchstone and published `detector_v031` figures is documented honestly in `benchmarks/exp_095_grounding/README.md` — including a known case where the v1.4.1 derivation fix doesn't fully reproduce in current implementation.
+Per-output drift between Touchstone and published `detector_v031` figures is documented honestly in `benchmarks/exp_095_grounding/README.md` - including a known case where the v1.4.1 derivation fix doesn't fully reproduce in current implementation.
 
 ### Snapshot drift detection
 
@@ -166,8 +166,8 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 
 ## Related
 
-- [Clarethium](https://blog.clarethium.com) — methodology umbrella, mothership
-- [Frame Check](https://frame.clarethium.com) — applied tool for frame validation
+- [Clarethium](https://blog.clarethium.com) - methodology umbrella, mothership
+- [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
 - Documentation: https://touchstone.clarethium.com
 
 ## Contributing
