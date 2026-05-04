@@ -9,7 +9,7 @@ A Clarethium project. Standards and reference implementation for measuring AI ou
 This repository contains:
 
 - **Touchstone Standard** — the canonical specification (CC-BY 4.0) at `STANDARDS/touchstone-1.0.md`
-- **`clarethium-touchstone`** — Python reference implementation (Apache 2.0 or MIT, pending decision)
+- **`clarethium-touchstone`** — Python reference implementation (Apache 2.0)
 
 The Standard defines the methodology. The library implements it. Other implementations conforming to the Standard are welcome.
 
@@ -162,16 +162,14 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 ## Licensing
 
 - **Standard:** CC-BY 4.0 (content)
-- **Library:** Apache 2.0 (recommended) or MIT (alternative)
-
-Final library license decision pending. Both are permissive open source and allow commercial use.
+- **Library:** Apache 2.0
 
 ## Related
 
 - [Clarethium](https://clarethium.com) — methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) — applied tool for frame validation
 - [FieldReceipts](https://fieldreceipts.com) — community platform using Touchstone substrate
-- Documentation: `https://touchstone.clarethium.com` (coming)
+- Documentation: https://touchstone.clarethium.com
 
 ## Contributing
 
