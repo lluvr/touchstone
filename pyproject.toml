@@ -38,15 +38,15 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-# Core implementation has zero dependencies for Layers 1b, 1c, 2, 3, 4, 5, 6, 7, 9, 10
-# Layer 1a (heading defaultness) requires google-genai for Gemini API
-# Spec compliance Layer 5 (semantic) requires google-genai for embeddings
+# Core implementation is dependency-free. All eleven measurement layers
+# operate on regex, structural analysis, source matching, and arithmetic.
+# Layer 1a (heading defaultness) accepts a vendor-neutral
+# ``BaselineGenerator`` callable so the user supplies their own LLM
+# client (Gemini, Claude, OpenAI, etc.) — the library imports no
+# specific provider SDK.
 dependencies = []
 
 [project.optional-dependencies]
-# Layer 1a heading defaultness baseline generation; Layer 5 semantic alignment embeddings
-gemini = ["google-genai>=1.0"]
-
 # Development tooling
 dev = [
     "pytest>=8.0",
@@ -54,9 +54,6 @@ dev = [
     "ruff>=0.6",
     "mypy>=1.10",
 ]
-
-# All optional features
-all = ["clarethium-touchstone[gemini]"]
 
 [project.urls]
 Homepage = "https://touchstone.clarethium.com"
