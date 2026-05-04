@@ -25,14 +25,14 @@ mypy src
 
 ## Proposing changes to the Standard
 
-Changes to the Standard go through the Suggestion process (modeled on Python Enhancement Proposals and Bitcoin Improvement Proposals). The process is documented at [`SUGGESTIONS/PROCESS.md`](SUGGESTIONS/PROCESS.md).
+Changes to the Standard go through the Suggestion process (modeled on Python Enhancement Proposals and Bitcoin Improvement Proposals). The full process is documented at [`SUGGESTIONS/PROCESS.md`](SUGGESTIONS/PROCESS.md).
 
-In the interim, propose Standard changes by:
+The basic flow:
 
 1. Opening an issue describing the proposed change and its motivation.
 2. Discussing in the issue thread until the change is well-scoped.
 3. Opening a pull request against `STANDARDS/touchstone-1.0.md` with the specific edit and reasoning.
-4. The pull request is reviewed by named editors.
+4. The pull request is reviewed by the editor body.
 
 Standard changes follow semantic versioning per Section 10. Major changes (breaking) require version bumps; additive changes are minor.
 

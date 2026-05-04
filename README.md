@@ -172,7 +172,7 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 
 ## Contributing
 
-Pre-launch. Contribution process documented after Standard 1.0 is published. Watch this repo for updates.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard changes follow the [Suggestion workflow](SUGGESTIONS/PROCESS.md) modeled on PEP-1 and BIP-1.
 
 ## Citation
 
