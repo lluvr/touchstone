@@ -2,7 +2,7 @@
 
 Model-independent verification for AI-coupled work.
 
-A Clarethium project. Standards and reference implementation for measuring AI output structure, fabrication, grounding, and specification compliance without depending on a model to judge a model.
+A Clarethium project. Standards and reference implementation for measuring AI output structure, fabrication, grounding, and (in a future release) specification compliance without depending on a model to judge a model.
 
 ## Start here
 
@@ -35,7 +35,10 @@ This matters when the auditor cannot be made of the same material as the audited
 | 10 | Quality profile (composite) | Optional |
 | 11 | Grounding decomposition (G/F/P) | Yes |
 
-**Specification compliance verification (five layers):**
+**Specification compliance verification (five layers, Standard Section 6):**
+
+Defined in the Standard but not in v0.1 of the library. The `align()` API
+is reserved for a future release.
 
 | Layer | Construct |
 |-------|-----------|
@@ -71,9 +74,17 @@ See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full speci
 
 ## Status
 
-Pre-launch. Standard 1.0 drafting in progress. Library extraction in progress. PyPI organization pending approval.
+Pre-launch on PyPI; reference implementation feature-complete on `main`.
+All eleven Section 5 measurement layers implemented and tested (375
+tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12,
+build distribution). Two reproducible validation benchmarks
+(`benchmarks/`) — Touchstone reproduces the published EXP-081 Cohen's
+d = -5.43 with d = -5.238 on the same corpus.
 
-Expected first release: Q3 2026.
+Section 6 (Specification Compliance) is reserved for a future release.
+
+PyPI organization application pending approval; until then install
+from source per the [Getting started](getting-started.md) guide.
 
 ## License
 
