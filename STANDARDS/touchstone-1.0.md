@@ -301,10 +301,12 @@ A conforming implementation MAY:
 
 The Standard's reference implementation has been validated on:
 - Markdown analytical documents (strategic analysis, product specifications, research summaries, code documentation)
-- Generators: Anthropic, Gemini, OpenAI, xAI/Grok families
+- Generators: fast-tier model variants from Anthropic, Gemini, OpenAI, and xAI/Grok families. Construct generalization to flagship-tier model outputs is open research; signal may attenuate when stronger models reject the embellishment prompt or produce sophisticated content not tripped by the simpler signals.
 - English language
 
 Use outside this validated scope is explicitly OUT-OF-SCOPE for the Standard at version 1.0; conforming implementations MAY claim extended scope with documented validation.
+
+> **Operator finalization required.** Confirm or refine the fast-tier qualifier and flagship-tier caveat phrasing above. The qualifier is load-bearing for honest scope claim against future flagship-model corpora.
 
 ### 9.3 Versioning of conformance claims
 
