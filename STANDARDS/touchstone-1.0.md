@@ -343,20 +343,13 @@ Field positioning context (related approaches and their distinctions):
 
 ## Appendix A: Worked examples
 
-> **Operator finalization required.** Include 3-5 worked examples covering high-quality output passing all layers, output with detected fabrication, output with poor source grounding, spec compliance success and failure cases, edge cases requiring threshold adjustment.
+> **Reserved for Standard 1.1.** Worked examples (high-quality output passing all layers; output with detected fabrication; output with poor source grounding; edge cases requiring threshold adjustment) are deferred to Standard 1.1, to be authored from corpus material rather than synthesised in advance.
 
 ---
 
 ## Appendix B: FAQ
 
-> **Operator finalization required.** Anticipated questions to address:
-> - How does this differ from LLM-as-judge approaches?
-> - How does this differ from C2PA Content Credentials?
-> - Can Touchstone be used with structured outputs (JSON, markup)?
-> - What about non-English text?
-> - What if my use case requires custom thresholds?
-> - How do I report discrepancies in my implementation against reference test cases?
-> - What is the relationship between Touchstone Standard and the `clarethium-touchstone` library?
+> **Reserved for Standard 1.1.** Frequently-asked questions are deferred to Standard 1.1, to be authored from real implementer questions surfaced after Standard 1.0 release rather than from anticipated questions in advance.
 
 ---
 
