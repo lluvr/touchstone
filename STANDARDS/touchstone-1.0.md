@@ -10,7 +10,7 @@
 
 ## Abstract
 
-Touchstone Standard defines a model-independent methodology for verifying the structural quality, source grounding, fabrication characteristics, and specification compliance of AI-coupled work outputs. The Standard specifies eleven measurement layers for output profiling, five layers for specification compliance verification, calibration discipline, threshold conventions, and conformance requirements. Of the eleven measurement layers, ten use deterministic regex pattern matching, string analysis, and arithmetic; one uses optional LLM API for baseline generation. The Standard does not depend on AI models judging AI outputs.
+Touchstone Standard defines a model-independent methodology for verifying the structural quality, source grounding, and fabrication characteristics of AI-coupled work outputs. The Standard specifies eleven measurement layers for output profiling, calibration discipline, threshold conventions, and conformance requirements. Of the eleven measurement layers, ten use deterministic regex pattern matching, string analysis, and arithmetic; one uses optional LLM API for baseline generation. The Standard does not depend on AI models judging AI outputs. Specification compliance verification is reserved for Standard 1.1.
 
 ---
 
@@ -18,20 +18,19 @@ Touchstone Standard defines a model-independent methodology for verifying the st
 
 ### 1.1 Purpose
 
-The Standard provides a verifiable methodology for measuring AI-coupled work. Two complementary functions are defined:
+The Standard provides a verifiable methodology for measuring AI-coupled work. The Standard defines:
 
 - **Output measurement** (Section 5): profiling structural quality, claim density, source grounding, fabrication characteristics, presentation features, and grounding decomposition of AI-generated text against optional source material.
-- **Specification compliance verification** (Section 6): extracting requirements from a written specification and verifying that an output addresses them.
 
-Both functions are designed to operate without depending on a separate AI model to judge correctness. The Standard rests on the principle that an auditor cannot be made of the same material as the audited; AI evaluating AI inherits structural conflicts of interest.
+Output measurement is designed to operate without depending on a separate AI model to judge correctness. The Standard rests on the principle that an auditor cannot be made of the same material as the audited; AI evaluating AI inherits structural conflicts of interest.
+
+Specification compliance verification (extracting requirements from a written specification and verifying that an output addresses them) is reserved for Standard 1.1.
 
 ### 1.2 Scope
 
 The Standard covers:
 
 - Eleven measurement layers for output profiling (Section 5)
-- Five layers of specification compliance verification (Section 6)
-- Eight requirement types for spec extraction (Section 6.4)
 - Threshold values and calibration discipline (Section 7)
 - Reference test cases for implementation validation (Section 8)
 - Versioning and conformance rules (Sections 10-11)
@@ -196,65 +195,7 @@ When a document includes an explicit prohibition recommendation (e.g., "do not p
 
 ## 6. Specification compliance verification
 
-The Standard defines five layers of specification compliance verification. Implementations MUST implement Layers 1-4 to be conforming. Layer 5 is OPTIONAL.
-
-### 6.1 Layer 1: Requirement extraction
-
-REQUIRED. Extracts discrete requirements from a written specification using regex patterns for: lists, bullets, parenthetical labels (such as "(A1)..(A5)"), imperatives, constraints, format markers, structural labels.
-
-Each extracted requirement MUST be classified by type per Section 6.4.
-
-### 6.2 Layer 2: Coverage mapping
-
-REQUIRED. For each extracted requirement, verifies output coverage using type-routed verification:
-
-- TOPIC and IMPERATIVE: keyword overlap (with optional semantic upgrade per Layer 5)
-- CONSTRAINT: dedicated constraint checker (negation and limit detection)
-- FORMAT: format checker (structure detection)
-- STRUCTURAL_LABEL: regex counting against expected labels
-- QUALITY_CRITERION, META_INSTRUCTION, BEHAVIORAL: reported as unverifiable; not scored as coverage
-
-Coverage decomposition MUST be reported as separate rates:
-- `concrete_coverage_rate`: TOPIC + IMPERATIVE coverage
-- `structural_compliance_rate`: STRUCTURAL_LABEL coverage
-- `n_unverifiable`: count of requirements that cannot be automatically verified
-
-A single inflated `coverage_rate` MUST NOT be used as the primary reported metric.
-
-### 6.3 Layer 3: Scope drift
-
-REQUIRED. Identifies output content not traceable to spec via section-level keyword absence. With Layer 5 enabled, embedding similarity upgrades drift assessment via cascade with default thresholds 0.60 (paraphrase recovery) and 0.55 (drift confirmation).
-
-### 6.4 Requirement types
-
-Eight requirement types are recognized:
-
-| Type | Description | Verifier | Semantic upgrade eligible |
-|------|-------------|----------|---------------------------|
-| TOPIC | Content area requirement | Keyword overlap | Yes |
-| IMPERATIVE | Must-do action requirement | Keyword overlap | Yes |
-| CONSTRAINT | Boundary condition (negation/limit) | Constraint checker | No |
-| FORMAT | Format requirement (structure) | Format checker | No |
-| STRUCTURAL_LABEL | Labeled section requirement | Regex counting | No |
-| QUALITY_CRITERION | Quality threshold (abstract) | Unverifiable; reported only | No |
-| META_INSTRUCTION | Instruction-about-instruction | Unverifiable; reported only | No |
-| BEHAVIORAL | Behavioral pattern (abstract) | Unverifiable; keyword overlap if attempted | No |
-
-Only TOPIC and IMPERATIVE requirements are eligible for semantic upgrade in Layer 5. Abstract types (QUALITY_CRITERION, META_INSTRUCTION, BEHAVIORAL) MUST NOT receive semantic upgrades; embedding similarity to any same-topic content is unfalsifiable for these types.
-
-### 6.5 Layer 4: Emphasis balance
-
-REQUIRED. Computes Spearman rank correlation between output word allocation per requirement and spec ordering. Measures distribution alignment, not importance weighting.
-
-### 6.6 Layer 5: Semantic coverage (opt-in)
-
-OPTIONAL. Uses embedding similarity for synonym paraphrase recovery on TOPIC and IMPERATIVE requirements only. Cascade architecture: lexical pass first; MISSING or PARTIAL results upgraded only if eligible by type. ADDRESSED results checked for substance via causal/data marker density.
-
-Implementations using Layer 5 MUST:
-- Restrict semantic upgrades to TOPIC and IMPERATIVE types
-- Document the embedding model used
-- Provide graceful fallback to lexical-only if embedding service unavailable
-- Flag substance warnings when keyword presence lacks supporting density
+> **Reserved for Standard 1.1.** Verification of output coverage against a written specification (requirement extraction, type-routed coverage mapping, scope drift detection, emphasis balance, optional semantic alignment) is deferred to Standard 1.1. Reference implementation `clarethium-touchstone` v0.1 implements Section 5 only; the canonical research substrate for this section lives in the operator's vault as `clarethium_align.py` and is not yet packaged for release.
 
 ---
 
@@ -326,7 +267,6 @@ A conforming implementation MUST:
 
 - Implement Layers 1, 1b, 1c, 2, 3, 4, 5, 6, 7, 10 of output measurement (Section 5)
 - Implement Layer 11 when source material is provided
-- Implement Layers 1-4 of specification compliance (Section 6)
 - Use threshold values from Section 7 as defaults
 - Pass all reference test cases (Section 8)
 - Document any threshold adjustments
@@ -336,7 +276,6 @@ A conforming implementation MAY:
 
 - Implement Layer 1a (heading defaultness, requires LLM API)
 - Implement Layers 8-9 (experimental in v1.0)
-- Implement Layer 5 of specification compliance (semantic alignment)
 - Add additional measurement layers as documented extensions
 - Optimize for specific use cases with documented adjustments
 
@@ -438,14 +377,6 @@ Field positioning context (related approaches and their distinctions):
 | 9 Information novelty | Implemented; experimental v1.3; length-confounded |
 | 10 Quality profile | Implemented; validated across 4 studies |
 | 11 G/F/P decomposition | Implemented v1.4; 19 tests passing |
-
-| Spec Compliance Layer | Status in `clarethium-touchstone` v0.x |
-|-----------------------|----------------------------------------|
-| 1 Requirement extraction | Implemented; 8-type classification |
-| 2 Coverage mapping | Implemented with type-routed verification |
-| 3 Scope drift | Implemented; bidirectional |
-| 4 Emphasis balance | Implemented; Spearman rank correlation |
-| 5 Semantic coverage | Implemented; opt-in; embedding-based |
 
 ---
 
