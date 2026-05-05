@@ -240,16 +240,40 @@ Layers 5, 7, and 9 do not carry normative pass/fail thresholds at Standard 1.0: 
 
 ## 8. Reference test cases
 
-> **Operator finalization required.** Specify canonical reference test suite for compliance.
+> **Operator finalization required.** Confirm conformance bands in §8.1 and §8.2 below; author normative framing for what the conformance test asserts (reproduction on the packaged corpus vs construct generalization to other corpora) and the fast-tier-corpus caveat (signal validated on fast-tier model outputs; flagship-tier construct generalization is open research). A minimal conformance subset extracted into `tests/conformance/` is reserved for Standard 1.0.1.
 
-The reference implementation `clarethium-touchstone` includes:
-- 171 tests for output measurement (Layer 1-10)
-- 19 additional tests for Layer 11 (G/F/P decomposition)
-- 148 self-tests for specification compliance verification
-- Cross-domain validation across product specifications, research summaries, code documentation
-- Cross-generator validation across at least three model families (Anthropic, Gemini, OpenAI/xAI)
+For v1.0, reference test cases are the published reproducibility benchmarks at `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`. Both are byte-pinned via pytest snapshot assertion in the reference implementation's CI. Implementations claiming conformance MUST pass the bands declared at the Standard version they implement.
 
-For v1.0 ratification, a minimal compliance test suite MUST be extracted into `tests/reference/` and versioned with the Standard. Implementations claiming conformance MUST pass all reference test cases at the Standard version they implement.
+### 8.1 EXP-081 adversarial discrimination
+
+- Path: `benchmarks/exp_081_discrimination/`
+- Corpus: 12 documents (faithful N=6, embellished N=6); fast-tier model variants from Anthropic, Gemini, OpenAI, and xAI/Grok families
+- Reference result: Cohen's d = -5.238 vs published d = -5.43 (CI [-9.077, -4.681])
+- Reference per-output MAE: unsourced_rate 0.014, gap 0.010, substance 0.010, presentation 0.000
+- Per-output gap-direction agreement: 100% (12/12)
+
+Conformance bands (corpus-bound, proposed):
+
+| Measurement | Required band |
+|-------------|---------------|
+| Cohen's d on packaged corpus | -5.238 ± 0.5 |
+| Per-output gap-direction agreement | 100% (12/12) |
+| Per-output MAE: unsourced_rate | ≤ 0.05 |
+| Per-output MAE: gap | ≤ 0.05 |
+| Per-output MAE: substance | ≤ 0.05 |
+
+### 8.2 EXP-095 grounding decomposition
+
+- Path: `benchmarks/exp_095_grounding/`
+- Corpus: 13 hand-classified outputs; 3 source documents; 3 model families
+- Reference result: P-direction agreement on existence (P>0 vs P=0) is 100% (13/13); aggregate MAE vs detector v0.3.1 is 0.02-0.04 across G/F/P; per-output P-magnitude drift on 4/13 outputs is documented in benchmark README
+
+Conformance bands (corpus-bound, proposed):
+
+| Measurement | Required band |
+|-------------|---------------|
+| P-existence agreement on packaged corpus | 100% (13/13) |
+| Aggregate G/F/P MAE | ≤ 0.10 |
 
 ---
 
