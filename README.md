@@ -2,7 +2,17 @@
 
 Model-independent verification for AI-coupled work.
 
-A Clarethium project. Standards and reference implementation for measuring AI output structure, fabrication, grounding, and spec compliance without depending on a model to judge a model.
+## What this is
+
+Touchstone names the practice of measuring AI outputs without depending on AI to judge AI. It is one of three reference artifacts published by Clarethium:
+
+- **Touchstone** validates work against quality standards.
+- **Lodestone** orients practice.
+- **Whetstone** sharpens craft.
+
+The Touchstone Standard specifies eleven measurement layers for output profiling: structural composition, claim density, source matching, grounding decomposition, and others. Ten of the eleven use deterministic regex, structural analysis, and arithmetic; one uses an optional LLM API for baseline generation only. The methodology rests on the principle that an auditor cannot be made of the same material as the audited.
+
+This is a reference specification plus reference implementation. The Standard is the canonical text. The `clarethium-touchstone` library is the reference Python implementation.
 
 ## What's here
 
@@ -138,7 +148,7 @@ End-to-end empirical evidence that Layers 4, 5, 7, 8 composed via Layer 10 (`qua
 
 Layer 11 (`grounding_decomposition`) classifies each sentence as Grounded / Framed / Projected. Validated against 13 hand-classified outputs across 3 source documents and 3 model families:
 
-- **P-direction agreement: 100%** - Touchstone never disagrees with manual classification on whether projected content (P) exists in an output
+- **P-direction agreement: 100% on existence (P>0 vs P=0)** - Touchstone never disagrees with manual classification on whether projected content exists in an output. Per-output P magnitude differs from manual range on 4/13 outputs; see the per-output table in `benchmarks/exp_095_grounding/README.md` for the magnitude breakdown.
 - **MAE vs documented detector v0.3.1: 0.02-0.04 across G/F/P categories** in aggregate
 
 Per-output drift between Touchstone and published `detector_v031` figures is documented honestly in `benchmarks/exp_095_grounding/README.md` - including a known case where the v1.4.1 derivation fix doesn't fully reproduce in current implementation.
@@ -164,10 +174,19 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 - **Standard:** CC-BY 4.0 (content)
 - **Library:** Apache 2.0
 
+## Companions
+
+Touchstone composes with the other Clarethium reference artifacts:
+
+- **[Lodestone](https://github.com/Clarethium/lodestone)**: operator methodology. The first-person practice that pairs with Touchstone's third-person measurement.
+- **Whetstone**: craft sharpening. Currently at [`clarethium-app`](https://github.com/Clarethium/clarethium-app); rename to `whetstone` is planned.
+- **[cma](https://github.com/Clarethium/cma)**: executable compound-practice loop. Companion to Lodestone, surfacing relevant prior captures at the moment of action.
+
+Touchstone is also the substrate underneath [Frame Check](https://frame.clarethium.com), Clarethium's applied frame-validation tool.
+
 ## Related
 
-- [Clarethium](https://blog.clarethium.com) - methodology umbrella, mothership
-- [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
+- [Clarethium](https://blog.clarethium.com): methodology umbrella, mothership.
 - Documentation: https://touchstone.clarethium.com
 
 ## Contributing
