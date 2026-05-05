@@ -226,13 +226,7 @@ Quality gap interpretation:
 
 Validated separation: source-grounded documents have gap mean -0.357; source-absent documents have gap mean +0.313. Threshold of 0 cleanly separates these conditions in calibration data.
 
-### 7.5 Spec compliance thresholds
-
-Default keyword overlap threshold for ADDRESSED classification: 60%. Calibrated against synthetic test pairs at 94% accuracy.
-
-Default semantic upgrade threshold (Layer 5): 0.60 cosine similarity (paraphrase recovery) and 0.55 (drift confirmation).
-
-### 7.6 Calibration discipline
+### 7.5 Calibration discipline
 
 Threshold values MUST:
 - Be explicit and version-controlled
@@ -240,7 +234,7 @@ Threshold values MUST:
 - Carry caveats noting calibration corpus and conditions
 - Be revisited via the Suggestion process when reference distributions evolve
 
-> **Operator finalization required.** Confirm or adjust threshold values for v1.0 ratification. Add additional thresholds for Layers 5, 7, 9, and Layer 1c (low-precision flag).
+Layers 5, 7, and 9 do not carry normative pass/fail thresholds at Standard 1.0: Layer 5 is at directional validation only, Layer 7 is descriptive-not-pass/fail per Section 5.7, and Layer 9 is experimental and length-confounded per Section 5.9. Layer 1c precision-flag bands (high / adequate / low) are documented in the reference implementation's `assertion_precision` output field.
 
 ---
 
