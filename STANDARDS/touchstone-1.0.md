@@ -74,7 +74,7 @@ The Standard rests on four principles that distinguish it from LLM-as-judge appr
 
 ### 3.1 Model-independence
 
-All required measurements MUST be performable without invoking an AI model to evaluate the output. Layer 1a (heading defaultness) and Layer 5 of specification compliance (semantic alignment) MAY use AI for ancillary tasks; these are explicitly OPTIONAL or conditionally executable. The core measurement methodology MUST function without AI when source and spec material are deterministic.
+All required measurements MUST be performable without invoking an AI model to evaluate the output. Layer 1a (heading defaultness) MAY use AI for ancillary tasks; this layer is explicitly OPTIONAL. The core measurement methodology MUST function without AI when source material is deterministic.
 
 ### 3.2 Structural over semantic
 
