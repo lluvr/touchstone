@@ -336,7 +336,8 @@ Evolution is governed by the Suggestion process documented in `SUGGESTIONS/PROCE
 
 ## 12. References
 
-> **Operator finalization required.** Add citations to underlying research:
+> **Operator finalization required.** Convert the EXP-series research below into formal citations. Reproductions of EXP-081 and EXP-095 ship in this repository at `benchmarks/`. AIRP R-series coupling is deferred to Standard 1.0.1 patch (citations require the R-series papers to publish first; ratification cannot block on external dependency).
+>
 > - EXP-078 through EXP-081 (fabrication and grounding studies)
 > - EXP-084 (gaming resistance / Goodhart dynamics validation)
 > - EXP-087 (alignment calibration)
@@ -344,7 +345,6 @@ Evolution is governed by the Suggestion process documented in `SUGGESTIONS/PROCE
 > - EXP-089 (binary diagnostic structure analysis)
 > - EXP-094 (construct audit, instability vs fabrication rename)
 > - EXP-095 (G/F/P decomposition origin)
-> - AIRP R-series papers when published (R3 FVS canon, R4 methodology)
 
 External references:
 
