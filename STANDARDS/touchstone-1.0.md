@@ -92,7 +92,7 @@ The Standard, its threshold values, and its reference test cases are public. Con
 
 ## 4. Output structure
 
-> **Operator finalization required.** Specify canonical output format primarily addressed by the Standard. Reference implementation operates on Markdown analytical documents (validated scope per Section 9). Extension to structured outputs (JSON, structured markup) and other text formats is layer-specific and MAY be implementation-defined.
+The Standard primarily addresses Markdown analytical documents. Reference implementation operates on this format; validated scope is documented in Section 9. Extension to structured outputs (JSON, structured markup) and to other text formats is layer-specific and MAY be implementation-defined; conforming implementations claiming extended scope MUST document the validation supporting that claim.
 
 ---
 
