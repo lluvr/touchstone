@@ -1,8 +1,8 @@
 # Touchstone Standard 1.0 (DRAFT)
 
-**Status:** Draft v0.2. Sections 1, 3, 5, 6, 9, 10 substantially complete pending operator review. Sections 2, 4, 7, 8, 11, 12 require operator-authored finalization.
-**Version:** 1.0.0-draft.2
-**Date:** 2026-05-02 (drafting in progress)
+**Status:** Draft v0.3. Scope-tightening pass complete (Section 6 deferred to Standard 1.1; Appendices A and B deferred to 1.1; Sections 4, 7, 8, 9.2, 12 settled). Sections 2 (Terminology) and 11 (Conformance) require operator authoring before ratification.
+**Version:** 1.0.0-draft.3
+**Date:** 2026-05-05 (drafting in progress)
 **License:** CC-BY 4.0
 **Canonical URL:** https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md
 
@@ -395,23 +395,31 @@ Field positioning context (related approaches and their distinctions):
 
 ## Drafting status
 
-Sections substantially complete (operator review only):
+Sections substantively complete:
 
 - Section 1 (Introduction)
 - Section 3 (Substrate principles)
+- Section 4 (Output structure)
 - Section 5 (Output measurement layers, all eleven)
-- Section 6 (Specification compliance verification, all five layers)
-- Section 9 (Implementation guidance)
+- Section 7 (Thresholds and calibration discipline)
+- Section 9 (Implementation guidance, with §9.2 fast-tier qualifier pending operator confirmation)
 - Section 10 (Versioning)
 - Appendix C (Implementation status)
 
-Sections requiring operator-authored finalization:
+Sections requiring operator authoring before ratification:
 
-- Section 2 (Terminology - define key terms)
-- Section 4 (Output structure - confirm scope)
-- Section 7 (Threshold values - finalize specific numerical thresholds)
-- Section 8 (Reference test cases - extract minimal compliance suite)
-- Section 11 (Conformance - specify formal process)
-- Section 12 (References - add EXP citations and AIRP coupling)
+- Section 2 (Terminology: output, source, claim, evidence, layer, conforming implementation)
+- Section 8 (Reference test cases: confirm conformance bands, author normative framing for corpus-bound conformance and fast-tier-corpus caveat)
+- Section 11 (Conformance: self-certification process, declaration mechanism, what invalidates a claim)
+- Section 12 (References: convert EXP-series list into formal citations)
+
+Reserved for Standard 1.1:
+
+- Section 6 (Specification compliance verification)
 - Appendix A (Worked examples)
 - Appendix B (FAQ)
+
+Reserved for Standard 1.0.1 patch:
+
+- Minimal conformance subset extraction to `tests/conformance/`
+- AIRP R-series citations (gated on R-series papers publishing)
