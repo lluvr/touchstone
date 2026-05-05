@@ -4,11 +4,10 @@ Model-independent verification for AI-coupled work.
 
 ## What this is
 
-Touchstone names the practice of measuring AI outputs without depending on AI to judge AI. It is one of three reference artifacts published by Clarethium:
+Touchstone names the practice of measuring AI outputs without depending on AI to judge AI. It is one of two open reference artifacts published by Clarethium:
 
 - **Touchstone** validates work against quality standards.
 - **Lodestone** orients practice.
-- **Whetstone** sharpens craft.
 
 The Touchstone Standard specifies eleven measurement layers for output profiling: structural composition, claim density, source matching, grounding decomposition, and others. Ten of the eleven use deterministic regex, structural analysis, and arithmetic; one uses an optional LLM API for baseline generation only. The methodology rests on the principle that an auditor cannot be made of the same material as the audited.
 
@@ -176,10 +175,9 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 
 ## Companions
 
-Touchstone composes with the other Clarethium reference artifacts:
+Touchstone composes with the other Clarethium open reference artifacts:
 
 - **[Lodestone](https://github.com/Clarethium/lodestone)**: operator methodology. The first-person practice that pairs with Touchstone's third-person measurement.
-- **Whetstone**: craft sharpening. Currently at [`clarethium-app`](https://github.com/Clarethium/clarethium-app); rename to `whetstone` is planned.
 - **[cma](https://github.com/Clarethium/cma)**: executable compound-practice loop. Companion to Lodestone, surfacing relevant prior captures at the moment of action.
 
 Touchstone is also the substrate underneath [Frame Check](https://frame.clarethium.com), Clarethium's applied frame-validation tool.
