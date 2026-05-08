@@ -85,3 +85,4 @@ dmypy.json
 scratch/
 local/
 *.local.md
+.venv/
