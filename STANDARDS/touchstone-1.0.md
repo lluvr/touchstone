@@ -195,7 +195,7 @@ When a document includes an explicit prohibition recommendation (e.g., "do not p
 
 ## 6. Specification compliance verification
 
-> **Reserved for Standard 1.1.** Verification of output coverage against a written specification (requirement extraction, type-routed coverage mapping, scope drift detection, emphasis balance, optional semantic alignment) is deferred to Standard 1.1. Reference implementation `clarethium-touchstone` v0.1 implements Section 5 only; the canonical research substrate for this section lives in the operator's vault as `clarethium_align.py` and is not yet packaged for release.
+> **Reserved for Standard 1.1.** Verification of output coverage against a written specification (requirement extraction, type-routed coverage mapping, scope drift detection, emphasis balance, optional semantic alignment) is deferred to Standard 1.1. Reference implementation `clarethium-touchstone` v0.1 implements Section 5 only.
 
 ---
 

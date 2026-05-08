@@ -18,10 +18,8 @@ The ``measure()`` orchestrator runs every measurement layer whose
 preconditions are met. Layer functions are also accessible
 individually from ``clarethium_touchstone.measure``.
 
-Standard Section 6 (Specification Compliance) is not part of v0.1.
-The ``align()`` API is reserved for a future release; the canonical
-research reference lives in the operator's vault as
-``clarethium_align.py`` and is not yet packaged.
+Standard Section 6 (Specification Compliance) is reserved for
+Standard 1.1; the ``align()`` API is not part of v0.1.
 
 The Standard is the canonical reference. The library is the reference
 implementation. Where library behaviour diverges from the Standard,

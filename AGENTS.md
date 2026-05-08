@@ -17,7 +17,7 @@ of how relevant they feel to the change in front of you.
 If you are tempted to commit a file with any of these shapes:
 
 - A document analyzing why some choice was made (rationale memos,
-  decision drafts, "repo shape" or "empire shape" discussions).
+  decision drafts, "repo shape" or "project shape" discussions).
 - An audit of leakage, security, methodology gaps, publication
   readiness, or engine performance.
 - An outreach plan, reviewer list, methodology paper outline, or
