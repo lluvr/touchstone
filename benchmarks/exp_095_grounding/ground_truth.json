@@ -2,7 +2,7 @@
   "$schema_version": "1",
   "experiment": "EXP-095",
   "experiment_doc": "https://github.com/Clarethium/touchstone/blob/main/benchmarks/exp_095_grounding/README.md",
-  "description": "Layer 11 (grounding_decomposition) ground-truth corpus for Touchstone validation. Manual G/F/P proportions where available; detector v0.3.1 results for backwards-compat reference. See vault EXP-095-data/GROUND_TRUTH_20.md for full methodology.",
+  "description": "Layer 11 (grounding_decomposition) ground-truth corpus for Touchstone validation. Manual G/F/P proportions where available; detector v0.3.1 results for backwards-compat reference.",
   "outputs": [
     {
       "id": 1,

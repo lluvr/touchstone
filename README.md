@@ -121,7 +121,7 @@ The reference implementation covers every layer in Standard Section 5:
 
 The top-level `measure()` orchestrator runs every layer whose preconditions are met. Layers without preconditions return `None` for that key in the `MeasureResult` dict.
 
-Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `align()` and `profile()` APIs are reserved for a future release; the canonical research reference lives in the operator's vault as `clarethium_align.py` and is not yet packaged. Touchstone v0.1 ships measurement only.
+Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `align()` and `profile()` APIs are reserved for Standard 1.1. Touchstone v0.1 ships measurement only.
 
 ## Empirical validation
 
