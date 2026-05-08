@@ -231,7 +231,7 @@ def test_source_fidelity_appears_only_with_adequate_precision_and_source() -> No
     assert "source_fidelity" in r3["components_available"]
 
 
-# Text with ≥5 entities AND ≥10 numbers. Note: vault entity patterns are
+# Text with ≥5 entities AND ≥10 numbers. Note: entity patterns are
 # CASE-SENSITIVE - sentence-start "According to" does not trigger; only
 # mid-sentence lowercase "according to" / "by" / "per" / "cited by" do.
 ENTITY_RICH_TEXT = (
@@ -256,7 +256,7 @@ def test_entity_grounding_appears_when_at_least_five_entities() -> None:
 
 def test_entity_grounding_excluded_when_fewer_than_five_entities() -> None:
     """When fewer than 5 entities extract, entity_grounding is excluded
-    (vault precision threshold).
+   .
     """
     # ADEQUATE_PRECISION_TEXT has plenty of numbers but no named entities
     result = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)
@@ -343,7 +343,7 @@ def test_temporal_stability_excluded_when_no_comparisons() -> None:
 
 def test_temporal_stability_excluded_when_too_few_numbers() -> None:
     """Even with comparisons, if fewer than 10 unique numbers appear,
-    temporal_stability is excluded (vault precision threshold).
+    temporal_stability is excluded.
     """
     text = "Revenue grew 12%."
     result = quality_profile(text, source=text, comparisons=[text])

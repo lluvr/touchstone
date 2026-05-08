@@ -25,7 +25,7 @@ appear at the top of the output; per-output predictions follow.
 ### `exp_095_grounding/`
 
 Validates Layer 11 (`grounding_decomposition`) against the EXP-095
-corpus from the operator's research vault. 13 model outputs across
+ground-truth corpus. 13 model outputs across
 3 source documents (Apple Q1 FY2026 earnings, BLS March 2026 jobs
 report, Wegovy OASIS-4 trial) and 3 model families (gpt-4o, Gemini
 3 Flash, xAI Grok 4.1 Fast). Each output has either a full manual

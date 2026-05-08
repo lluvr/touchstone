@@ -31,7 +31,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = temporal_instability("text", ["comp"])
     assert set(result.keys()) == {
         "instability_rate",
@@ -168,7 +168,7 @@ def test_year_filtering_consistent_with_layer_4() -> None:
 def test_word_count_callouts_filtered() -> None:
     """Word-count callout numbers are filtered before instability.
 
-    The 60-char proximity window of the word-count filter (vault-faithful)
+    The 60-char proximity window of the word-count filter
     can also drop other nearby numbers; pad the data with distance so
     the 12% number escapes the proximity filter.
     """

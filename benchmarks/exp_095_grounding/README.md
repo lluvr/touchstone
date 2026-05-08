@@ -1,7 +1,7 @@
 # EXP-095 grounding decomposition benchmark
 
 Validates Touchstone's Layer 11 (`grounding_decomposition`) against
-the EXP-095 ground-truth corpus from the operator's research vault.
+the EXP-095 ground-truth corpus.
 
 ## Methodology
 
@@ -14,11 +14,9 @@ of Grounded / Framed / Projected sentences:
 | Run 1 outputs (3 models × 3 topics, plus 1 missing) | 7 | Full manual G/F/P proportions |
 | Run 3 outputs across xAI / Gemini topics | 6 | Manual P estimate range; detector-validated G/F |
 
-The 7 entries with full manual classification come from
-`CALIBRATION_ANALYSIS.md` in the vault and were classified
+The 7 entries with full manual classification were classified
 claim-by-claim. The 6 entries with manual P estimate were validated
-by detector v0.3.1 with manual P-verification on disagreement cases
-(`GROUND_TRUTH_20.md` in the vault).
+by detector v0.3.1 with manual P-verification on disagreement cases.
 
 ## Sources
 
@@ -58,12 +56,12 @@ runs are in the ground-truth set.
 
 The `detector_v031` column in `ground_truth.json` reflects values
 **published in EXP-095** (post-v1.4.1 fix), not what the current
-vault `clarethium_measure.py` produces. Two outputs show measurable
+the prior detector produces. Two outputs show measurable
 drift between the published EXP-095 paper and the current
 implementation:
 
 - **Output #7 (xAI BLS run 1):** detector_v031 published 0.21,
-  Touchstone (and current vault) produces 0.10. Both are below the
+  Touchstone produces 0.10. Both are below the
   manual P=0.48 baseline, but the detector_v031 figure is a more
   optimistic structural-P count than the current code yields.
 - **Output #16 (xAI BLS run 3):** detector_v031 published 0.18 (the
@@ -79,9 +77,9 @@ implementation:
 
 This means the v1.4.1 derivation fix that the GROUND_TRUTH_20 doc
 credits with improving xAI BLS detection does NOT fully reproduce
-in the current vault implementation; either the fix's effect is
+in the reference implementation; either the fix's effect is
 input-specific or it was partially regressed since the doc was
-written. **Touchstone v0.1 inherits this state from the vault.**
+written. **Touchstone v0.1 inherits this state.**
 The drift is real evidence pointing to a follow-up investigation
 (redesign of the derivation checker for small-number sources, per
 the deferred Patches 1-3 plan).
@@ -95,7 +93,7 @@ checker would create churn without information value.
 
 7 of the 20 outputs in `GROUND_TRUTH_20.md` (gpt-5-mini default
 runs and prohibition-condition variants) live in JSON result files
-in the vault rather than as standalone .txt outputs. Adding them to
+in JSON result files rather than as standalone .txt outputs. Adding them to
 this benchmark is future work.
 
 ## Files

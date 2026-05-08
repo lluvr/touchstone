@@ -55,7 +55,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = grounding_decomposition("Some text.", "Some source.")
     assert set(result.keys()) == {
         "proportions",
@@ -94,7 +94,7 @@ def test_assess_derivation_regime_boundaries(
     expected_primary_diagnostic: bool,
     expected_cross_ref: bool,
 ) -> None:
-    """Vault-validated boundaries: < 5 = diagnostic, [5,10) = transition,
+    """Validated boundaries: < 5 = diagnostic, [5,10) = transition,
     >= 10 = saturated. Pinned per LAYER_11_SCOPE_BOUNDARY.md and
     Monte Carlo data (FPR 53% at N=5, 97% at N=10).
     """
@@ -310,7 +310,7 @@ def test_derivation_within_tolerance() -> None:
 
 
 def test_small_integer_not_classified_as_unsourced() -> None:
-    """Vault behaviour: small ints 1-10 (e.g., '5 best practices') are
+    """Behaviour: small ints 1-10 (e.g., '5 best practices') are
     filtered from unsourced numbers to avoid noise.
     """
     text = "There are 5 main reasons to consider this approach in detail."

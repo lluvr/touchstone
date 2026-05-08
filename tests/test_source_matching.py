@@ -157,7 +157,7 @@ def test_word_count_callouts_filtered() -> None:
 
 
 def test_word_count_filter_does_not_drop_distant_numbers() -> None:
-    """A word-count callout filters numbers within ~60 chars (the vault's
+    """A word-count callout filters numbers within ~60 chars (the implementation's
     proximity window). Numbers further away are NOT affected.
     """
     source = "Revenue was $100M."
@@ -202,10 +202,10 @@ def test_empty_source_marks_all_unsourced() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Vault-fidelity behaviour pinning
+# Behaviour pinning
 #
 # These tests document algorithm choices preserved from the operator's
-# research vault. Changing them requires a Standard version bump
+# Changing them requires a Standard version bump
 # (Section 10). Failing one of these tests means the algorithm drifted.
 # ---------------------------------------------------------------------------
 
@@ -236,7 +236,7 @@ def test_year_boundary_inclusive_at_1990_and_2035() -> None:
 
 
 def test_multiplier_uses_substring_match_in_source() -> None:
-    """Vault behaviour: multiplier source matching uses unanchored substring
+    """Behaviour: multiplier source matching uses unanchored substring
     search, so "2x" output matches "12x" in source. This is generous and
     intentional; pinned here so future tightening is visible.
     """
@@ -320,10 +320,10 @@ def test_different_currency_does_not_spuriously_match() -> None:
 
 def test_usd_baseline_unchanged_after_multi_currency_patch() -> None:
     """Backward compatibility: USD-only documents behave identically to
-    pre-Patch-2 baseline. The vault-faithful $-only matching path is
+    pre-Patch-2 baseline. The $-only matching path is
     preserved when extraction sees ``currency="$"``.
     """
-    # Self-source with USD numbers (Vault-style)
+    # Self-source with USD numbers
     text = "Revenue grew $100M with $200M in margins reported across the period."
     result = source_matching(text, text)
     assert result["unsourced_rate"] == 0.0
@@ -370,7 +370,7 @@ def test_known_limitation_cross_scale_false_negative() -> None:
 
 
 def test_scale_word_dollar_form_preserved() -> None:
-    """Vault-faithful: "$1.5 trillion" is captured by the dollar pattern
+    """Behaviour: "$1.5 trillion" is captured by the dollar pattern
     first (because the negative lookbehind on scaled_integer prevents
     double-extraction inside currency context). Behavior unchanged.
     """
@@ -381,7 +381,7 @@ def test_scale_word_dollar_form_preserved() -> None:
 
 
 def test_percentage_decimal_falls_back_to_integer_part() -> None:
-    """Vault behaviour: when an output percentage like 10.5% is not found
+    """Behaviour: when an output percentage like 10.5% is not found
     verbatim in source, the algorithm searches for the integer part (10%).
     This is generous and intentional; pinned here so future tightening is
     visible.

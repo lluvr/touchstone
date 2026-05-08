@@ -63,7 +63,7 @@ def test_exp_095_close_agreement_with_detector_v031() -> None:
     category should stay below 0.10 (current baseline: 0.02-0.04).
 
     A regression past 0.10 means the extraction has drifted from the
-    research-vault implementation in a way the per-layer unit tests
+    reference implementation in a way the per-layer unit tests
     didn't catch. Investigate before merging.
     """
     from benchmarks.exp_095_grounding.run import aggregate, run_all

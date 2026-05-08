@@ -37,7 +37,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = epistemic_calibration("Some text.", "Some source.")
     assert set(result.keys()) == {
         "calibration_score",
@@ -58,7 +58,7 @@ def test_empty_text_returns_zero_low_precision() -> None:
 
     IMPORTANT: ``calibration_score = 0.0`` here means NO DATA, not
     "0% grounded". Callers must check ``n_assertions > 0`` before
-    interpreting calibration_score as a meaningful ratio. The vault
+    interpreting calibration_score as a meaningful ratio. The implementation
     sentinel for this case was ``None``; the TypedDict requires a
     float so 0.0 is the normalised value.
     """
@@ -185,7 +185,7 @@ def test_ground_3_high_vocab_overlap_grounds() -> None:
 
 
 def test_ground_3_uses_substring_match_vault_faithful() -> None:
-    """Vault behaviour: Ground 3 vocab check is ``w in source_lower``
+    """Behaviour: Ground 3 vocab check is ``w in source_lower``
     (Python substring), so a content word ``cat`` is considered
     grounded when source contains ``catalog``. Same generosity as
     Layer 6 vocabulary_proximity. Pinned because it can inflate
@@ -204,7 +204,7 @@ def test_ground_3_uses_substring_match_vault_faithful() -> None:
 
 
 def test_ground_3_threshold_strictly_greater_than_half() -> None:
-    """Vault threshold is ``> 0.5`` (strictly greater than half), not ≥.
+    """Threshold is ``> 0.5`` (strictly greater than half), not ≥.
 
     A sentence with exactly 50% overlap (2 of 4 content words in source)
     does NOT ground via vocab. Other grounds also fail in this test
@@ -272,7 +272,7 @@ def test_expanded_calibration_patterns_detected(phrase: str) -> None:
     ],
 )
 def test_precision_thresholds(n: int, expected: str) -> None:
-    """Precision: <5 → low, <15 → adequate, ≥15 → high (vault's 'good'
+    """Precision: <5 → low, <15 → adequate, ≥15 → high (the 'good'
     renamed for TypedDict consistency).
     """
     assert _calibration_precision(n) == expected

@@ -56,7 +56,7 @@ result["grounding_decomposition"]["has_projection"]  # False
 ```
 
 The composite `quality_profile` (Layer 10) requires at least 10 numbers in
-text for `source_fidelity` to qualify (vault precision threshold). For the
+text for `source_fidelity` to qualify. For the
 substance vs presentation gap signal, supply a longer document:
 
 ```python

@@ -36,7 +36,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = information_novelty(
         "First valid sentence here with multiple distinct words present today."
     )
@@ -134,7 +134,7 @@ def test_decay_is_negative_when_novelty_declines() -> None:
 
 
 def test_decay_is_zero_when_fewer_than_three_qualifying_sentences() -> None:
-    """OLS slope is undefined with n<3 data points; vault returns 0.0."""
+    """OLS slope is undefined with n<3 data points; returns 0.0."""
     text = (
         "First valid sentence here with multiple distinct content words. "
         "Second sentence repeats some content words present already."

@@ -69,12 +69,12 @@ def test_layers_6_and_9_use_same_qualifying_sentence_definition() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Unicode handling (vault behaviour, pinned)
+# Unicode handling (behaviour, pinned)
 # ---------------------------------------------------------------------------
 
 
 def test_tokenize_drops_non_ascii_characters() -> None:
-    """Vault behaviour: ``[a-zA-Z']+`` only matches ASCII letters.
+    """Behaviour: ``[a-zA-Z']+`` only matches ASCII letters.
 
     Non-ASCII characters split words: ``café`` → ``caf``; ``naïve`` →
     ``na`` + ``ve``; ``Zürich`` → ``z`` + ``rich``. Pinned because this
@@ -177,7 +177,7 @@ def test_layer_8_calibration_set_strictly_extends_layer_1c() -> None:
     """Layer 8 uses a broader assertion set than Layer 1c. Phrases like
     ``indisputably``, ``conclusively``, ``definitively``, ``inevitably``,
     ``it is clear that``, ``no doubt``, ``demonstrates that`` are matched
-    by Layer 8 but NOT by Layer 1c (vault preserves Layer 1c's narrower
+    by Layer 8 but NOT by Layer 1c (preserves Layer 1c's narrower
     set to keep its validated reference distributions stable).
     """
     from clarethium_touchstone.measure import (

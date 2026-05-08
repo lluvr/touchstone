@@ -1,8 +1,8 @@
 """Shared pytest fixtures for the Touchstone test suite.
 
 The reference test suite (per Standard Section 8) lives under
-``tests/reference/`` once extracted from the operator's research
-vault. These reference cases are versioned with the Standard.
+``tests/reference/``. Reference cases are versioned with the
+Standard.
 
 Synthetic and unit tests live alongside this file as ``test_*.py``.
 """

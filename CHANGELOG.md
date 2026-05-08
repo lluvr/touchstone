@@ -44,7 +44,7 @@ magnitude-aware redesign is a future patch.
 - **Patch 1 landed (deferred from earlier session):** Layer 11
   ``grounding_decomposition`` now returns a ``scope_assessment`` field
   classifying the source's derivation-checker regime. Boundaries are
-  vault-validated (< 5 diagnostic, [5,10) transition, ≥ 10 saturated)
+  empirically validated (< 5 diagnostic, [5,10) transition, ≥ 10 saturated)
   and align with the methodology doc and Monte Carlo FPR data
   (53% at N=5, 97% at N=10). New public helper
   ``assess_derivation_regime(source_num_count)`` returns the same
@@ -60,7 +60,7 @@ magnitude-aware redesign is a future patch.
 
 - **EXP-095 benchmark suite shipped:** ``benchmarks/exp_095_grounding/``
   validates Layer 11 against 13 hand-classified outputs from the
-  research vault. Results: P-direction agreement with manual
+  EXP-095 corpus. Results: P-direction agreement with manual
   classification is 100%; MAE vs documented detector v0.3.1 is
   0.02-0.04 in aggregate (with documented per-output drift surfaced
   honestly in the README). Snapshot file pinned via byte-match
@@ -78,10 +78,8 @@ magnitude-aware redesign is a future patch.
   Standard Section 6 (Specification Compliance) is reserved for a
   future release. The pre-port stubs raised ``NotImplementedError``
   on every call; cleaner to remove the API surface than ship
-  misleading entry points. Section 6 will return when the
-  vault's ``clarethium_align.py`` (3,124 lines, currently unused
-  by any production tool) is properly extracted with the same
-  vault-fidelity discipline as Section 5.
+  misleading entry points. Section 6 will return in Standard 1.1
+  with the same pinned-behaviour discipline as Section 5.
 
 Multi-currency, scaled-integer, and Layer 11 ``scope_assessment``
 fork patches (Patches 1, 2, 3 from the diff) are deferred. Each
@@ -112,13 +110,13 @@ Layers extracted (in order):
 - `measure()` orchestrator (composes all 11 layers, returns `MeasureResult` per `types.py`)
 - Layer 1a heading defaultness (vendor-neutral via `BaselineGenerator = Callable[[str], str | None]` - caller supplies their own LLM client)
 
-The library is vault-faithful: regex patterns, thresholds, filtering rules, and validation caveats are preserved from the operator's research vault. Vault-faithful surprises are pinned with explicit tests so future drift is visible.
+The library pins regex patterns, thresholds, filtering rules, and validation caveats so future drift is visible. Surprising behaviours are explicitly tested; any change is intentional and version-bumped.
 
 Test coverage: 338 tests pass on Python 3.10, 3.11, 3.12. Lint (ruff), format (ruff format), type check (mypy strict), and build (`python -m build`) all green in CI.
 
 Outstanding before first PyPI release:
 - PyPI Clarethium organization application approval
-- Operator-authored Standard sections (Terminology, References, Appendices A and B)
+- Standard sections still in drafting (Terminology, References, Appendices A and B)
 
 ## 2026-05-02: Initial bootstrap
 
@@ -131,7 +129,7 @@ Repository created at `Clarethium/touchstone`. Initial structure:
 - CI workflow (lint, type check, test matrix, build distribution)
 - Custom domain `touchstone.clarethium.com` via GitHub Pages
 
-PyPI organization application pending approval. Library extraction from research vault in progress.
+PyPI organization application pending approval. Reference implementation in progress.
 
 Architecture committed:
 - Touchstone is a Clarethium sub-brand at `touchstone.clarethium.com`
