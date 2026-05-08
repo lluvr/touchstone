@@ -52,7 +52,7 @@ result["grounding_decomposition"]["proportions"]   # {"G": 1.0, "F": 0.0, "P": 0
 result["grounding_decomposition"]["has_projection"]  # False
 ```
 
-The composite quality profile (Layer 10) requires ≥10 numbers in text for the source-fidelity contribution to qualify (vault precision threshold). For the substance vs presentation gap signal, supply a longer document:
+The composite quality profile (Layer 10) requires ≥10 numbers in text for the source-fidelity contribution to qualify. For the substance vs presentation gap signal, supply a longer document:
 
 ```python
 text = (
@@ -80,7 +80,7 @@ assessment["cross_reference_layer_4_for_numbers"]    # True
 assessment["note_user_facing"]                       # UX-safe explanation
 ```
 
-Boundaries are vault-validated against EXP-095 Monte Carlo data: < 5 = diagnostic, [5, 10) = transition, ≥ 10 = saturated.
+Boundaries are empirically validated against EXP-095 Monte Carlo data: < 5 = diagnostic, [5, 10) = transition, ≥ 10 = saturated.
 
 For Layer 1a (heading defaultness), supply your own LLM client as a callable (vendor-neutral):
 
@@ -177,7 +177,7 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 
 Touchstone composes with the other Clarethium open reference artifacts:
 
-- **[Lodestone](https://github.com/Clarethium/lodestone)**: operator methodology. The first-person practice that pairs with Touchstone's third-person measurement.
+- **[Lodestone](https://github.com/Clarethium/lodestone)**: methodology canon. The first-person practice that pairs with Touchstone's third-person measurement.
 - **[cma](https://github.com/Clarethium/cma)**: executable compound-practice loop. Companion to Lodestone, surfacing relevant prior captures at the moment of action.
 
 Touchstone is also the substrate underneath [Frame Check](https://frame.clarethium.com), Clarethium's applied frame-validation tool.

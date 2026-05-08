@@ -4,7 +4,7 @@ This directory contains the canonical reference test cases for the Touchstone St
 
 ## Status
 
-The reference test suite is being extracted from the operator's research vault. Initial content placeholder. Full reference suite ships with Standard 1.0 ratification.
+The reference test suite is being authored against the Touchstone Standard. Initial content placeholder. Full reference suite ships with Standard 1.0 ratification.
 
 ## Structure (planned)
 
@@ -49,7 +49,7 @@ Implementations MAY include their own additional test cases under `tests/synthet
 
 ## Validation pedigree
 
-The reference suite draws from operator's existing validation work:
+The reference suite draws from existing validation work:
 
 - 171 measure tests + 19 Layer 11 tests
 - 148 align self-tests
@@ -57,7 +57,7 @@ The reference suite draws from operator's existing validation work:
 - Cross-generator validation (Anthropic, Gemini, OpenAI/xAI families)
 - Studies 8-9 discriminant validity (100 pairs)
 
-For ratification, a representative subset (~30-100 cases) is selected as the canonical reference suite. The full validation corpus remains in the operator's research vault.
+For ratification, a representative subset (~30-100 cases) is selected as the canonical reference suite.
 
 ## Running
 

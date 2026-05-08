@@ -6,7 +6,7 @@ overlap but cannot distinguish original analysis from fabrication.
 
 Note: ``w in source_lower`` uses Python substring matching, so a
 content word ``cat`` is considered present if source contains
-``catalog``. Vault behaviour preserved.
+``catalog``. Behaviour preserved.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = vocabulary_proximity(
         "Performance improved across all systems present here today.",
         "Performance improved.",
@@ -88,12 +88,12 @@ def test_empty_source_marks_all_low_proximity() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Vault-fidelity: substring matching is generous
+# Pinned: substring matching is generous
 # ---------------------------------------------------------------------------
 
 
 def test_substring_match_is_generous() -> None:
-    """Vault behaviour: ``w in source_lower`` is a Python substring check.
+    """Behaviour: ``w in source_lower`` is a Python substring check.
 
     A content word ``cat`` is considered grounded if source contains
     ``catalog`` because the substring ``cat`` exists inside ``catalog``.

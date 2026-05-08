@@ -37,7 +37,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = entity_provenance("Some text.", "Some source.")
     assert set(result.keys()) == {
         "entity_unsourced_rate",
@@ -62,7 +62,7 @@ def test_empty_text_returns_zero() -> None:
 
 
 def test_person_pattern_requires_trigger_prefix() -> None:
-    """Vault behaviour: 'John Smith' bare in mid-sentence is NOT detected
+    """Behaviour: 'John Smith' bare in mid-sentence is NOT detected
     as a Person. The pattern requires 's, 'according to', 'by ', comma,
     em-dash, or period before the name.
     """
@@ -76,7 +76,7 @@ def test_person_pattern_requires_trigger_prefix() -> None:
 
 
 def test_attribution_triggers_are_case_sensitive() -> None:
-    """Vault behaviour: trigger words are matched WITHOUT re.IGNORECASE.
+    """Behaviour: trigger words are matched WITHOUT re.IGNORECASE.
 
     Sentence-start 'According to' (capitalised A) does NOT trigger the
     PERSON or ATTRIBUTED patterns; mid-sentence lowercase 'according to'
@@ -130,7 +130,7 @@ def test_org_suffix_patterns_detected() -> None:
 
 
 def test_org_pattern_includes_leading_the() -> None:
-    """Vault behaviour: the ORG pattern's leading ``[A-Z][a-zA-Z]+``
+    """Behaviour: the ORG pattern's leading ``[A-Z][a-zA-Z]+``
     captures 'The' as a Title Case word, so 'The MIT Foundation' is
     extracted as a single entity rather than 'MIT Foundation'.
     """
@@ -156,7 +156,7 @@ def test_attribution_patterns_detected() -> None:
 
 
 def test_attribution_pattern_is_greedy() -> None:
-    """Vault behaviour: the attribution pattern's ``[A-Z]?`` makes the
+    """Behaviour: the attribution pattern's ``[A-Z]?`` makes the
     leading capital optional within the {0,4} quantifier, so trailing
     lowercase words are captured into the entity value.
 
@@ -265,7 +265,7 @@ def test_disjoint_source_marks_all_unsourced() -> None:
 
 
 def test_word_by_word_fallback_for_multiword_entities() -> None:
-    """Vault-faithful: when full string isn't in source but each content
+    """Behaviour: when full string isn't in source but each content
     word (>3 chars, non-stop) appears, the entity counts as in-source.
     """
     e = {"value": "Stanford University", "type": "ORG", "context": ""}
@@ -297,14 +297,14 @@ def test_entity_match_is_case_insensitive_both_directions() -> None:
 
 
 def test_substring_match_inflates_short_entity_values() -> None:
-    """Vault behaviour: entity 'Smith' is grounded by source containing
+    """Behaviour: entity 'Smith' is grounded by source containing
     'Smithsonian' because Python ``in`` is a substring check, not a
     word-boundary check. Pinned because this affects interpretation -
     short entity values can match unrelated longer words.
     """
     e = {"value": "Smith", "type": "PERSON", "context": ""}
     assert _entity_in_source(e, "The Smithsonian Institution opened in 1846.")
-    # 'smith' is substring of 'smithsonian' → True (vault-faithful generosity)
+    # 'smith' is substring of 'smithsonian' → True
 
 
 def test_word_by_word_fallback_when_substring_fails() -> None:
@@ -336,7 +336,7 @@ def test_word_by_word_fallback_fails_when_word_missing() -> None:
 
 
 def test_org_suffix_and_camelcase_coexist() -> None:
-    """Vault behaviour: when text contains 'OpenAI Foundation', the ORG
+    """Behaviour: when text contains 'OpenAI Foundation', the ORG
     suffix pattern captures 'OpenAI Foundation' AND the CamelCase
     pattern separately captures 'OpenAI'. Both are stored because the
     dedup key for CamelCase is ('ORG_CAMEL', value) - distinct from
@@ -358,7 +358,7 @@ def test_org_suffix_and_camelcase_coexist() -> None:
 
 
 def test_same_entity_value_under_different_types_kept_separately() -> None:
-    """Vault behaviour: dedup is keyed on (type, value), so the same
+    """Behaviour: dedup is keyed on (type, value), so the same
     string captured under PERSON and ATTRIBUTED counts as two entities.
     """
     text = "Findings according to John Smith confirm the result yesterday."

@@ -34,7 +34,7 @@ def test_output_shape_is_well_formed() -> None:
 
 
 def test_output_keys_are_exact_set() -> None:
-    """No extra fields leak from the vault implementation."""
+    """No extra fields leak from the reference implementation."""
     result = presentation_features("Some text with content.")
     assert set(result.keys()) == {
         "type_token_ratio",
@@ -210,7 +210,7 @@ def test_named_concept_two_title_words_plus_concept_noun() -> None:
 
 
 def test_named_concept_single_title_word_not_matched() -> None:
-    """Single Title Case word + concept noun does NOT match (vault behaviour)."""
+    """Single Title Case word + concept noun does NOT match (behaviour)."""
     # 'Streetlight Effect' alone in mid-sentence: only 'Streetlight' before 'Effect'
     text = "Light cones bias us through streetlight Effect biases everywhere."
     # 'streetlight' is lowercase; even if Title Case alone it wouldn't match
@@ -220,7 +220,7 @@ def test_named_concept_single_title_word_not_matched() -> None:
 
 
 def test_named_concept_sentence_start_the_inflates_match() -> None:
-    """Vault behaviour: 'The X Concept' matches because 'The' counts as a
+    """Behaviour: 'The X Concept' matches because 'The' counts as a
     Title Case word ('The' + 'X' = 2+ Title Case before the concept noun).
     Pinned because this affects external interpretation of the count.
     """

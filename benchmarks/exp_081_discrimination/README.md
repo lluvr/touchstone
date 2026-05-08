@@ -26,7 +26,7 @@ Both conditions produce ~1,000-word analytical documents. The Touchstone
 quality_profile gap signal should discriminate the two by detecting the
 ungrounded numbers introduced in the embellished condition.
 
-## Published finding (vault EXP-081)
+## Published finding (EXP-081)
 
 The original paper measurement reported:
 
@@ -54,7 +54,7 @@ the published CI, and the MAE on every per-doc metric is under 0.014.
 This is end-to-end empirical validation: Layers 4 (source_matching),
 5 (entity_provenance), 7 (presentation_features), and 8 (epistemic_calibration)
 all contribute to quality_profile, and the composed gap signal is
-faithful to the research-vault measurement.
+faithful to the the EXP-081 measurement.
 
 ## Why this benchmark matters
 

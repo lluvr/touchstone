@@ -72,7 +72,7 @@ supply their own callable. The generator returns the model's output
 text or ``None`` on failure (rate limit, timeout, etc.).
 """
 
-# Number of baseline documents to generate for Layer 1a (vault default).
+# Number of baseline documents to generate for Layer 1a (default).
 _DEFAULT_N_BASELINES = 3
 
 # ---------------------------------------------------------------------------
@@ -80,7 +80,7 @@ _DEFAULT_N_BASELINES = 3
 # ---------------------------------------------------------------------------
 
 # Numbers within this range are treated as years rather than data values.
-# Sourced from the operator's research vault; do not adjust without a
+# Pinned baseline parameter; do not adjust without a
 # Standard update per Section 10.
 _YEAR_RANGE = (1990, 2035)
 
@@ -294,7 +294,7 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
         # currency symbol, require the same symbol in source (so doc "€30"
         # does NOT spuriously match source "$30"). For backward compat with
         # callers that don't supply currency, fall back to "$" (the
-        # vault-faithful USD-only behaviour).
+        # USD-only behaviour).
         currency = num.get("currency", "$")
         currency_re = re.escape(currency) + r"\s*"
         if re.search(currency_re + re.escape(val), source_text):
@@ -603,7 +603,7 @@ def _assertion_ratio(text: str) -> tuple[float, Literal["adequate", "low"]]:
 
 # Threshold above which the heading set is considered "default" - the
 # fraction of the document's headings whose tokens overlap a corpus of
-# baseline LLM-generated headings on the same topic. Vault-faithful
+# baseline LLM-generated headings on the same topic. Pinned
 # (gate_0 exploratory threshold = 0.40).
 _HEADING_DEFAULTNESS_THRESHOLD = 0.40
 
@@ -612,7 +612,7 @@ _HEADING_DEFAULTNESS_THRESHOLD = 0.40
 # baseline-heading word union.
 _HEADING_WORD_OVERLAP_THRESHOLD = 0.5
 
-# Default LLM prompt for baseline generation. Vault-faithful.
+# Default LLM prompt for baseline generation. This is pinned behaviour.
 _BASELINE_PROMPT_TEMPLATE = (
     "Write a thorough analysis of: {topic}\n\nWrite 600-800 words with 5-7 sections (## headings)."
 )
@@ -620,7 +620,7 @@ _BASELINE_PROMPT_TEMPLATE = (
 
 def _heading_words(heading: str) -> set[str]:
     """Tokenise a heading into a lowercase word set, dropping numbering
-    and emphasis (vault-faithful: ``re.sub(r'[\\*\\d\\.\\s]+', ' ', h)``).
+    and emphasis (``re.sub(r'[\\*\\d\\.\\s]+', ' ', h)``).
     """
     cleaned = re.sub(r"[\*\d\.\s]+", " ", heading).lower()
     return set(cleaned.split())
@@ -730,7 +730,7 @@ def structural_profile(
 # -- Layer 2: Claim density -----------------------------------------------
 
 # Numerical claim patterns. Recall ~97% on digit-formatted numbers across
-# three document types per the operator's research vault. Misses numbers
+# three document types. Misses numbers
 # expressed as words (e.g. "twenty percent") and relative claims.
 _NUMERICAL_CLAIM_PATTERNS: tuple[tuple[str, str], ...] = (
     (
@@ -1028,7 +1028,7 @@ def source_matching(text: str, source: str) -> SourceMatching:
 def _extract_entities(text: str) -> list[dict[str, str]]:
     """Extract named entities via five regex patterns.
 
-    Patterns (vault-faithful):
+    Patterns:
 
     1. Person names following a triggering prefix (``'s ``, ``according
        to``, ``by ``, comma, em-dash, period). Bare "FirstName LastName"
@@ -1117,7 +1117,7 @@ def _extract_entities(text: str) -> list[dict[str, str]]:
     # Pattern 5: CamelCase organisation names.
     camel_pattern = r"(?<!\w)([A-Z][a-z]+[A-Z][a-zA-Z]+)(?!\w)"
     for m in re.finditer(camel_pattern, body):
-        # Note: the keyed type is ORG (vault uses ORG_CAMEL only as the
+        # Note: the keyed type is ORG (uses ORG_CAMEL only as the
         # internal dedup key; the public type is ORG).
         name = m.group(1)
         key = ("ORG_CAMEL", name)
@@ -1140,7 +1140,7 @@ def _extract_entities(text: str) -> list[dict[str, str]]:
 def _entity_in_source(entity: dict[str, str], source_text: str) -> bool:
     """Check whether ``entity['value']`` appears in source.
 
-    Two-pass match (vault-faithful):
+    Two-pass match:
 
     1. Whole-string lowercase substring search (``cat`` matches
        ``catalog``, mirroring Layer 6's generosity).
@@ -1164,7 +1164,7 @@ def entity_provenance(text: str, source: str) -> EntityProvenance:
 
     English-centric patterns; non-English names with non-ASCII
     characters often miss. Substring matching against source is
-    generous (vault-faithful) - see ``_entity_in_source``.
+    generous - see ``_entity_in_source``.
 
     Output:
 
@@ -1206,7 +1206,7 @@ def vocabulary_proximity(text: str, source: str) -> VocabularyProximity:
     fabricated content (undesirable). Layer 6 alone cannot
     distinguish; consult Layers 4-5 for fabrication detection.
 
-    Vault behaviour preserved: word-in-source check is a substring
+    Behaviour preserved: word-in-source check is a substring
     match (``w in source_lower``), so a content word ``cat`` is
     considered present if the source contains ``catalog``. This is
     generous and intentional - surfaces lexical overlap without
@@ -1418,7 +1418,7 @@ def presentation_features(text: str) -> PresentationFeatures:
 # The structural assertion ratio (Layer 1c) was validated on the original
 # 13 patterns; Layer 8 uses a wider set including additional high-confidence
 # phrases the structural ratio intentionally omits (to preserve its
-# reference distributions). Vault-faithful.
+# reference distributions). This is pinned behaviour.
 _CALIBRATION_ASSERTION_PATTERNS: tuple[str, ...] = (
     # Original Layer 1c ASSERTION patterns
     r"\bmust\b",
@@ -1461,7 +1461,7 @@ _CALIBRATION_ASSERTION_RE = re.compile("|".join(_CALIBRATION_ASSERTION_PATTERNS)
 def _calibration_precision(total: int) -> Literal["high", "adequate", "low"]:
     """Map total assertion count to precision indicator.
 
-    Vault thresholds: < 5 = low, < 15 = adequate, >= 15 = good. The
+    Thresholds: < 5 = low, < 15 = adequate, >= 15 = good. The
     Touchstone TypedDict uses ``high`` instead of ``good`` for the
     upper tier (vocabulary normalisation across layers); semantics
     are identical.
@@ -1494,12 +1494,12 @@ def epistemic_calibration(text: str, source: str) -> EpistemicCalibration:
 
     The expanded assertion set (v1.3 calibration-only) catches phrases
     like "it is clear that", "indisputable", "conclusively",
-    "definitive(ly)", "inevitable", "demonstrates that" - vault-faithful
+    "definitive(ly)", "inevitable", "demonstrates that"
     augmentation that Layer 1c's structural ratio omits to preserve
     validated reference distributions.
 
     Returns 0.0 / "low" precision when no assertion-bearing sentences
-    are found (the TypedDict requires float values; the vault's
+    are found (the TypedDict requires float values; the implementation's
     ``None`` sentinel is normalised to 0.0 here).
     """
     sentences = _split_sentences_simple(text)
@@ -1701,7 +1701,7 @@ def quality_profile(
       calibration precision is not ``low`` (≥5 assertions found).
     * ``temporal_stability`` = 1 - temporal_instability.instability_rate
       (Layer 3), contributed when ``comparisons`` is provided and at least
-      10 unique numbers appear across versions (vault precision threshold).
+      10 unique numbers appear across versions.
 
     Presentation components (always available):
 
@@ -1718,7 +1718,7 @@ def quality_profile(
     side has contributors (e.g. empty text without source), all three
     values are ``0.0``.
 
-    Validation (vault notes): four studies showed strong d effects.
+    Validation (prior studies): four studies showed strong d effects.
     (1) source present vs absent: d=-5.78, N=24.
     (2) faithful vs embellished on xAI: d=-5.43, N=12.
     (3) faithful vs embellished on Gemini: d=-2.28, N=12.
@@ -1750,7 +1750,7 @@ def quality_profile(
             substance["source_fidelity"] = 1.0 - sm["unsourced_rate"]
 
         # Entity grounding (Layer 5) when at least 5 entities extracted.
-        # The vault's "low" precision threshold for entities is total < 5.
+        # The "low" precision threshold for entities is total < 5.
         ep = entity_provenance(text, source)
         if ep["n_entities"] >= 5:
             substance["entity_grounding"] = 1.0 - ep["entity_unsourced_rate"]
@@ -1762,7 +1762,7 @@ def quality_profile(
             substance["epistemic_calibration"] = ec["calibration_score"]
 
     # Temporal stability (Layer 3) when comparisons are supplied and at
-    # least 10 unique numbers appear across versions (vault precision
+    # least 10 unique numbers appear across versions (precision
     # threshold). Independent of source.
     if comparisons:
         ti = temporal_instability(text, comparisons)
@@ -1803,7 +1803,7 @@ def quality_profile(
 # External entity P-markers: hard-coded names/concepts not typically in
 # analytical source documents (drugs, companies, products, indices). The
 # list is domain-biased toward the operator's research corpus; extend it
-# for new domains. Vault-faithful; static in v1.0.
+# for new domains. Pinned behaviour; static in v1.0.
 _GFP_EXTERNAL_ENTITIES: tuple[str, ...] = (
     r"\bSTEP\s+\d\b",
     r"\bSURMOUNT\b",
@@ -1920,7 +1920,7 @@ def _gfp_is_derivable(value: float, source_floats: set[float], tolerance: float 
     ``A+B``, ``A-B``), and two-step add/subtract intermediates combined
     with another source number (tighter 1% tolerance).
 
-    Vault-faithful. The derivation checker is known to saturate as the
+    This is pinned behaviour. The derivation checker is known to saturate as the
     source's number count grows: at N>=10 source floats, false-positive
     rate approaches 100%, effectively disabling Layer 11's primary P
     signal for number-dense sources. See Standard Section 5.11 scope
@@ -2042,7 +2042,7 @@ def grounding_decomposition(
 
     Sentences cleaned to <20 chars (markdown stripped) are skipped.
 
-    Scope boundary (vault Standard 5.11): the primary unsourced-number
+    Scope boundary (Standard 5.11): the primary unsourced-number
     signal saturates as source number count grows. At ≥10 source numbers,
     derivation-checker false-positive rate approaches 100%. P falls back
     to secondary signals (external entities, gated years). Cross-reference

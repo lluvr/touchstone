@@ -108,7 +108,7 @@ def test_layer_1a_disjoint_yields_zero_score() -> None:
 
 def test_layer_1a_threshold_strictly_greater_than_half() -> None:
     """A heading with exactly 50% word overlap does NOT count as matching
-    the baseline (vault threshold is strict ``> 0.5``).
+    the baseline (threshold is strict ``> 0.5``).
     """
     # Doc heading 'Common Words' has 2 words: common, words.
     # Baseline word union: {common, heading} (1 of 2 doc words present).
@@ -381,7 +381,7 @@ def test_extract_section_bodies_handles_h3_headings() -> None:
 
 
 def test_extract_section_bodies_h1_does_not_start_section() -> None:
-    """Vault behaviour: only ## and ### start sections; # (h1) does not."""
+    """Behaviour: only ## and ### start sections; # (h1) does not."""
     text = "# Top h1 heading\nh1 body content stays orphaned and excluded.\n## Sub\nBody."
     bodies = _extract_section_bodies(text)
     # Only the ## section is captured; the h1 body is dropped as preamble
@@ -391,7 +391,7 @@ def test_extract_section_bodies_h1_does_not_start_section() -> None:
 
 
 def test_extract_section_bodies_h4_does_not_start_section() -> None:
-    """Vault behaviour: #### (h4) does not start a new section.
+    """Behaviour: #### (h4) does not start a new section.
 
     h4 lines fall through and accumulate into the current ## or ### body.
     """
@@ -403,7 +403,7 @@ def test_extract_section_bodies_h4_does_not_start_section() -> None:
 
 
 def test_extract_section_bodies_preamble_dropped() -> None:
-    """Vault behaviour: text before the first ## heading is excluded entirely."""
+    """Behaviour: text before the first ## heading is excluded entirely."""
     text = "Preamble paragraph never captured.\n\n## Section\nSection body kept."
     bodies = _extract_section_bodies(text)
     assert len(bodies) == 1

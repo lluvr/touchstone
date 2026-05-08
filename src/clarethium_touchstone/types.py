@@ -183,7 +183,7 @@ class ScopeAssessment(TypedDict):
     positive rate approaches 100%. The scope_assessment field tells
     consumers which P-signal to trust on a given source.
 
-    Boundaries (vault-validated, methodology-doc-aligned):
+    Boundaries (validated, methodology-doc-aligned):
     - ``diagnostic``: source_num_count < 5 - primary unsourced_numbers
       signal is reliable
     - ``transition``: 5 ≤ source_num_count < 10 - derivation-checker FPR
