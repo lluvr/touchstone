@@ -136,5 +136,5 @@
       "detector_v031": {"G": 0.52, "F": 0.41, "P": 0.07}
     }
   ],
-  "pending_outputs": "Outputs 8-11, 18-20 from GROUND_TRUTH_20.md (gpt-5-mini default + prohibition variants) live in JSON result files rather than as standalone .txt outputs. Adding them is future work."
+  "pending_outputs": "Outputs 8-11 and 18-20 from the published EXP-095 corpus (gpt-5-mini default and prohibition-variant runs) are not yet included as standalone .txt outputs in this repository. Adding them is future work."
 }

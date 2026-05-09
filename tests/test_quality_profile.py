@@ -256,7 +256,7 @@ def test_entity_grounding_appears_when_at_least_five_entities() -> None:
 
 def test_entity_grounding_excluded_when_fewer_than_five_entities() -> None:
     """When fewer than 5 entities extract, entity_grounding is excluded
-   .
+    .
     """
     # ADEQUATE_PRECISION_TEXT has plenty of numbers but no named entities
     result = quality_profile(ADEQUATE_PRECISION_TEXT, source=ADEQUATE_PRECISION_TEXT)

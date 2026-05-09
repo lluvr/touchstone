@@ -6,6 +6,33 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## v0.1.0 - 2026-05-09
+
+Initial public release of Touchstone. Includes:
+
+- **Touchstone Standard 1.0** at `STANDARDS/touchstone-1.0.md` (CC-BY 4.0). v0.1
+  scope is Section 5 (output profiling, eleven measurement layers). Section 6
+  (Specification Compliance) is reserved for a future release.
+- **`clarethium-touchstone` Python reference implementation** (Apache 2.0).
+  Dependency-free; Layer 1a accepts a vendor-neutral `BaselineGenerator`
+  callable so the user supplies their own LLM client.
+- **Two reproducibility benchmarks** in `benchmarks/`. EXP-081 (adversarial
+  discrimination) reproduces the published Cohen's d=-5.43 finding with
+  Touchstone d=-5.238, 100% per-output gap-direction agreement, MAE 0.014
+  on unsourced rate. EXP-095 (grounding decomposition) reaches 100%
+  P-direction agreement on existence (P>0 vs P=0) across 13 hand-classified
+  outputs from 3 model families against 3 source documents; per-output P
+  magnitude differs from manual range on 4/13 outputs.
+- **375 tests** pass on Python 3.10 / 3.11 / 3.12; CI green; snapshot drift
+  detection on both benchmarks pinned via byte-match pytest assertion.
+
+Patches 2 and 3 (multi-currency extraction; scaled-integer forms with raw-form
+source-match cascade fix) and Layer 11 `scope_assessment` (derivation-regime
+classifier) are included. For the per-patch development sequence that landed
+into this release, see the dated entries below.
+
+---
+
 ## 2026-05-03: Patch 2 (multi-currency) + Patch 3 (scaled-integer) shipped
 
 After two earlier sessions deferring these patches (concerned that
@@ -112,11 +139,7 @@ Layers extracted (in order):
 
 The library pins regex patterns, thresholds, filtering rules, and validation caveats so future drift is visible. Surprising behaviours are explicitly tested; any change is intentional and version-bumped.
 
-Test coverage: 338 tests pass on Python 3.10, 3.11, 3.12. Lint (ruff), format (ruff format), type check (mypy strict), and build (`python -m build`) all green in CI.
-
-Outstanding before first PyPI release:
-- PyPI Clarethium organization application approval
-- Standard sections still in drafting (Terminology, References, Appendices A and B)
+Test coverage: 338 tests pass on Python 3.10, 3.11, 3.12 (375 by v0.1.0). Lint (ruff), format (ruff format), type check (mypy strict), and build (`python -m build`) all green in CI.
 
 ## 2026-05-02: Initial bootstrap
 
@@ -154,10 +177,3 @@ The `clarethium-touchstone` library follows semantic versioning independently:
 - Library patches can ship without Standard changes
 - Library may temporarily implement features ahead of Standard ratification (flagged as experimental)
 - Library deprecations announced one minor version before removal
-
----
-
-## Pending releases
-
-- **Standard 1.0** - drafting in progress (May 2026 target)
-- **`clarethium-touchstone` 0.1.0** - initial library release (Q3 2026 target, dependent on PyPI approval and substrate extraction)
