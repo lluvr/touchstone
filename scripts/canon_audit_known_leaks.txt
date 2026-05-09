@@ -1,83 +1,158 @@
 # Known-leaks fixture for canon_audit.sh self-test.
 #
-# Every non-comment, non-blank line below MUST be matched by the audit's
-# rigid or vault patterns. If a line stops matching, the audit has a
-# bug — either the pattern was weakened or a new variant slipped in.
+# Every non-comment, non-blank line below MUST be matched by at least one
+# pattern family. If a line stops matching, the audit has a bug — either
+# the pattern was weakened or a new variant slipped in.
 #
 # When a new shape is added to PUBLIC_CANON_DISCIPLINE.md §3c, add a
 # representative line here AND extend the audit's regex. Both ship
 # together.
+#
+# Lines starting with `## family:` are informational — they label which
+# family the next block of fixture lines exercises. The self-test
+# only requires that each line match SOME family, but the labels keep
+# the fixture organized.
 
-# ── §3c rigid: operator-side / operator-internal ──
+## family: PRIVATE_FILES
+See STRATEGY.md §6 Durable Decisions for context.
+DATA_MOAT.md §3 names the privacy contract surface.
+RELEASE_PREP_v1.md Section 3 lists the must-exclude inventory.
+LEAKAGE_AUDIT_v1.md Findings 6 and 12 catalog the bug classes.
+REMEDIATION_LOG_v1.md §K records the fix sequence.
+MCP_CLIENT_CONFORMANCE_v1.md confirms 32/32 round-trips passed.
+PUBLISH_READINESS_VERDICT_v1.md gates the cut.
+PUBLISH_READINESS_ASSESSMENT_v1.md §3.2 names the open gaps.
+OBSERVATORY_STATE.md is the diagnostic document.
+CONSTRUCT_HONESTY_AUDIT_v1.md §6 says "no user-study evidence".
+STRESS_TEST_ASSESSMENT_v1.md §1.1 carries the novelty claim.
+METHODOLOGY_PAPER_v2_section2_DRAFT_v1.md outlines §2.
+METHODOLOGY_PAPER_OUTLINE_v1.md predates the section drafts.
+PHASE_1_5_GAPS.md Item 4 names the parser gap.
+FRAME_DIVERGENCE_v1.md spec part-1 ships at the URI.
+V4_2_GAP_INVENTORY_v1.md catalogs 27 gaps.
+
+## family: FVS_EVAL_PATHS
+Validation evidence in fvs_eval/v4/library_v4_reliability.json.
+See fvs_eval/SPEC.md §14 for the rejection list.
+Track A report at fvs_eval/validation_study/REPORT_V3_TRACK_A.md.
+Track B design at fvs_eval/reader_aid_study/DESIGN_v1.1.md.
+Engine at fvs_eval/v4/v4_2_engine.py.
+Audit at fvs_eval/v4/RULE_AUDIT.md §2.1.
+
+## family: WEB_APP_MODULES
+This module breaks the zero-LLM-cost contract; see observatory.py.
+The telemetry events are routed through tier_a_event.
+Saved-analyses persistence lives in saved_analyses.py for the web path.
+See origin_protection.py for the Turnstile integration.
+The framing_ai.py module owns the AI-interpret surface.
+Consensus check at consensus.py drives the verify flow.
+og_image.py renders the shareable preview cards.
+build_corpus_site.py emits the static site.
+export_corpus.py runs the daily NDJSON dump.
+reframe.py is the editorial CLI.
+claim_selector.py picks the question per claim.
+model_registry.py holds the lineage map.
+
+## family: WEB_APP_LIVE_IMPORTS
+from security import redact_pii_in_text
+from annotator import annotate_document as _annotate
+import observatory
+from telemetry import track_event
+from app import compose_html_response
+from pipeline import run_full_pipeline
+
+## family: OPERATOR_PATHS
+Run with --bin /home/llucic/.local/bin/frame-check-mcp.
+Operator memory directory at ~/.claude/projects/-home-llucic-frame-check/memory/.
+Trace path /Users/lovro/dev/frame-check on macOS.
+Hostname: llucic@Powerhouse.localdomain
+Bare hostname Powerhouse appears in the env.
+Repo URL https://github.com/lluvr/frame-check is the dev tree.
+
+## family: OPERATIONAL_STATE
+The web app reads cost_budget.json on every request.
+Per-feature limits live in feature_limit_compare.json.
+Lock state in process_lock.json prevents concurrent observatory runs.
+Daemon state at observatory_state.json.
+Topic catalog at observatory_topics.yaml.
+Provider map at model_registry.yaml.
+Event store at events.sqlite + events.sqlite-wal.
+Circuit breaker state at circuit_breaker.json.
+
+## family: OPERATOR_INFRA
+Routes through the secrets-vault LiteLLM proxy at 127.0.0.1:4000.
+Honors the proxy_isolated class on the secrets-vault.
+Litestream replicates the SQLite store to R2.
+fly.toml configures the deploy target.
+Run fly deploy -a fabrication-profiler from the dev tree.
+
+## family: RESEARCH_IDS
+Pre-registered as F-2026-027 with outcome F-2026-028.
+Validation under EXP-095 baseline.
+EXP-094 confound audit names the IRR threshold.
+F-2026-017 closed the deferred work.
+
+## family: STRATEGIC_EXTENDED
+The bet is that this calibration holds across the v2 corpus.
+Mainstream the bet by publishing the methodology.
+The zero-LLM-cost moat is preserved via opt-in.
+The hosting moat depends on Fly's pricing stability.
+Publication moat compounds with each revised release.
+The adoption moat depends on integrator trust.
+Empire moat shapes the long-run direction.
+The moat is broken when LLM augmentation lands.
+The project's moat is the named-authorship layer.
+
+## family: CANON_VOCAB_EXTENDED
+The construct-honesty posture is the contribution.
+Voice construct-honesty defect remains unfixed.
+Construct-honesty audit caught three classes.
+This surfaces the construct-honesty surfacing tax.
+Operationalizes the construct-honesty principle at every layer.
+Construct-honesty alignment between docs and code.
+Construct-honesty stance for AI-assisted authorship.
+The construct-honesty machinery flags the violation.
+
+## family: RIGID (legacy §3c — kept for backward-compat)
 This is operator-side notes and should not appear in public surface.
 The operator-internal evaluation rubric is referenced here.
-
-# ── §3c rigid: the operator's [optional adjective] [strategy|...] ──
-# Adjectives intervening between "operator's" and the leak noun do not exempt.
-# Note: "corpus" / "baseline" / "paper" deliberately NOT in this alternation —
-# domain-overloaded in cma/touchstone/lodestone where "operator" means "AI
-# practitioner" and "the operator's corpus" is generic. Catch shape-shifted
-# leaks like "the operator's research corpus" via the §5a fresh-reader test.
 See the operator's strategy memo for context.
 The work continues in the operator's research vault on disk.
 The work continues in the operator's experimental dev tree.
 Compare against the operator's positioning analysis from last quarter.
-
-# ── §3c rigid: bare operator [paper|study|playbook|doctrine|memo|brief] ──
-# Limited to artifact-shape words. Words like "operator methodology",
-# "operator practice", "operator framework", "operator positioning" are
-# too domain-shaped to flag mechanically (lodestone uses "operator" as
-# vocabulary for AI-practitioner; the overlap is incidental).
 Reading: operator playbook for the team.
 This is operator memo content.
 See operator brief for findings.
 The operator paper lives elsewhere.
 The operator study cited prior work.
 Operator doctrine for AI-coupled work.
-
-# ── §3c rigid: private [operator|...] ──
 Mirror from the private upstream when stable.
 Forked into the private fork for auditing.
-
-# ── §3c rigid: meta-reference parentheticals ──
 This is calibrated upstream (see private).
 The decision lives elsewhere (internal reference).
 Threshold tuning applies (operator-side reference).
 See the protocol (see operator-side studies).
-
-# ── §3c rigid: internal version / unredacted / the full X ──
 The internal version of this rubric is more detailed.
 See unredacted memo for the cited number.
 The full methodology lives outside this repo.
 Refer to the full ground-truth corpus for verification.
 The full specification ships separately.
-
-# ── §3c rigid: extracted-from / canonical-lives ──
 Extracted from the operator's research vault.
 The canonical research lives in the upstream tree.
 The canonical methodology lives separately.
-
-# ── §3c rigid: strategic-vocabulary bigrams ──
 Our trust moat comes from authorship.
 Data moat is the durable advantage.
 The compounding claim survives this round.
 This is named-authorship moat at work.
 Methodology-as-moat framing.
-
-# ── §3c rigid: empire vocabulary ──
 This is empire-grade infrastructure.
 Empire-wide rollout planned.
 The Clarethium-empire shape favors composition.
 The project's empire is built on canon.
-
-# ── §3c rigid: construct-honesty discipline ──
 Construct-honesty discipline applies at every layer.
 We follow the construct honesty discipline strictly.
 
-# ── §3c rigid: Powerhouse.localdomain hostname ──
-Author: lluvr <llucic@Powerhouse.localdomain>
-
-# ── §3c vault-as-architecture ──
+## family: VAULT (legacy)
 Library is vault-faithful: regex preserved as-is.
 Boundaries are vault-validated against EXP-095 data.
 Vault behaviour: text before first ## heading is excluded.

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# canon_audit.sh — public-canon §3c + §5b audit.
+# canon_audit.sh — comprehensive public-canon leak audit.
 #
-# Canonical operator-side copy. Each Clarethium public repo carries an
+# Canonical maintainer-side copy. Each Clarethium public repo carries an
 # exact copy at `scripts/canon_audit.sh`. A drift between this file and
 # the per-repo copy is a process bug; sync via:
 #
 #   cp ~/.claude/clarethium-internal/canon_audit.sh <repo>/scripts/canon_audit.sh
 #   cp ~/.claude/clarethium-internal/canon_audit_known_leaks.txt \
-#      <repo>/tests/fixtures/canon_audit_known_leaks.txt
+#      <repo>/scripts/canon_audit_known_leaks.txt
 #
 # Run from a Clarethium public repo root.
 #
@@ -17,27 +17,28 @@
 #                                   should catch (against the known-leaks
 #                                   fixture). Exit 0 = passes, 1 = misses.
 #   ./canon_audit.sh --version      Print canonical version SHA.
+#   ./canon_audit.sh --list-families Print pattern family names.
 #
-# Reference: ~/.claude/clarethium-internal/PUBLIC_CANON_DISCIPLINE.md §3c, §5b, §5e.
+# Reference: ~/.claude/clarethium-internal/PUBLIC_CANON_DISCIPLINE.md
+#   §3c (forbidden patterns), §5b (path allowlist), §5e (audit canon).
+#
+# Failure-mode catalog (each family closes a documented FM-PCD-N):
+#   PRIVATE_FILES         FM-PCD-1  (sanitize-not-construct: refs to maintainer-only docs)
+#   FVS_EVAL_PATHS        FM-PCD-9  (dead-link in adopter docs)
+#   WEB_APP_MODULES       FM-PCD-11 (web-app-architecture leak via shared modules)
+#   WEB_APP_LIVE_IMPORTS  FM-PCD-8  (try/except imports of private modules)
+#   OPERATOR_PATHS        FM-PCD-7  (personal-path leak)
+#   OPERATIONAL_STATE     FM-PCD-6  (runtime state file leak)
+#   OPERATOR_INFRA        FM-PCD-11 (operator infra leak via shared comments)
+#   RESEARCH_IDS          FM-PCD-10 (research ID without public resolver)
+#   STRATEGIC_EXTENDED    FM-PCD-3  (strategic vocabulary beyond §3c PAT_RIGID)
+#   CANON_VOCAB_EXTENDED  FM-PCD-3  (construct-honesty {posture|defect|audit})
+#   RIGID                 FM-PCD-1  (legacy §3c rigid set, kept for compat)
+#   VAULT                 FM-PCD-1  (vault-as-architecture, kept for compat)
 
 set -u
 
-VERSION='2026-05-08'
-
-# ── Forbidden patterns (§3c) ────────────────────────────────────────
-# These patterns must produce zero matches in tracked content outside
-# the §5b path allowlist. Case-insensitive throughout.
-
-# Rigid shapes — high-confidence, no false-positive cost.
-PAT_RIGID='operator-side|operator-internal|the operator['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\boperator (paper|study|playbook|doctrine|memo|brief)\b|private (operator|fork|tree|upstream|repo)|\(see private|\(internal reference|\(operator-side reference|\(see operator-side|internal version of|unredacted [a-z]|the full (methodology|version|spec|specification|paper|draft|manuscript|ground.truth)|extracted from the operator['\''’]s|the canonical (source|version|research|methodology) lives|(trust|data|authorship|methodology|adoption|compounding|positioning|named.authorship)[- ]moat|methodology[- ]as[- ]moat|Clarethium-empire|the project['\''’]s empire|empire-grade|empire-wide|(compounding|data|trust|authorship|named-authorship)[- ]claim|construct[- ]honesty discipline|Powerhouse\.localdomain|llucic@'
-
-# Vault-as-architecture — the noun and its term-of-art compounds.
-PAT_VAULT='\bvault[- ]faithful\b|\bvault[- ]validated\b|\bvault behaviour\b|\bvault behavior\b|\bvault[- ]style\b|\bvault['\''’]?s? precision threshold\b|\bvault notes\b|\bin the vault\b|\bfrom the vault\b|\bthe operator['\''’]s ([a-z-]+ ){0,4}vault\b'
-
-# Bare "vault" — context-dependent. Reported as a soft-finding (review
-# each hit; reject unless it's a domain compound on the allowlist).
-PAT_VAULT_BARE='\bvault\b'
-VAULT_BARE_ALLOWLIST='password vault|bank vault|secrets vault|secrets-vault|hashicorp vault|key vault|vault7|vaulted offline'
+VERSION='2026-05-09-touchstone-research-ids'
 
 # ── Path allowlist (§5b) ────────────────────────────────────────────
 EXCLUDES=(
@@ -59,18 +60,102 @@ EXCLUDES=(
   --exclude=AGENTS.md
   --exclude=.gitleaks.toml
   --exclude=.gitignore
+  --exclude=.pre-commit-config.yaml
   --exclude=PUBLIC_CANON_DISCIPLINE.md
   --exclude=canon_audit.sh
   --exclude=canon_audit_known_leaks.txt
+  --exclude=canon_replacements.txt
 )
 
 # ── Inline exempt support ───────────────────────────────────────────
 # Lines containing `# canon-exempt: <reason>` (or `// canon-exempt:`)
-# are allowed past the audit. The reason is mandatory; bare-tag fails.
-
+# are allowed past the audit. Reason is mandatory; bare-tag fails.
 filter_inline_exempts() {
   grep -vE '(#|//|<!--)\s*canon-exempt:\s*\S'
 }
+
+# ── Pattern family: PRIVATE_FILES (FM-PCD-1) ────────────────────────
+# Operator-internal documents referenced by filename. Public canon
+# never names these; references invite dead-link reads.
+PAT_PRIVATE_FILES='\b(STRATEGY|DATA_MOAT|RELEASE_PREP|LEAKAGE_AUDIT|REMEDIATION_LOG|MCP_CLIENT_CONFORMANCE|PUBLISH_READINESS_VERDICT|PUBLISH_READINESS_ASSESSMENT|OBSERVATORY_STATE|CONSTRUCT_HONESTY_AUDIT|STRESS_TEST_ASSESSMENT|METHODOLOGY_PAPER|PHASE_[0-9_]+_GAPS|FRAME_DIVERGENCE_v[0-9]|V4_2_GAP_INVENTORY|EXTRACT_POLICY|VERIFICATION_ARCHITECTURE|DETECTOR_V[0-9]_PROMOTION|TRACK_B_INFORMAL|REVIEWERS|REVIEWER_OUTREACH_TEMPLATES|CALIBRATION_SET|FRAMING_ANALYSIS|V[0-9]_EVIDENCE_FOR_PROMOTION|V[0-9]_CONFIDENCE_INVERSION_IMPACT|FRAME_DIVERGENCE_v[0-9]_SUMMARY|ANCHOR_AUTHORSHIP_METHODOLOGY|MCP_INTEGRATOR_OUTREACH|MCP_PACKAGE_DESIGN|MCP_CONTRACT_V[0-9]_PROPOSAL|MCP_TYPESCRIPT_SCOPE|METHODOLOGY_V[0-9]_CANDIDATES|ENGINE_TIER_(STRATEGY|RECOMMENDATIONS)|CROSS_CURATOR_OUTREACH|DETECTION_RULE_AUDIT|VISITOR_AUDIT|RULE_AUDIT|LIBRARY_V[0-9]_TO_V[0-9]_RATIFICATION|RELIABILITY_STUDY|FALSIFICATION_PROTOCOL|CORRESPONDENCE_STUDY)([_a-zA-Z0-9]*)\.md\b|\b(DETECTION_RULE_AUDIT|VISITOR_AUDIT)\b'
+
+# ── Pattern family: FVS_EVAL_PATHS (FM-PCD-9) ───────────────────────
+# Maintainer-side validation tree. No public resolver.
+PAT_FVS_EVAL_PATHS='\bfvs_eval/[a-zA-Z0-9_./-]+'
+
+# ── Pattern family: WEB_APP_MODULES (FM-PCD-11) ─────────────────────
+# References to web-app-only modules from shared MCP code. Either as
+# .py filename, in import statements, or as bareword module names in
+# comments. Allowlist excludes the modules that legitimately ship in
+# the wheel.
+PAT_WEB_APP_MODULES='\b(observatory|telemetry|model_registry|tier_a_event|saved_analyses|saved_compare|origin_protection|framing_ai|consensus|og_image|build_corpus_site|export_corpus|reframe|claim_selector)(\.py)?\b'
+
+# ── Pattern family: WEB_APP_LIVE_IMPORTS (FM-PCD-8) ─────────────────
+# Try-imports of private modules. The module name in the source is
+# itself the leak, regardless of whether the import succeeds at
+# runtime. Includes the modules that a wheel-installed adopter cannot
+# resolve.
+PAT_WEB_APP_LIVE_IMPORTS='\b(from|import) (security|annotator|observatory|telemetry|model_registry|tier_a_event|saved_analyses|saved_compare|origin_protection|framing_ai|consensus|og_image|build_corpus_site|export_corpus|reframe|claim_selector|app|pipeline|formatter|framing_sdk|falsifications|phase1_smoke|consistency|examples|compare_examples|domain_baselines|decision_readiness_diff|decision_readiness_peer|l2_concept_validation|l2_extended_validation|metric_classifier|mirror|subject_classifier)\b'
+
+# ── Pattern family: OPERATOR_PATHS (FM-PCD-7) ───────────────────────
+# Personal machine paths and operator-private repo URLs.
+PAT_OPERATOR_PATHS='/home/llucic|/Users/lovro|Powerhouse(\.localdomain)?|~/\.claude/projects|\.claude/projects/-home-llucic|github\.com/lluvr/frame-check\b'
+
+# ── Pattern family: OPERATIONAL_STATE (FM-PCD-6) ────────────────────
+# Runtime state files from the live web deploy. None of these have
+# any public canon use.
+PAT_OPERATIONAL_STATE='\b(cost_budget|feature_limit_[a-z_]+|process_lock|observatory_state|frame_check_observatory_state|circuit_breaker)\.(json|sqlite|sqlite-shm|sqlite-wal)\b|\b(observatory_topics|model_registry)\.yaml\b|\bevents\.sqlite\b'
+
+# ── Pattern family: OPERATOR_INFRA (FM-PCD-11) ──────────────────────
+# Maintainer-side infrastructure detail. The deploy target (Fly.io) is
+# operator-internal; the LLM proxy implementation is operator-internal.
+PAT_OPERATOR_INFRA='\bsecrets[- ]vault\b|\bLiteLLM proxy\b|127\.0\.0\.1:[0-9]+|proxy_isolated|\blitestream\b|\bfly\.toml\b|\bfly deploy\b|\bfabrication-profiler\b|operator-managed config files'
+
+# ── Pattern family: RESEARCH_IDS (FM-PCD-10) ────────────────────────
+# Operator research register IDs. No public resolver.
+PAT_RESEARCH_IDS='\bF-2026-[0-9]{3}\b|\bEXP-[0-9]{3}\b'
+
+# ── Pattern family: STRATEGIC_EXTENDED (FM-PCD-3) ───────────────────
+# Strategic vocabulary beyond §3c PAT_RIGID. The bare/novel forms.
+PAT_STRATEGIC_EXTENDED='\bthe bet\b|\bthe[- ]bet\b|(zero[- ]LLM[- ]cost|production|hosting|publication|adoption|the project['\''’]s)[- ]moat\b|\bthe moat\b|\bempire moat\b'
+
+# ── Pattern family: CANON_VOCAB_EXTENDED (FM-PCD-3) ─────────────────
+# construct-honesty compound forms beyond `discipline`. Only the
+# `discipline` form is on canon_replacements.txt; the others slipped
+# through.
+PAT_CANON_VOCAB_EXTENDED='construct[- ]honesty (posture|defect|audit|surfacing|principle|alignment|tax|stance|machinery)\b'
+
+# ── Pattern family: RIGID (legacy §3c, FM-PCD-1) ────────────────────
+PAT_RIGID='operator-side|operator-internal|maintainer-side|maintainer-internal|the operator['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\boperator (paper|study|playbook|doctrine|memo|brief)\b|the maintainer['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\bmaintainer (paper|study|playbook|doctrine|memo|brief)\b|private (operator|fork|tree|upstream|repo)|\(see private|\(internal reference|\(operator-side reference|\(see operator-side|internal version of|unredacted [a-z]|the full (methodology|version|spec|specification|paper|draft|manuscript|ground.truth)|extracted from the operator['\''’]s|the canonical (source|version|research|methodology) lives|(trust|data|authorship|methodology|adoption|compounding|positioning|named.authorship)[- ]moat|methodology[- ]as[- ]moat|Clarethium-empire|the project['\''’]s empire|empire-grade|empire-wide|(compounding|data|trust|authorship|named-authorship)[- ]claim|construct[- ]honest(y)?\s+(discipline|posture|defect|audit|surfacing|principle|alignment|tax|stance|machinery|frame|reading)\b|\bunder-detection (construct|posture)\b|llucic@|library_v[0-9]+ ratification|library_v[0-9]+ ratified|Step [0-9]+ ratification|after library_v[0-9]+ ratification|substrate[- ]side composition roadmap|Item [0-9]+ of the substrate|\bMove\s+D-[A-Z]+-[0-9]+\b|\bDecision\s+D-[A-Z]+-[0-9]+\b|Step [0-9]+ of the (decomposition|refactor|cleanup|migration|rollout|plan)|as Step [0-9]+ of the|METHODOLOGY[ ]?§[0-9]+(\.[0-9]+)*'
+
+# ── Pattern family: VAULT (legacy §3c) ──────────────────────────────
+PAT_VAULT='\bvault[- ]faithful\b|\bvault[- ]validated\b|\bvault behaviour\b|\bvault behavior\b|\bvault[- ]style\b|\bvault['\''’]?s? precision threshold\b|\bvault notes\b|\bin the vault\b|\bfrom the vault\b|\bthe operator['\''’]s ([a-z-]+ ){0,4}vault\b'
+
+PAT_VAULT_BARE='\bvault\b'
+VAULT_BARE_ALLOWLIST='password vault|bank vault|secrets vault|secrets-vault|hashicorp vault|key vault|vault7|vaulted offline'
+
+# Web-app modules: a few legitimate uses survive in benign contexts
+# (e.g., a comment in a frame catalog entry that happens to contain
+# the word "consensus"). Specific allowlist lines for known benign
+# uses of `consensus` (the English word) and `mirror` (mirror image).
+WEB_APP_MODULE_ALLOWLIST='consensus (verdict|went|on|across|exists|doesn|that|but|mechanism|proxy|and|is|using|now)|scientific consensus|expert consensus|reader consensus|rater consensus|cross-(provider|family) consensus|cross-provider consensus|library_consensus|Re-compute consensus|_consensus|^# Consensus|verifier consensus|inter-LLM consensus|consensus research|the consensus|broke the consensus|community consensus|editor body consensus|path to consensus|by .* consensus|consensus or strong|mirror (image|the methodology|review)|examples?\.md|reframe (the question|the document)|architectural reframe|consistency check|\bobservatory\b\s+(state|topics|daemon|paused|offline)|telemetry\.|telemetry tagging|telemetry events|telemetry schema|telemetry path|downstream telemetry|corpus telemetry|telemetry queries|structural telemetry|telemetry_opt_in|telemetry pipeline|telemetry patterns|production telemetry|verification.*telemetry|telemetry and audit|Tier B telemetry|to telemetry|record telemetry|surface in|saved_analyses / saved_compare|"reframe", "topic_generation"|verification, consensus|telemetry\)|for telemetry pass|:[[:space:]]*#[[:space:]]+Consensus[[:space:]]*$|domain_baselines\.py'
+
+# Strategic-extended allowlist: specific contexts where the bigram is
+# legitimate (quoted excerpts, methodology paper).
+STRATEGIC_EXTENDED_ALLOWLIST='NVIDIA['\''’]s competitive moat|moat continues to strengthen|competitive moat through CUDA|economic moat|wide moat|narrow moat'
+
+# Research-IDs allowlist: a research ID is permitted iff it has a
+# public resolver (a directory or document in a public Clarethium
+# repo that defines the ID). The Touchstone benchmarks ship under
+# `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`
+# in the Clarethium/touchstone public repo and are the public
+# resolvers for EXP-081 and EXP-095 respectively, so those IDs are
+# legitimate public canon and are allowlisted globally. Adding a new
+# ID here requires that the ID is referenced from a directory or
+# document the public can resolve. Other research IDs without a
+# public resolver remain leaks; inline `# canon-exempt: <reason>` is
+# the per-line escape for one-off cases.
+RESEARCH_IDS_ALLOWLIST='\bEXP-081\b|\bEXP-095\b'
 
 # ── Self-test ───────────────────────────────────────────────────────
 self_test() {
@@ -79,6 +164,7 @@ self_test() {
   fixture=
   for candidate in \
     "$script_dir/canon_audit_known_leaks.txt" \
+    "scripts/canon_audit_known_leaks.txt" \
     "tests/fixtures/canon_audit_known_leaks.txt" \
     ~/.claude/clarethium-internal/canon_audit_known_leaks.txt; do
     if [ -f "$candidate" ]; then
@@ -92,14 +178,44 @@ self_test() {
   fi
 
   # Each non-comment, non-blank fixture line MUST be matched by at
-  # least one of: PAT_RIGID, PAT_VAULT, or PAT_VAULT_BARE.
-  local expected misses=0
-  expected=$(grep -cv '^\s*\(#\|$\)' "$fixture" 2>/dev/null || echo 0)
-
+  # least one pattern family. Lines starting with `## family:` set the
+  # expected family; if set, the matching pattern must be in that
+  # family. Lines without `## family:` only need to match SOME family.
+  local total=0 misses=0 expected_family=""
   while IFS= read -r line; do
-    [ -z "$line" ] && continue
-    case "$line" in \#*) continue ;; esac
-    if ! echo "$line" | grep -qEi "$PAT_RIGID|$PAT_VAULT|$PAT_VAULT_BARE"; then
+    if [ -z "$line" ]; then continue; fi
+    case "$line" in
+      "##"*"family:"*)
+        expected_family="${line#*family:}"
+        expected_family="${expected_family// /}"
+        continue
+        ;;
+      "#"*) continue ;;
+    esac
+    total=$((total + 1))
+    local matched=0
+    for family_pat in \
+        "PRIVATE_FILES:$PAT_PRIVATE_FILES" \
+        "FVS_EVAL_PATHS:$PAT_FVS_EVAL_PATHS" \
+        "WEB_APP_MODULES:$PAT_WEB_APP_MODULES" \
+        "WEB_APP_LIVE_IMPORTS:$PAT_WEB_APP_LIVE_IMPORTS" \
+        "OPERATOR_PATHS:$PAT_OPERATOR_PATHS" \
+        "OPERATIONAL_STATE:$PAT_OPERATIONAL_STATE" \
+        "OPERATOR_INFRA:$PAT_OPERATOR_INFRA" \
+        "RESEARCH_IDS:$PAT_RESEARCH_IDS" \
+        "STRATEGIC_EXTENDED:$PAT_STRATEGIC_EXTENDED" \
+        "CANON_VOCAB_EXTENDED:$PAT_CANON_VOCAB_EXTENDED" \
+        "RIGID:$PAT_RIGID" \
+        "VAULT:$PAT_VAULT" \
+        "VAULT_BARE:$PAT_VAULT_BARE"; do
+      local family="${family_pat%%:*}"
+      local pat="${family_pat#*:}"
+      if echo "$line" | grep -qEi "$pat"; then
+        matched=1
+        break
+      fi
+    done
+    if [ "$matched" -eq 0 ]; then
       [ "$misses" -eq 0 ] && echo "self-test FAIL: lines not matched by any pattern:" >&2
       echo "  MISS: $line" >&2
       misses=$((misses + 1))
@@ -107,11 +223,24 @@ self_test() {
   done < "$fixture"
 
   if [ "$misses" -gt 0 ]; then
-    echo "self-test FAIL: $misses/$expected known-leak lines not matched"
+    echo "self-test FAIL: $misses/$total known-leak lines not matched"
     return 1
   fi
-  echo "self-test PASS: all $expected known-leak lines matched"
+  echo "self-test PASS: all $total known-leak lines matched"
   return 0
+}
+
+# ── Run audit on a single pattern family ────────────────────────────
+audit_family() {
+  local family="$1"
+  local pattern="$2"
+  local allowlist="${3:-}"
+  local hits
+  hits=$(grep -rEn -i "${EXCLUDES[@]}" --binary-files=without-match "$pattern" . 2>/dev/null | filter_inline_exempts || true)
+  if [ -n "$allowlist" ]; then
+    hits=$(echo "$hits" | grep -viE "$allowlist" || true)
+  fi
+  echo "$hits"
 }
 
 # ── Main ────────────────────────────────────────────────────────────
@@ -120,39 +249,69 @@ case "${1:-audit}" in
     echo "canon_audit.sh $VERSION"
     exit 0
     ;;
+  --list-families)
+    cat <<'EOF'
+PRIVATE_FILES         FM-PCD-1   maintainer-only docs as filename refs
+FVS_EVAL_PATHS        FM-PCD-9   maintainer-side validation tree paths
+WEB_APP_MODULES       FM-PCD-11  web-app module name leaks
+WEB_APP_LIVE_IMPORTS  FM-PCD-8   try-imports of private modules
+OPERATOR_PATHS        FM-PCD-7   personal machine paths + private repo URLs
+OPERATIONAL_STATE     FM-PCD-6   runtime state file shapes
+OPERATOR_INFRA        FM-PCD-11  Fly.io / LiteLLM / litestream / secrets-vault
+RESEARCH_IDS          FM-PCD-10  F-NNNN-NNN, EXP-NNN (no public resolver)
+STRATEGIC_EXTENDED    FM-PCD-3   bare/novel moat compounds, "the bet"
+CANON_VOCAB_EXTENDED  FM-PCD-3   construct-honesty {posture|defect|audit|...}
+RIGID                 FM-PCD-1   legacy §3c rigid set
+VAULT                 FM-PCD-1   vault-as-architecture compounds
+VAULT_BARE            review     bare "vault" (allowlist permits domain forms)
+EOF
+    exit 0
+    ;;
   --self-test)
     self_test
     exit $?
     ;;
   audit|"")
-    rigid_hits=$(grep -rEn -i "${EXCLUDES[@]}" --binary-files=without-match "$PAT_RIGID" . 2>/dev/null | filter_inline_exempts || true)
-    vault_hits=$(grep -rEn -i "${EXCLUDES[@]}" --binary-files=without-match "$PAT_VAULT" . 2>/dev/null | filter_inline_exempts || true)
-    bare_hits=$(grep -rEn -i "${EXCLUDES[@]}" --binary-files=without-match "$PAT_VAULT_BARE" . 2>/dev/null \
-      | grep -viE "$VAULT_BARE_ALLOWLIST" \
-      | filter_inline_exempts || true)
-
     fail=0
-    if [ -n "$rigid_hits" ]; then
-      echo "## §3c rigid-pattern hits ##"
-      echo "$rigid_hits"
-      fail=1
-    fi
-    if [ -n "$vault_hits" ]; then
-      [ -n "$rigid_hits" ] && echo
-      echo "## §3c vault-as-architecture hits ##"
-      echo "$vault_hits"
-      fail=1
-    fi
-    if [ -n "$bare_hits" ]; then
-      [ -n "$rigid_hits$vault_hits" ] && echo
-      echo "## §3c bare-vault hits (review each) ##"
-      echo "$bare_hits"
-      fail=1
-    fi
+    declare -a families
+    families=(
+      "PRIVATE_FILES:PAT_PRIVATE_FILES"
+      "FVS_EVAL_PATHS:PAT_FVS_EVAL_PATHS"
+      "WEB_APP_MODULES:PAT_WEB_APP_MODULES:WEB_APP_MODULE_ALLOWLIST"
+      "WEB_APP_LIVE_IMPORTS:PAT_WEB_APP_LIVE_IMPORTS"
+      "OPERATOR_PATHS:PAT_OPERATOR_PATHS"
+      "OPERATIONAL_STATE:PAT_OPERATIONAL_STATE"
+      "OPERATOR_INFRA:PAT_OPERATOR_INFRA"
+      "RESEARCH_IDS:PAT_RESEARCH_IDS:RESEARCH_IDS_ALLOWLIST"
+      "STRATEGIC_EXTENDED:PAT_STRATEGIC_EXTENDED:STRATEGIC_EXTENDED_ALLOWLIST"
+      "CANON_VOCAB_EXTENDED:PAT_CANON_VOCAB_EXTENDED"
+      "RIGID:PAT_RIGID"
+      "VAULT:PAT_VAULT"
+      "VAULT_BARE:PAT_VAULT_BARE:VAULT_BARE_ALLOWLIST"
+    )
+    first=1
+    for entry in "${families[@]}"; do
+      IFS=':' read -r family pvar avar <<< "$entry"
+      pattern="${!pvar}"
+      if [ -n "${avar:-}" ]; then
+        allowlist="${!avar}"
+      else
+        allowlist=""
+      fi
+      hits=$(audit_family "$family" "$pattern" "$allowlist")
+      if [ -n "$hits" ]; then
+        [ "$first" -eq 0 ] && echo
+        first=0
+        count=$(echo "$hits" | wc -l)
+        echo "## ${family} (${count} hit$([ "$count" = "1" ] || echo s)) ##"
+        echo "$hits"
+        fail=1
+      fi
+    done
     exit $fail
     ;;
   *)
-    echo "usage: $0 [--version|--self-test|audit]" >&2
+    echo "usage: $0 [--version|--list-families|--self-test|audit]" >&2
     exit 2
     ;;
 esac

@@ -46,11 +46,11 @@ runs are in the ground-truth set.
   variance. The aggregate reflects close agreement on the majority
   of outputs; specific cases drift further (see below).
 - **MAE vs full manual classification (n=7): 0.12-0.13 across G/F/P**
-  - pre-existing systematic detector behaviour, documented in
-  `GROUND_TRUTH_20.md`. The detector consistently over-counts G
-  relative to manual classification because mixed sentences (source
-  number + interpretation) are classified as G by the detector but
-  as F by manual when the primary function is interpretive.
+  - pre-existing systematic detector behaviour. The detector
+  consistently over-counts G relative to manual classification
+  because mixed sentences (source number + interpretation) are
+  classified as G by the detector but as F by manual when the
+  primary function is interpretive.
 
 ### Caveats and known drift
 
@@ -65,7 +65,7 @@ implementation:
   manual P=0.48 baseline, but the detector_v031 figure is a more
   optimistic structural-P count than the current code yields.
 - **Output #16 (xAI BLS run 3):** detector_v031 published 0.18 (the
-  v1.4.1 fix figure cited in `GROUND_TRUTH_20.md` line 73),
+  v1.4.1 fix figure recorded in the EXP-095 paper),
   Touchstone now produces **0.051** (post-Patch-3, was 0.026 in
   pre-Patch-3 baseline). Manual estimate is 0.10-0.15. Patch 3
   (scaled-integer extraction) improved this by making source-side
@@ -75,8 +75,8 @@ implementation:
   improvement requires the deferred Patch 2 (multi-currency) and
   proper magnitude-aware source matching.
 
-This means the v1.4.1 derivation fix that the GROUND_TRUTH_20 doc
-credits with improving xAI BLS detection does NOT fully reproduce
+This means the v1.4.1 derivation fix credited in the EXP-095 paper
+with improving xAI BLS detection does NOT fully reproduce
 in the reference implementation; either the fix's effect is
 input-specific or it was partially regressed since the doc was
 written. **Touchstone v0.1 inherits this state.**
@@ -91,10 +91,10 @@ checker would create churn without information value.
 
 ## Pending expansion
 
-7 of the 20 outputs in `GROUND_TRUTH_20.md` (gpt-5-mini default
-runs and prohibition-condition variants) live in JSON result files
-in JSON result files rather than as standalone .txt outputs. Adding them to
-this benchmark is future work.
+7 additional outputs from the published EXP-095 corpus (gpt-5-mini
+default runs and prohibition-condition variants, bringing the total
+from 13 to 20) are not yet included as standalone .txt outputs in
+this repository. Adding them is future work.
 
 ## Files
 

@@ -1,0 +1,59 @@
+title = "touchstone gitleaks configuration"
+
+# Extends gitleaks' default ruleset with patterns specific to the
+# public-canon discipline. Default rules already catch GitHub PATs,
+# AWS keys, Stripe tokens, and generic high-entropy secrets. The
+# custom rules below add path-pattern blocks for known unbundled
+# artifact filename shapes plus contributor-workspace absolute
+# paths.
+
+[extend]
+# Inherit gitleaks' built-in ruleset. Custom rules below ADD to
+# these, do not replace.
+useDefault = true
+
+# Refuse commits matching common agent-handoff scratchpad filename
+# patterns. These files are scratch space and should never enter
+# version control regardless of content.
+[[rules]]
+id = "agent-handoff-scratchpad"
+description = "Agent handoff scratchpad files (should not be committed)"
+regex = '''.+''' # match anything in the file content
+path = '''(?i)(CONTINUATION_PROMPT|HANDOFF_PROMPT|AGENT_HANDOFF|SESSION_HANDOFF|SCRATCH_PROMPT|AGENT_SCRATCH).*\.md$'''
+
+# Filename shapes that fall outside the public-repo content scope
+# defined in AGENTS.md. Strategic memos, audit deliverables, and
+# similar working-set artifacts have shapes that the linter can
+# refuse on by name.
+[[rules]]
+id = "out-of-scope-doc-shape"
+description = "Filename shape that falls outside the public-repo content scope"
+regex = '''.+'''
+path = '''(?i)(^|/)([A-Z_]*INVENTORY|[A-Z_]*AUDIT|[A-Z_]*VERDICT|[A-Z_]*REMEDIATION_LOG|[A-Z_]*OUTREACH|[A-Z_]*PROMOTION)(_v[0-9]+)?\.(md|sh|py)$'''
+
+# Absolute paths into a contributor's home directory. The pattern
+# is broad on purpose: any /home/<user>/<subdir> shape is suspicious
+# in committed content. Legitimate cases (placeholder paths in
+# docs, fictional fixtures) are in the allowlist.
+[[rules]]
+id = "absolute-home-path"
+description = "Absolute path into a contributor's home directory"
+regex = '''(?i)/home/[a-z][a-z0-9._-]*/[a-z.][a-z0-9._-]*'''
+[rules.allowlist]
+regexes = [
+  '''/home/example-user''',
+  '''/home/<user>''',
+  '''/home/USER''',
+  '''/home/\$USER''',
+]
+
+[allowlist]
+description = "Files exempt from the project-specific rules above (gitleaks default rules still apply)"
+# Allow the canon audit script and its self-test fixture to enumerate
+# the leak filename shapes it must detect; allow AGENTS.md and the
+# discipline doc to name patterns it forbids.
+paths = [
+  '''scripts/canon_audit\.sh''',
+  '''scripts/canon_audit_known_leaks\.txt''',
+  '''AGENTS\.md''',
+]

@@ -330,21 +330,24 @@ Evolution is governed by the Suggestion process documented in `SUGGESTIONS/PROCE
 
 ## 11. Conformance
 
-> **Operator finalization required.** Specify formal conformance process. Initial proposal: self-certification via passing reference test cases plus documentation of threshold adjustments. Year 2-3: optional formal certification by editor body.
+Conformance is by self-certification. An implementation is conformant against Standard 1.0 when it:
+
+1. Passes the reference test suite shipped in `tests/` of the reference implementation.
+2. Documents any threshold adjustments away from the defaults specified in §7.
+3. Surfaces the standard version it implements through whatever interface the implementation exposes.
+
+Optional formal certification by an editor body is reserved for a future Standard version once an editor body is constituted.
 
 ---
 
 ## 12. References
 
-> **Operator finalization required.** Convert the EXP-series research below into formal citations. Reproductions of EXP-081 and EXP-095 ship in this repository at `benchmarks/`. AIRP R-series coupling is deferred to Standard 1.0.1 patch (citations require the R-series papers to publish first; ratification cannot block on external dependency).
->
-> - EXP-078 through EXP-081 (fabrication and grounding studies)
-> - EXP-084 (gaming resistance / Goodhart dynamics validation)
-> - EXP-087 (alignment calibration)
-> - EXP-088 (typed verifiers + semantic gating validation)
-> - EXP-089 (binary diagnostic structure analysis)
-> - EXP-094 (construct audit, instability vs fabrication rename)
-> - EXP-095 (G/F/P decomposition origin)
+The reproducible empirical validation studies that ship with this Standard are in `benchmarks/` of the reference implementation:
+
+- **EXP-081** (adversarial discrimination): `benchmarks/exp_081_discrimination/`. Reproduces a published Cohen's d=-5.43 finding on a 12-document corpus.
+- **EXP-095** (grounding decomposition): `benchmarks/exp_095_grounding/`. 13 hand-classified outputs from 3 model families against 3 source documents.
+
+Additional empirical validation studies referenced during the drafting of this Standard are in preparation; their citations will land as Standard 1.0.1 editorial patches once the corresponding papers publish.
 
 External references:
 
