@@ -74,6 +74,75 @@ def test_layer_1a_returns_none_when_all_baselines_fail() -> None:
     assert result["heading_defaultness"] is None
 
 
+def test_layer_1a_tolerates_baseline_generator_exceptions() -> None:
+    """Exceptions raised by the caller-supplied generator are caught
+    and counted as failed calls. They must not propagate out of
+    ``structural_profile`` or ``measure()``: a flaky LLM client must
+    not crash an entire measurement.
+    """
+
+    def raising(_p: str) -> str | None:
+        raise RuntimeError("simulated LLM rate-limit error")
+
+    # Should not raise. All three calls fail, so 1a returns None.
+    result = structural_profile(
+        "## My Heading\nBody content here today.",
+        topic="topic",
+        baseline_generator=raising,
+        n_baselines=3,
+    )
+    assert result["heading_defaultness"] is None
+    # 1b and 1c still populate normally on text alone.
+    assert isinstance(result["mechanism_ratio"], float)
+    assert isinstance(result["assertion_ratio"], float)
+
+
+def test_layer_1a_tolerates_partial_exceptions() -> None:
+    """Mixed failure modes (raises, None returns, successful strings)
+    are all handled; only successful string returns count toward
+    ``n_baseline_documents``.
+    """
+    call_count = [0]
+
+    def mixed(_p: str) -> str | None:
+        call_count[0] += 1
+        if call_count[0] == 1:
+            raise ValueError("first call raised")
+        if call_count[0] == 2:
+            return None
+        return "## Some Heading\nText body."
+
+    result = structural_profile(
+        "## My Heading\nDoc body.",
+        topic="topic",
+        baseline_generator=mixed,
+        n_baselines=3,
+    )
+    hd = result["heading_defaultness"]
+    assert hd is not None
+    # Only the third call succeeded
+    assert hd["n_baseline_documents"] == 1
+
+
+def test_layer_1a_rejects_non_string_return() -> None:
+    """A baseline_generator that returns a non-string (e.g. a dict or
+    int) is treated as a failed call. The library does not assume any
+    particular SDK shape.
+    """
+
+    def bad_return(_p: str) -> str | None:
+        # Pretend the user accidentally returned the raw API response.
+        return {"text": "## Heading\nBody."}  # type: ignore[return-value]
+
+    result = structural_profile(
+        "## My Heading\nDoc body.",
+        topic="topic",
+        baseline_generator=bad_return,
+        n_baselines=2,
+    )
+    assert result["heading_defaultness"] is None
+
+
 def test_layer_1a_full_overlap_yields_max_default_score() -> None:
     """Document heading words fully present in baseline word union →
     100% overlap → all doc headings match → score = 1.0; is_default True.

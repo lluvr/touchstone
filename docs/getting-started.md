@@ -3,11 +3,25 @@
 This guide covers installation, basic usage, and first measurements with the
 `clarethium-touchstone` library.
 
-> **Status:** v0.1 ships Section 5 measurement only. All eleven measurement
-> layers (Standard Section 5) are implemented and tested with empirical
-> validation against the published EXP-081 adversarial-validity finding
-> (Cohen's d = -5.43 reproduced). Section 6 (Specification Compliance) is
-> reserved for a future release; the `align()` API is not part of v0.1.
+> **Status:** v0.1 ships Section 5 measurement only. All eleven Section 5
+> layers are implemented and tested; two internal regression benchmarks
+> (EXP-081 and EXP-095) reproduce exactly from a clone. Section 6
+> (Specification Compliance) is reserved for Standard 1.1; the `align()`
+> API is not part of v0.1.
+
+## Scope and locale
+
+The reference implementation is calibrated and tested on English-language
+Markdown analytical documents (financial summaries, product analyses,
+research summaries). Behavior on other languages is undefined: the regex
+patterns, stop-word list, syllable counter, and entity heuristics are
+English-only and may silently produce uninformative results on non-English
+input. Behavior on non-Markdown text (plain prose, JSON, code) is
+implementation-defined and not part of v1.0's validated scope.
+
+Empty or near-empty input does not raise: short documents return
+all-zero metrics with the corresponding precision indicator set to
+`"low"`. Treat `"low"`-precision results as not yet meaningful.
 
 ## Installation
 
@@ -21,18 +35,23 @@ The library is dependency-free. Layer 1a (heading defaultness) accepts a
 caller-supplied LLM client via a `BaselineGenerator` callable, so no
 provider SDK is required to install.
 
-For development (running tests, linting):
-
-```bash
-pip install "clarethium-touchstone[dev]"
-```
-
-Until PyPI publication, install from source:
+Until PyPI publication, install from source. On modern Debian/Ubuntu and
+Mac-homebrew Pythons, the system Python is externally-managed (PEP-668);
+install into a virtual environment:
 
 ```bash
 git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e .
+```
+
+For development (running tests, linting):
+
+```bash
+pip install -e ".[dev]"
+pytest -q
 ```
 
 ## First measurement
@@ -97,6 +116,76 @@ When `topic` or `baseline_generator` is missing, `heading_defaultness` is
 `None` and the rest of `structural_profile` (mechanism ratio, assertion
 ratio) runs normally on text alone.
 
+### Baseline-generator quality guidance
+
+Layer 1a's output depends on the baseline generator's quirks. To get
+reproducible results across runs, fix these dimensions:
+
+- **Model class and version.** Different models produce different
+  default headings on the same topic. Document the model and version
+  you used; treat a change in either as a calibration change.
+- **Temperature.** The default prompt asks for a 600-800 word analysis;
+  results are intended for sampling at temperature ≥ 1.0 so that
+  multiple calls surface a representative spread of defaults rather
+  than a single deterministic skeleton. Temperature 0 collapses the
+  baseline to one document and inflates the overlap signal.
+- **n_baselines.** The default of 3 samples is a minimum for stable
+  word-union estimation. Higher (5-10) gives a more stable baseline
+  word set at the cost of more LLM calls.
+- **Topic specificity.** Generic topics ("strategy") produce generic
+  defaults; specific topics ("Q1 FY2026 earnings analysis for a
+  consumer-goods company") produce more on-target defaults and a
+  more discriminating overlap signal.
+- **Recoverable failures.** The library tolerates raised exceptions
+  and non-string returns from the generator (each is counted as a
+  failed call). If every call across `n_baselines` fails,
+  `heading_defaultness` is None; the layer does not crash the rest
+  of `measure()`.
+
+The Standard's §3.1 model-independence claim applies to the scoring
+substrate (which does not invoke an LLM on the output being measured).
+Layer 1a is the optional exception: it calls an LLM for baseline
+generation only, not for output scoring.
+
+## Layer 11 external entities
+
+Layer 11's secondary P-signal matches sentences against a regex list of
+external entities (drug names, products, indices) that are unlikely to
+appear in a faithful analytical document on the source. The shipped
+default list is empirically seeded from the three EXP-095 source
+domains (Apple Q1 earnings, BLS labor, OASIS-4 / Wegovy clinical trial)
+and is biased toward pharmaceuticals, tech products, and US labor
+terms. On other domains the default list is largely silent.
+
+Adopters extending to new domains supply their own list. Replace the
+default entirely, or extend it via Python's iterable-unpacking syntax:
+
+```python
+from clarethium_touchstone import EXTERNAL_ENTITIES_DEFAULT, measure
+
+# Replace entirely for a new domain
+result = measure(
+    text,
+    source=source,
+    external_entities=[
+        r"\bcompetitor-product-name\b",
+        r"\bdomain-specific-index\b",
+    ],
+)
+
+# Extend the default with additional patterns
+result = measure(
+    text,
+    source=source,
+    external_entities=[*EXTERNAL_ENTITIES_DEFAULT, r"\bextra-pattern\b"],
+)
+```
+
+Each pattern is case-insensitive Python regex. The Standard's §5.11
+notes that on new domains adopters MUST document the entity set they
+use; the public `EXTERNAL_ENTITIES_DEFAULT` constant is provided so
+this is mechanical rather than requiring private-name access.
+
 ## Layer 11 scope assessment
 
 Layer 11's derivation checker saturates as the source's unique-number count
@@ -146,19 +235,27 @@ specification of each layer.
 
 ## What measurements mean
 
-Touchstone measures structural relationships, not subjective quality:
+Touchstone measures structural relationships, not subjective quality. For each layer, the table below states the construct, what a high value indicates, and what it explicitly does not assert.
 
-- **Low `unsourced_rate`** means the output's numerical claims appear in the
-  source. It does not mean the source's claims are true.
-- **Low `quality_profile.gap`** means substance index exceeds presentation
-  index. It does not mean the document is well-written or correct.
-- **High `G` proportion** in grounding decomposition means most sentences
-  restate or directly derive from source. It does not mean those sentences
-  are interesting or insightful.
+| Layer | Construct | What "high" means | What it does not assert |
+|-------|-----------|-------------------|-------------------------|
+| 1a heading defaultness | Fraction of document headings matching LLM-generated baselines on the same topic | Document follows a default skeleton structure | Whether the headings are good or bad; whether the content is original |
+| 1b mechanism ratio | Causal-language markers vs filler/buzzword markers | Reasoning-style prose dominates over buzzword-style | Whether the causal claims are correct |
+| 1c assertion ratio | Fraction of epistemic-register markers in the ASSERTION category | High-confidence rhetorical stance | Whether the assertions are warranted |
+| 2 claim density | Numerical and causal claims per 1,000 words | Information-dense prose | Whether the claims are correct |
+| 3 temporal instability | Fraction of digit-formatted numbers unstable across regenerations of the same task | Numbers shift between regenerations (an upper bound on fabrication) | Direct fabrication detection (instability ≠ fabrication; stable fabrication is undetected) |
+| 4 source matching (`unsourced_rate`) | Fraction of digit-formatted numbers in output not found in source via exact string search | Many numbers are not in the source | Whether the source is correct; whether unsourced numbers are wrong (could be derived) |
+| 5 entity provenance | Fraction of named entities in output not found in source | External names introduced | Whether the entity references are appropriate |
+| 6 vocabulary proximity | Per-sentence content-word overlap with source | Output paraphrases the source closely | Whether close paraphrase is desirable (could indicate either summary or copy) |
+| 7 presentation features | Type-token ratio, FK grade, formatting density, assertiveness, named-concept count | Descriptive features of surface form | Anything evaluative; these are inputs to Layer 10's composite |
+| 8 epistemic calibration | Fraction of assertion-bearing sentences with at least one grounding signal | Assertions tend to be grounded | Whether the groundings are real evidence (could be coincidental overlap) |
+| 9 information novelty | Per-sentence lexical novelty (content words not seen earlier) | Vocabulary keeps expanding (less repetition) | Semantic information content (length-confounded by Heaps' law) |
+| 10 quality profile (`gap`) | `presentation_index - substance_index` | Polished surface exceeds verifiable substance (overclaiming risk) | Whether the document is well-written or correct |
+| 11 G/F/P decomposition (`P` proportion) | Fraction of sentences classified as Projected (external data, predictions, unsourced specifics) | Many sentences introduce material not in source | Whether the projected content is true or false |
 
-The Standard's Section 9 in its methodology paper documents known limitations
-and gaming vectors. Read those before deploying Touchstone in high-stakes
-settings.
+Touchstone's pattern set is public regex, structural analysis, and string search. An actor aware of the patterns can construct outputs that evade the detector. The Standard explicitly excludes adversarial-intent detection (§1.3). Treat library output as one input to a quality decision, not the only input, especially in high-stakes settings.
+
+The README §Limitations section names what this release does not yet demonstrate (external corpus validation, head-to-head baselines, small-N statistical caveats, Layer 11 domain bias). Standard §3.5 names the falsifiable claims and the evidence that would invalidate each.
 
 ## Threshold guidance
 

@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We as members, contributors, and editors pledge to make participation in the Touchstone project and ecosystem a harassment-free experience for everyone.
+We as members, contributors, and maintainers pledge to make participation in the Touchstone project and ecosystem a harassment-free experience for everyone.
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community focused on advancing model-independent verification methodology.
 
@@ -27,9 +27,9 @@ Examples of unacceptable behavior include:
 
 ## Enforcement Responsibilities
 
-The editor body is responsible for clarifying and enforcing standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior they deem inappropriate, threatening, offensive, or harmful.
+The maintainers are responsible for clarifying and enforcing standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior they deem inappropriate, threatening, offensive, or harmful.
 
-The editor body has the right and responsibility to remove, edit, or reject comments, commits, code, suggestions, issues, pull requests, and other contributions that are not aligned with this Code of Conduct, and will communicate reasons for moderation decisions when appropriate.
+The maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, suggestions, issues, pull requests, and other contributions that are not aligned with this Code of Conduct, and will communicate reasons for moderation decisions when appropriate.
 
 ## Scope
 
@@ -45,24 +45,24 @@ It also applies when an individual is officially representing the project in pub
 
 ## Reporting
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the editor body by:
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the maintainers by:
 
 - Opening a GitHub Security Advisory at <https://github.com/Clarethium/touchstone/security/advisories/new> if the report involves sensitive personal information
-- Contacting any editor directly via GitHub for non-sensitive reports
+- Opening a GitHub issue for non-sensitive reports
 
 All complaints will be reviewed and investigated promptly and fairly.
 
-The editor body is obligated to respect the privacy and security of the reporter.
+The maintainers are obligated to respect the privacy and security of the reporter.
 
 ## Enforcement Guidelines
 
-The editor body will follow these Community Impact Guidelines in determining the consequences for any action they deem in violation of this Code of Conduct:
+The maintainers will follow these Community Impact Guidelines in determining the consequences for any action they deem in violation of this Code of Conduct:
 
 ### 1. Correction
 
 **Community Impact:** Use of inappropriate language or other behavior deemed unprofessional or unwelcome in the community.
 
-**Consequence:** A private, written warning from the editor body, providing clarity around the nature of the violation and an explanation of why the behavior was inappropriate. A public apology may be requested.
+**Consequence:** A private, written warning from the maintainers, providing clarity around the nature of the violation and an explanation of why the behavior was inappropriate. A public apology may be requested.
 
 ### 2. Warning
 

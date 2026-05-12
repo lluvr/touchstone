@@ -19,7 +19,7 @@ Bug fixes that do not change behavior do not require a Suggestion. Open a pull r
 
 ## Audience
 
-Anyone may submit a Suggestion. Native English is not required; if writing in another language, the editor body will help with translation.
+Anyone may submit a Suggestion. Native English is not required; if writing in another language, the maintainers can help with translation as bandwidth allows.
 
 The author of a Suggestion is sometimes called the *champion*. The champion shepherds the proposal through review and is the primary respondent to feedback.
 
@@ -90,7 +90,7 @@ Suggestions that document best practices, integration guides, or rationale witho
      ▼
 ┌─────────────────────────────────────────┐
 │  Resolution                              │
-│   - Accepted (merged by editor body)    │
+│   - Accepted (merged by maintainers)    │
 │   - Rejected (closed with rationale)    │
 │   - Deferred (closed; revisit later)    │
 │   - Withdrawn (closed by author)        │
@@ -119,7 +119,7 @@ Draft suggestions can be:
 
 ### Review phase
 
-The Suggestion is opened as a pull request against this repository. The editor body assigns reviewers within 2 weeks. Discussion happens on the pull request thread.
+The Suggestion is opened as a pull request against this repository. Discussion happens on the pull request thread. The maintainers respond as bandwidth allows; at this stage the project does not commit to a fixed response SLA.
 
 Reviewers evaluate against:
 
@@ -148,27 +148,27 @@ Reviewers evaluate against:
 
 Resolution is one of:
 
-- **Accepted.** Editor body merges the pull request. The change is incorporated. Standard Track changes trigger a version bump per Section 10.
+- **Accepted.** Maintainers merge the pull request. The change is incorporated. Standard Track changes trigger a version bump per Section 10.
 - **Rejected.** The proposal is closed with a rationale comment. The rationale becomes part of the project's reasoning record. Rejected suggestions can be reopened with new evidence or modified scope.
 - **Deferred.** The proposal is closed but tagged for later reconsideration. Common reasons: dependency on other in-progress work, or the proposal is good but lacks priority.
 - **Withdrawn.** The champion closes the proposal voluntarily.
 
-Resolution is by editor body consensus. Editor selection and tie-breaking follow the governance evolution specified in the Standard.
+Resolution is by maintainer consensus. As the project matures and an editor body is constituted (Standard §11), formal reviewer-assignment, voting, and tie-breaking rules will be added here.
 
 ---
 
-## Editor body
+## Maintainers and governance evolution
 
-The editor body is responsible for:
+The current maintainers are responsible for:
 
-- Triaging incoming Suggestions (assigning reviewers, labeling)
-- Reviewing Suggestions per their domain
+- Triaging incoming Suggestions
+- Reviewing Suggestions
 - Merging accepted Suggestions
 - Maintaining the Standard document
 - Releasing library versions
 - Documenting the project's reasoning record
 
-Editor body composition follows the Standard Section 10 governance evolution timeline.
+The Standard reserves formal certification by an editor body to a future Standard version once such a body is constituted (Standard §11). Until then, all responsibilities above sit with the project maintainers; conformance is by self-certification.
 
 ---
 
@@ -238,4 +238,4 @@ Copy the appropriate template, fill in the sections, and submit as a pull reques
 
 This document is a Process Track Suggestion. Changes to it follow the same workflow described above.
 
-Current version: 1.0.0-draft. Ratification follows operator finalization plus deputy editor review.
+Current version: 1.0.0-draft. Ratification follows maintainer completion of the pending sections and Suggestion-process review.

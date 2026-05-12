@@ -45,7 +45,7 @@ def test_output_shape_is_well_formed() -> None:
     assert set(result["proportions"].keys()) == {"G", "F", "P"}
     assert all(isinstance(v, float) for v in result["proportions"].values())
     assert isinstance(result["sentence_classifications"], list)
-    assert result["p_detection_mode"] in ("conservative", "liberal")
+    assert result["p_detection_mode"] == "conservative"
     assert isinstance(result["n_sentences"], int)
     assert isinstance(result["n_grounded"], int)
     assert isinstance(result["n_framed"], int)
@@ -456,3 +456,121 @@ def test_derivation_canonical_cases(
 ) -> None:
     """Canonical inputs to the derivation checker produce expected results."""
     assert _gfp_is_derivable(value, source_floats) == expected_derivable
+
+
+# ---------------------------------------------------------------------------
+# Public external_entities extensibility (Layer 11 secondary P-signal)
+# ---------------------------------------------------------------------------
+
+
+def test_external_entities_default_constant_is_public() -> None:
+    """``EXTERNAL_ENTITIES_DEFAULT`` is part of the public API and contains
+    the shipped Layer 11 entity patterns. Adopters import it to extend or
+    inspect the default set.
+    """
+    from clarethium_touchstone import EXTERNAL_ENTITIES_DEFAULT
+
+    assert isinstance(EXTERNAL_ENTITIES_DEFAULT, tuple)
+    assert len(EXTERNAL_ENTITIES_DEFAULT) > 0
+    # Sanity check: a few pinned entries from the seeded list
+    assert any("Wegovy" in p or "tirzepatide" in p for p in EXTERNAL_ENTITIES_DEFAULT)
+
+
+def test_external_entities_none_uses_default() -> None:
+    """When ``external_entities`` is None (default), Layer 11 uses the
+    shipped default list. A sentence mentioning a default-list entity
+    should fire the external-entities P-marker.
+    """
+    text = "Earnings were affected by Novo Nordisk competition this quarter."
+    source = "Quarterly earnings were affected by competitive pressure."
+
+    result = grounding_decomposition(text, source, external_entities=None)
+    p_classifications = [s for s in result["sentence_classifications"] if s.get("primary") == "P"]
+    assert any("external_entities" in s.get("p_markers", []) for s in p_classifications)
+
+
+def test_external_entities_empty_silences_secondary_signal() -> None:
+    """Passing an empty list disables the secondary external-entity
+    P-signal entirely. A sentence that would have fired on the default
+    list now falls through to the unsourced-numbers / unsourced-years
+    P-decision path.
+    """
+    text = "Earnings were affected by Novo Nordisk competition this quarter."
+    source = "Quarterly earnings were affected by competitive pressure."
+
+    result = grounding_decomposition(text, source, external_entities=[])
+    for s in result["sentence_classifications"]:
+        assert "external_entities" not in s.get("p_markers", [])
+
+
+def test_external_entities_replaces_default_with_custom_list() -> None:
+    """A caller can replace the default list with a domain-specific one.
+    The custom patterns fire on matching sentences; default patterns do
+    not (replacement, not extension).
+    """
+    text = (
+        "The Acme9000 platform shipped to customers this quarter. "
+        "Novo Nordisk competition was not a meaningful factor this period."
+    )
+    source = "The system was deployed to customers last week with strong adoption."
+
+    # Custom pattern matches "Acme9000"; the default Novo Nordisk pattern
+    # is dropped from the override list.
+    result = grounding_decomposition(text, source, external_entities=[r"\bAcme9000\b"])
+    p_classifications = [s for s in result["sentence_classifications"] if s.get("primary") == "P"]
+    acme_hit = any(
+        "Acme9000" in s.get("sentence", "") and "external_entities" in s.get("p_markers", [])
+        for s in p_classifications
+    )
+    novo_hit = any(
+        "Novo Nordisk" in s.get("sentence", "") and "external_entities" in s.get("p_markers", [])
+        for s in p_classifications
+    )
+    assert acme_hit, "custom Acme9000 pattern should have fired"
+    assert not novo_hit, "default Novo Nordisk pattern should be silent when overridden"
+
+
+def test_external_entities_extension_via_unpacking() -> None:
+    """The documented extension pattern ``[*EXTERNAL_ENTITIES_DEFAULT,
+    *my_patterns]`` works: both the default patterns AND the new ones
+    fire.
+    """
+    from clarethium_touchstone import EXTERNAL_ENTITIES_DEFAULT
+
+    text = (
+        "The Acme9000 platform shipped to customers this quarter. "
+        "Novo Nordisk competition was not a meaningful factor this period."
+    )
+    source = "The system was deployed to customers last week with strong adoption."
+
+    result = grounding_decomposition(
+        text,
+        source,
+        external_entities=[*EXTERNAL_ENTITIES_DEFAULT, r"\bAcme9000\b"],
+    )
+    p_classifications = [s for s in result["sentence_classifications"] if s.get("primary") == "P"]
+    fired = {
+        s.get("sentence", "").strip(): "external_entities" in s.get("p_markers", [])
+        for s in p_classifications
+    }
+    assert any("Acme9000" in sent and hit for sent, hit in fired.items())
+    assert any("Novo Nordisk" in sent and hit for sent, hit in fired.items())
+
+
+def test_measure_threads_external_entities_through_to_layer_11() -> None:
+    """The top-level ``measure()`` orchestrator passes ``external_entities``
+    through to Layer 11 unchanged.
+    """
+    from clarethium_touchstone import measure
+
+    text = "The Acme9000 platform shipped to customers this quarter as planned."
+    source = "The system was deployed to customers last week with strong adoption."
+
+    result = measure(text, source=source, external_entities=[r"\bAcme9000\b"])
+    gd = result["grounding_decomposition"]
+    assert gd is not None
+    p_classifications = [s for s in gd["sentence_classifications"] if s.get("primary") == "P"]
+    assert any(
+        "Acme9000" in s.get("sentence", "") and "external_entities" in s.get("p_markers", [])
+        for s in p_classifications
+    )

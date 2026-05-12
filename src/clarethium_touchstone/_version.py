@@ -12,5 +12,5 @@ See ``STANDARDS/touchstone-1.0.md`` Section 10 for full versioning
 discipline.
 """
 
-__version__ = "0.1.0.dev0"
-__standard_version__ = "1.0.0-draft"
+__version__ = "0.1.0"
+__standard_version__ = "1.0.0-draft.4"

@@ -1,0 +1,267 @@
+{
+  "experiment": "EXP-081 adversarial discrimination",
+  "library": "clarethium-touchstone",
+  "n_outputs": 12,
+  "aggregate": {
+    "n": 12,
+    "n_faithful": 6,
+    "n_embellished": 6,
+    "mean_gap_faithful": -0.4377,
+    "mean_gap_embellished": 0.1585,
+    "cohens_d_faithful_vs_embellished": -5.238,
+    "hedges_g_faithful_vs_embellished": -4.835,
+    "cohens_d_bootstrap_ci_95": [
+      -8.926,
+      -4.498
+    ],
+    "gap_direction_agreement_with_published": 1.0,
+    "mae_vs_published": {
+      "unsourced_rate": 0.014,
+      "gap": 0.0097,
+      "substance_index": 0.0095,
+      "presentation_index": 0.0
+    }
+  },
+  "per_output": [
+    {
+      "id": 1,
+      "condition": "faithful",
+      "topic": "remote_work",
+      "version": 1,
+      "predicted": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 80,
+        "substance_index": 1.0,
+        "presentation_index": 0.377,
+        "gap": -0.623
+      },
+      "expected": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 82,
+        "substance_index": 1.0,
+        "presentation_index": 0.377,
+        "gap": -0.623
+      }
+    },
+    {
+      "id": 2,
+      "condition": "faithful",
+      "topic": "remote_work",
+      "version": 2,
+      "predicted": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 106,
+        "substance_index": 1.0,
+        "presentation_index": 0.649,
+        "gap": -0.351
+      },
+      "expected": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 108,
+        "substance_index": 1.0,
+        "presentation_index": 0.649,
+        "gap": -0.351
+      }
+    },
+    {
+      "id": 3,
+      "condition": "embellished",
+      "topic": "remote_work",
+      "version": 1,
+      "predicted": {
+        "unsourced_rate": 0.234,
+        "total_numbers": 77,
+        "substance_index": 0.45,
+        "presentation_index": 0.507,
+        "gap": 0.057
+      },
+      "expected": {
+        "unsourced_rate": 0.226,
+        "total_numbers": 84,
+        "substance_index": 0.454,
+        "presentation_index": 0.507,
+        "gap": 0.053
+      }
+    },
+    {
+      "id": 4,
+      "condition": "embellished",
+      "topic": "remote_work",
+      "version": 2,
+      "predicted": {
+        "unsourced_rate": 0.369,
+        "total_numbers": 84,
+        "substance_index": 0.431,
+        "presentation_index": 0.759,
+        "gap": 0.328
+      },
+      "expected": {
+        "unsourced_rate": 0.359,
+        "total_numbers": 92,
+        "substance_index": 0.436,
+        "presentation_index": 0.759,
+        "gap": 0.323
+      }
+    },
+    {
+      "id": 5,
+      "condition": "faithful",
+      "topic": "communication",
+      "version": 1,
+      "predicted": {
+        "unsourced_rate": 0.016,
+        "total_numbers": 128,
+        "substance_index": 0.992,
+        "presentation_index": 0.681,
+        "gap": -0.311
+      },
+      "expected": {
+        "unsourced_rate": 0.016,
+        "total_numbers": 129,
+        "substance_index": 0.995,
+        "presentation_index": 0.681,
+        "gap": -0.314
+      }
+    },
+    {
+      "id": 6,
+      "condition": "faithful",
+      "topic": "communication",
+      "version": 2,
+      "predicted": {
+        "unsourced_rate": 0.031,
+        "total_numbers": 127,
+        "substance_index": 0.913,
+        "presentation_index": 0.447,
+        "gap": -0.466
+      },
+      "expected": {
+        "unsourced_rate": 0.031,
+        "total_numbers": 128,
+        "substance_index": 0.942,
+        "presentation_index": 0.447,
+        "gap": -0.495
+      }
+    },
+    {
+      "id": 7,
+      "condition": "embellished",
+      "topic": "communication",
+      "version": 1,
+      "predicted": {
+        "unsourced_rate": 0.189,
+        "total_numbers": 106,
+        "substance_index": 0.5,
+        "presentation_index": 0.558,
+        "gap": 0.057
+      },
+      "expected": {
+        "unsourced_rate": 0.23,
+        "total_numbers": 113,
+        "substance_index": 0.48,
+        "presentation_index": 0.558,
+        "gap": 0.078
+      }
+    },
+    {
+      "id": 8,
+      "condition": "embellished",
+      "topic": "communication",
+      "version": 2,
+      "predicted": {
+        "unsourced_rate": 0.209,
+        "total_numbers": 129,
+        "substance_index": 0.441,
+        "presentation_index": 0.712,
+        "gap": 0.271
+      },
+      "expected": {
+        "unsourced_rate": 0.245,
+        "total_numbers": 139,
+        "substance_index": 0.423,
+        "presentation_index": 0.712,
+        "gap": 0.289
+      }
+    },
+    {
+      "id": 9,
+      "condition": "faithful",
+      "topic": "ai_workflows",
+      "version": 1,
+      "predicted": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 83,
+        "substance_index": 0.857,
+        "presentation_index": 0.45,
+        "gap": -0.407
+      },
+      "expected": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 83,
+        "substance_index": 0.857,
+        "presentation_index": 0.45,
+        "gap": -0.407
+      }
+    },
+    {
+      "id": 10,
+      "condition": "faithful",
+      "topic": "ai_workflows",
+      "version": 2,
+      "predicted": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 82,
+        "substance_index": 0.9,
+        "presentation_index": 0.432,
+        "gap": -0.468
+      },
+      "expected": {
+        "unsourced_rate": 0.0,
+        "total_numbers": 82,
+        "substance_index": 0.9,
+        "presentation_index": 0.432,
+        "gap": -0.468
+      }
+    },
+    {
+      "id": 11,
+      "condition": "embellished",
+      "topic": "ai_workflows",
+      "version": 1,
+      "predicted": {
+        "unsourced_rate": 0.288,
+        "total_numbers": 73,
+        "substance_index": 0.54,
+        "presentation_index": 0.615,
+        "gap": 0.075
+      },
+      "expected": {
+        "unsourced_rate": 0.333,
+        "total_numbers": 78,
+        "substance_index": 0.518,
+        "presentation_index": 0.615,
+        "gap": 0.097
+      }
+    },
+    {
+      "id": 12,
+      "condition": "embellished",
+      "topic": "ai_workflows",
+      "version": 2,
+      "predicted": {
+        "unsourced_rate": 0.33,
+        "total_numbers": 91,
+        "substance_index": 0.469,
+        "presentation_index": 0.633,
+        "gap": 0.163
+      },
+      "expected": {
+        "unsourced_rate": 0.358,
+        "total_numbers": 95,
+        "substance_index": 0.456,
+        "presentation_index": 0.633,
+        "gap": 0.177
+      }
+    }
+  ]
+}

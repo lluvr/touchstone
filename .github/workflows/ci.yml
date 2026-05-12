@@ -32,7 +32,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: pytest --cov=clarethium_touchstone --cov-report=term-missing
+        run: pytest --cov=clarethium_touchstone --cov-report=term-missing --cov-fail-under=95
 
       - name: Upload coverage to summary
         if: always()
@@ -61,10 +61,10 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run ruff check
-        run: ruff check src tests
+        run: ruff check src tests examples benchmarks
 
       - name: Run ruff format check
-        run: ruff format --check src tests
+        run: ruff format --check src tests examples benchmarks
 
   typecheck:
     name: Type check

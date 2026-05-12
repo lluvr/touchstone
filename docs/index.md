@@ -13,9 +13,7 @@ A Clarethium project. Standards and reference implementation for measuring AI ou
 
 ## Why model-independent
 
-LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex pattern matching, structural analysis, source comparison, and arithmetic. The substrate does not depend on the model being measured.
-
-This matters when the auditor cannot be made of the same material as the audited. AI evaluating AI inherits the same biases, modes, and failures as the AI being evaluated. Touchstone breaks that loop by operating outside the model.
+LLM-as-judge approaches use a model to evaluate a model's output. Touchstone's scoring functions are regex, structural analysis, string search, and arithmetic; they do not invoke an LLM on the output being measured. Layer 1a (optional) calls an LLM to generate baseline documents on the same topic, not to score the output. The scoring substrate is independent of the model under measurement.
 
 ## What Touchstone measures
 
@@ -35,18 +33,10 @@ This matters when the auditor cannot be made of the same material as the audited
 | 10 | Quality profile (composite) | Optional |
 | 11 | Grounding decomposition (G/F/P) | Yes |
 
-**Specification compliance verification (five layers, Standard Section 6):**
-
-Defined in the Standard but not in v0.1 of the library. The `align()` API
-is reserved for a future release.
-
-| Layer | Construct |
-|-------|-----------|
-| 1 | Requirement extraction (8 types) |
-| 2 | Coverage mapping (type-routed verification) |
-| 3 | Scope drift |
-| 4 | Emphasis balance |
-| 5 | Semantic coverage (opt-in, embedding-based) |
+**Specification compliance verification:** reserved for Standard 1.1.
+Section 6 of the Standard is a placeholder in v1.0; the `align()` API is
+not part of the v0.1 library and the per-layer breakdown will land with
+1.1 when the methodology is settled.
 
 See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full specifications.
 
@@ -71,19 +61,20 @@ See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full speci
 - [Clarethium](https://clarethium.com) - methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
 
-## Status
+Pre-launch on PyPI. All eleven Section 5 measurement layers are
+implemented and tested (385 tests; CI green on lint, mypy strict, and
+test matrix Python 3.10/3.11/3.12). Two internal regression benchmarks
+ship in `benchmarks/`: EXP-081 (Cohen's d = -5.238 on a 12-document
+single-vendor corpus, vs the recorded `detector_v031` baseline of -5.43)
+and EXP-095 (P-existence direction agreement 100% on 13 outputs). Both
+are internal regression baselines, not external replications; the
+corpora are project-authored. External-corpus validation (TRUE,
+LLM-AggreFact, HaluBench, HaluEval) is open work.
 
-Pre-launch on PyPI; reference implementation feature-complete on `main`.
-All eleven Section 5 measurement layers implemented and tested (375
-tests, all CI green: lint, type check, test on Python 3.10/3.11/3.12,
-build distribution). Two reproducible validation benchmarks
-(`benchmarks/`) - Touchstone reproduces the published EXP-081 Cohen's
-d = -5.43 with d = -5.238 on the same corpus.
+Section 6 (Specification Compliance) is reserved for Standard 1.1.
 
-Section 6 (Specification Compliance) is reserved for a future release.
-
-PyPI organization application pending approval; until then install
-from source per the [Getting started](getting-started.md) guide.
+PyPI organization application is pending; until then, install from
+source per the [Getting started](getting-started.md) guide.
 
 ## License
 
