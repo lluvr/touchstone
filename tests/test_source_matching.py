@@ -204,9 +204,9 @@ def test_empty_source_marks_all_unsourced() -> None:
 # ---------------------------------------------------------------------------
 # Behaviour pinning
 #
-# These tests document algorithm choices preserved from the operator's
-# Changing them requires a Standard version bump
-# (Section 10). Failing one of these tests means the algorithm drifted.
+# These tests pin algorithm choices that ship as part of Standard 1.0.
+# Changing them requires a Standard version bump (Section 10). Failing
+# one of these tests means the algorithm drifted from the pinned shape.
 # ---------------------------------------------------------------------------
 
 

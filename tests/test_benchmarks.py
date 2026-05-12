@@ -206,7 +206,7 @@ def test_exp_081_snapshot_matches_committed_baseline() -> None:
         run_all,
     )
 
-    snapshot_path = BENCHMARK_DIR / "results" / "snapshot_2026-05-03.json"
+    snapshot_path = BENCHMARK_DIR / "results" / "snapshot_2026-05-12.json"
     if not snapshot_path.exists():
         pytest.skip(f"baseline snapshot missing: {snapshot_path}")
 
@@ -220,6 +220,21 @@ def test_exp_081_snapshot_matches_committed_baseline() -> None:
         "Update: python -m benchmarks.exp_081_discrimination.run "
         "--output benchmarks/exp_081_discrimination/results/snapshot_NEWDATE.json"
     )
+
+
+def test_exp_081_aggregate_statistics_stable() -> None:
+    """Cohen's d, Hedges' g, and the 95% bootstrap CI on Cohen's d are
+    deterministic given the fixed seed in ``bootstrap_ci_cohens_d``.
+    Pin them so a regression in either the gap signal or the
+    aggregation math is caught by CI rather than silently shifting the
+    headline number.
+    """
+    from benchmarks.exp_081_discrimination.run import aggregate, run_all
+
+    agg = aggregate(run_all())
+    assert agg["cohens_d_faithful_vs_embellished"] == -5.238
+    assert agg["hedges_g_faithful_vs_embellished"] == -4.835
+    assert agg["cohens_d_bootstrap_ci_95"] == [-8.926, -4.498]
 
 
 def test_exp_095_snapshot_matches_committed_baseline() -> None:

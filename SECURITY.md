@@ -2,9 +2,9 @@
 
 ## Reporting a vulnerability
 
-If you discover a security vulnerability in the `clarethium-touchstone` library, please do NOT open a public GitHub issue. Instead, contact the editor body privately.
+If you discover a security vulnerability in the `clarethium-touchstone` library, please do NOT open a public GitHub issue. Instead, file a GitHub Security Advisory so the maintainers can triage privately:
 
-**Contact:** open a GitHub Security Advisory at <https://github.com/Clarethium/touchstone/security/advisories/new>
+**Contact:** <https://github.com/Clarethium/touchstone/security/advisories/new>
 
 You can expect:
 
@@ -23,7 +23,8 @@ In scope:
 
 Out of scope:
 
-- Library behavior on adversarial AI outputs designed to evade structural detection. The Standard documents known gaming vectors (Section 9 of the methodology); evasion of structural detection by design is a research problem, not a security vulnerability.
+- Library behavior on adversarial AI outputs designed to evade structural detection. The Standard's threshold and pattern set are public; evasion of structural detection by an actor with knowledge of the regex is a research problem, not a security vulnerability. The library does not claim adversarial robustness.
+- Performance on adversarial inputs (catastrophic regex backtracking, untrusted-input denial of service). The library does not impose an input-size cap and has not been ReDoS-audited; processing very large or specifically-crafted text is the caller's responsibility. Adopters running Touchstone on untrusted input SHOULD bound input size at the call site and apply standard subprocess timeouts.
 - Third-party LLM clients the user supplies via the
   ``BaselineGenerator`` callable for Layer 1a. The library imports no
   specific provider SDK; security of the user-supplied client is the
@@ -47,7 +48,7 @@ caller-supplied callable.
 
 The library does not handle authentication, secrets, or persistent storage. Users are responsible for securing API keys and managing data the library processes.
 
-The Standard explicitly notes (Section 9 of methodology) gaming vectors that humans aware of the implementation can exploit. Treat substrate output as one input to a quality decision, not the only input.
+Touchstone's signal set is public regex, structural analysis, and string search. Anyone reading the source can construct outputs that evade the detector. Treat library output as one input to a quality decision, not the only input.
 
 ## Disclosure
 

@@ -209,7 +209,7 @@ class GroundingDecomposition(TypedDict):
 
     proportions: GFPProportions
     sentence_classifications: list[GFPSentence]
-    p_detection_mode: Literal["conservative", "liberal"]
+    p_detection_mode: Literal["conservative"]
     n_sentences: int
     n_grounded: int
     n_framed: int

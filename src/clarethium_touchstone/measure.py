@@ -34,7 +34,7 @@ See Appendix C of the Standard for layer-by-layer status.
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Literal, cast
 
 from clarethium_touchstone._version import __standard_version__, __version__
@@ -68,8 +68,20 @@ BaselineGenerator = Callable[[str], str | None]
 
 Layer 1a (heading defaultness) requires an LLM to produce baseline
 documents on the same topic. Touchstone is vendor-neutral: callers
-supply their own callable. The generator returns the model's output
-text or ``None`` on failure (rate limit, timeout, etc.).
+supply their own callable. The contract is permissive by design:
+
+- Return ``str`` on success (the LLM's output text).
+- Return ``None`` to signal a recoverable failure (rate limit,
+  timeout, content filter, empty response).
+- Raising any exception is also tolerated: it is caught by the
+  layer and treated as a failed call. Caller LLM errors do not
+  propagate out of ``measure()``.
+- Non-string return values (e.g. dicts, ints) are treated as failed
+  calls; the layer does not assume any particular SDK shape.
+
+If every baseline call across ``n_baselines`` fails, Layer 1a
+returns ``None`` and the rest of ``structural_profile`` (1b/1c) runs
+normally on text alone.
 """
 
 # Number of baseline documents to generate for Layer 1a (default).
@@ -340,7 +352,7 @@ def measure(
     topic: str | None = None,
     baseline_generator: BaselineGenerator | None = None,
     n_baselines: int = _DEFAULT_N_BASELINES,
-    p_detection_mode: str = "conservative",
+    external_entities: Sequence[str] | None = None,
 ) -> MeasureResult:
     """Run all applicable measurement layers on ``text``.
 
@@ -364,8 +376,15 @@ def measure(
             ``(prompt: str) -> str | None`` that runs the LLM. When
             both this and ``topic`` are provided, 1a runs.
         n_baselines: Number of baseline documents to request for 1a.
-        p_detection_mode: ``conservative`` (default) for Layer 11 P-marker
-            detection. Standard conformance requires conservative mode.
+        external_entities: Optional Layer 11 external-entity regex
+            pattern set. When ``None`` (default), uses
+            ``EXTERNAL_ENTITIES_DEFAULT`` (the list shipped with this
+            reference implementation, seeded from the EXP-095 source
+            domains). To extend the default, pass
+            ``[*EXTERNAL_ENTITIES_DEFAULT, *my_patterns]``. To replace
+            entirely (recommended on new domains), pass only your own
+            patterns. Each pattern is matched case-insensitively per
+            sentence by Layer 11's secondary P-signal.
 
     Returns:
         A ``MeasureResult`` with one key per applicable layer plus
@@ -395,7 +414,7 @@ def measure(
             epistemic_calibration(text, source) if source is not None else None
         ),
         "grounding_decomposition": (
-            grounding_decomposition(text, source, p_detection_mode=p_detection_mode)
+            grounding_decomposition(text, source, external_entities=external_entities)
             if source is not None
             else None
         ),
@@ -644,9 +663,17 @@ def _compute_heading_defaultness(
     > 0 to surface diverse defaults. Repeated calls produce different
     baselines and different scores.
 
+    Defensive contract: the caller-supplied ``baseline_generator`` is
+    treated as untrusted. Any exception it raises is caught and
+    counted as a failed call (the layer does not propagate caller LLM
+    errors out of ``measure()``). Return values are validated: only
+    ``str`` counts as success; ``None`` and any other type count as
+    failed.
+
     Returns ``None`` when:
     - The document has no level-2/3 headings to score
-    - All baseline-generation calls fail (return None)
+    - All baseline-generation calls fail (raise, return None, or
+      return a non-string)
     """
     doc_headings = _extract_headings_simple(text)
     if not doc_headings:
@@ -656,8 +683,11 @@ def _compute_heading_defaultness(
     baseline_word_union: set[str] = set()
     n_baselines_succeeded = 0
     for _ in range(n_baselines):
-        baseline_text = baseline_generator(prompt)
-        if baseline_text is None:
+        try:
+            baseline_text = baseline_generator(prompt)
+        except Exception:  # noqa: BLE001 - intentional broad catch for caller LLM errors
+            continue
+        if not isinstance(baseline_text, str):
             continue
         n_baselines_succeeded += 1
         for h in _extract_headings_simple(baseline_text):
@@ -980,9 +1010,11 @@ def source_matching(text: str, source: str) -> SourceMatching:
         ``n_unsourced``, ``n_total``, ``precision``, and a list of
         ``unsourced_details`` describing each claim not found in source.
 
-    Validated: 0/309 false positives across 5 self-source files
-    (document=source). 97.1% recall on digit-formatted numbers across
-    70 manually annotated claims (3 documents, 6 categories).
+    Validated: 97.1% extraction recall on 70 manually annotated
+    digit-formatted claims (3 documents, 6 categories). Regression
+    check: 0/309 numbers incorrectly flagged unsourced on 5 self-source
+    files (document=source); this is a string-equality smoke test, not
+    independent validation against an external faithfulness corpus.
     """
     numbers = _filter_numbers(_extract_numbers_for_matching(text), text)
 
@@ -1802,8 +1834,12 @@ def quality_profile(
 
 # External entity P-markers: hard-coded names/concepts not typically in
 # analytical source documents (drugs, companies, products, indices). The
-# list is domain-biased toward the operator's research corpus; extend it
-# for new domains. Pinned behaviour; static in v1.0.
+# list is empirically seeded from the three EXP-095 source domains
+# (Apple Q1 FY2026 earnings; BLS March 2026 employment situation;
+# OASIS-4 / Wegovy clinical trial). On other source domains the
+# secondary P-signal falls silent. Adopters extending Layer 11 to new
+# domains should author a parallel entity list with false-positive
+# control on negative (in-domain) text. Pinned behaviour; static in v1.0.
 _GFP_EXTERNAL_ENTITIES: tuple[str, ...] = (
     r"\bSTEP\s+\d\b",
     r"\bSURMOUNT\b",
@@ -1833,15 +1869,28 @@ _GFP_EXTERNAL_ENTITIES: tuple[str, ...] = (
 
 # Layer 11 derivation-regime boundaries. Sourced from EXP-095 Monte Carlo
 # data: at N=5 source floats the derivation checker has 53% false-positive
-# rate; at N=10 it reaches 97%; at N=15+ it saturates at 100%. The
-# boundaries below match the methodology doc (LAYER_11_SCOPE_BOUNDARY.md):
-# < 5 = diagnostic (primary signal reliable); [5,10) = transition (50-97%
-# FPR; cross-reference Layer 4); >= 10 = saturated (primary signal
-# effectively disabled). These constants are intentionally hardcoded in
-# v0.1; configurability is reserved until real calibration data emerges
-# from non-default number-target distributions.
+# rate; at N=10 it reaches 97%; at N=15+ it saturates at 100%. The boundary
+# semantics are documented in Standard §5.11: < 5 = diagnostic (primary
+# signal reliable); [5, 10) = transition (50-97% FPR; cross-reference
+# Layer 4); >= 10 = saturated (primary signal effectively disabled). These
+# constants are intentionally hardcoded in v0.1; configurability is
+# reserved until real calibration data emerges from non-default
+# number-target distributions.
 _DERIVATION_REGIME_DIAGNOSTIC_MAX = 5
 _DERIVATION_REGIME_TRANSITION_MAX = 10
+
+
+# Public re-export of the default external-entity P-marker patterns
+# (Layer 11). Callers extending the entity set on new domains can do:
+#
+#     measure(text, source=src,
+#             external_entities=[*EXTERNAL_ENTITIES_DEFAULT, *my_patterns])
+#
+# Callers replacing the entity set entirely (recommended on truly new
+# domains where the default patterns don't apply) pass only their own
+# list. The internal name retains the underscore prefix; the public
+# constant is the alias.
+EXTERNAL_ENTITIES_DEFAULT: tuple[str, ...] = _GFP_EXTERNAL_ENTITIES
 
 
 def assess_derivation_regime(source_num_count: int) -> ScopeAssessment:
@@ -2011,7 +2060,7 @@ def grounding_decomposition(
     text: str,
     source: str,
     *,
-    p_detection_mode: str = "conservative",  # noqa: ARG001 (reserved)
+    external_entities: Sequence[str] | None = None,
 ) -> GroundingDecomposition:
     """Layer 11 (EXPERIMENTAL in v1.0): per-sentence Grounded / Framed /
     Projected classification.
@@ -2028,9 +2077,15 @@ def grounding_decomposition(
     1. **Unsourced numbers** (primary): sentence contains a digit-formatted
        number that is neither in source verbatim nor derivable via
        ``_gfp_is_derivable`` from source numbers.
-    2. **External entities** (secondary): sentence matches a hard-coded
-       pattern from ``_GFP_EXTERNAL_ENTITIES`` (drug names, companies,
-       indices). Domain-biased; extend for new corpora.
+    2. **External entities** (secondary): sentence matches one of the
+       Layer 11 external-entity regex patterns. When ``external_entities``
+       is None (default), the shipped ``EXTERNAL_ENTITIES_DEFAULT`` list
+       is used. The default list is empirically seeded from the three
+       EXP-095 source domains (Apple Q1 earnings, BLS labor, OASIS-4 /
+       Wegovy clinical trial); it is domain-biased toward
+       pharmaceuticals, tech products, and US labor terms. On other
+       domains the secondary P-signal is silent unless an adopter
+       supplies a domain-appropriate list.
     3. **Unsourced years** (gated): year (19xx/20xx) absent from source,
        gated on either an unsourced number being present OR cleaned
        sentence length > 50 chars.
@@ -2052,15 +2107,22 @@ def grounding_decomposition(
     Args:
         text: Output to classify.
         source: Source material.
-        p_detection_mode: Reserved for future ``conservative`` /
-            ``liberal`` differentiation. Currently inert; only conservative
-            is implemented and is required for Standard conformance.
+        external_entities: Optional sequence of regex pattern strings to
+            use for Layer 11's secondary external-entity P-signal. When
+            ``None`` (default), uses ``EXTERNAL_ENTITIES_DEFAULT``. To
+            extend, pass ``[*EXTERNAL_ENTITIES_DEFAULT, *my_patterns]``.
+            To replace entirely (recommended on new domains), pass only
+            your own patterns. Each pattern is matched case-insensitively
+            per sentence.
 
     Returns:
         ``GroundingDecomposition`` with proportions, per-sentence
         classifications, projection flag, and prohibition recommendation
         when projection is detected.
     """
+    entity_patterns: Sequence[str] = (
+        external_entities if external_entities is not None else _GFP_EXTERNAL_ENTITIES
+    )
     sentences = _split_sentences_simple(text)
 
     # Source numbers as floats for derivation checking.
@@ -2122,7 +2184,7 @@ def grounding_decomposition(
 
         # External entity matches.
         ext_entities: list[str] = []
-        for pat in _GFP_EXTERNAL_ENTITIES:
+        for pat in entity_patterns:
             for m in re.finditer(pat, sent, re.IGNORECASE):
                 ext_entities.append(m.group())
 
@@ -2218,19 +2280,20 @@ def grounding_decomposition(
 # -- Re-exports for the public API ----------------------------------------
 
 __all__ = [
-    "measure",
-    "structural_profile",
-    "claim_density",
-    "temporal_instability",
-    "source_matching",
-    "entity_provenance",
-    "vocabulary_proximity",
-    "presentation_features",
-    "epistemic_calibration",
-    "information_novelty",
-    "quality_profile",
-    "grounding_decomposition",
+    "EXTERNAL_ENTITIES_DEFAULT",
     "assess_derivation_regime",
+    "claim_density",
+    "entity_provenance",
+    "epistemic_calibration",
+    "grounding_decomposition",
+    "information_novelty",
+    "measure",
+    "presentation_features",
+    "quality_profile",
+    "source_matching",
+    "structural_profile",
+    "temporal_instability",
+    "vocabulary_proximity",
 ]
 
 

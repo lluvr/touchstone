@@ -1,8 +1,8 @@
 # Touchstone Standard 1.0 (DRAFT)
 
-**Status:** Draft v0.3. Scope-tightening pass complete (Section 6 deferred to Standard 1.1; Appendices A and B deferred to 1.1; Sections 4, 7, 8, 9.2, 12 settled). Sections 2 (Terminology) and 11 (Conformance) require operator authoring before ratification.
-**Version:** 1.0.0-draft.3
-**Date:** 2026-05-05 (drafting in progress)
+**Status:** Draft v0.4. All Section 5-11 content substantively complete, including Terminology (§2), Conformance declaration mechanism + invalidation criteria (§11), confirmed reference-test conformance bands (§8), structured Field positioning references (§12), and falsifiable construct claims (§3.5). Section 6 (Specification Compliance) and Appendices A and B remain reserved for Standard 1.1. Independent editor review is pending.
+**Version:** 1.0.0-draft.4
+**Date:** 2026-05-12 (drafting in progress)
 **License:** CC-BY 4.0
 **Canonical URL:** https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md
 
@@ -22,7 +22,7 @@ The Standard provides a verifiable methodology for measuring AI-coupled work. Th
 
 - **Output measurement** (Section 5): profiling structural quality, claim density, source grounding, fabrication characteristics, presentation features, and grounding decomposition of AI-generated text against optional source material.
 
-Output measurement is designed to operate without depending on a separate AI model to judge correctness. The Standard rests on the principle that an auditor cannot be made of the same material as the audited; AI evaluating AI inherits structural conflicts of interest.
+Output measurement is designed to operate without invoking an AI model to score the output it measures. Layer 1a (optional) calls an LLM to generate baseline documents on the same topic, not to score the output. The remaining ten layers run on regex, structural analysis, string search, and arithmetic. This scoring substrate is independent of the model under measurement.
 
 Specification compliance verification (extracting requirements from a written specification and verifying that an output addresses them) is reserved for Standard 1.1.
 
@@ -58,13 +58,31 @@ This Standard targets:
 
 ### 1.5 Status of this document
 
-This document is a working draft of the canonical Touchstone Standard 1.0. Ratification follows operator-authored completion of remaining sections, editor-body review, and the Suggestion process documented in `SUGGESTIONS/PROCESS.md`.
+This document is a working draft of the canonical Touchstone Standard 1.0. Ratification follows maintainer completion of the sections currently marked pending, review through the Suggestion process documented in `SUGGESTIONS/PROCESS.md`, and (once constituted) editor-body sign-off per §11.
 
 ---
 
 ## 2. Terminology
 
-> **Operator finalization required.** Define key terms used throughout, including: Build, output, source, spec, claim, evidence, layer, conforming implementation. RFC 2119 keywords (MUST, SHOULD, MAY, RECOMMENDED, OPTIONAL) are used per their conventional meanings throughout this Standard.
+The Standard uses RFC 2119 keywords (MUST, SHOULD, MAY, RECOMMENDED, OPTIONAL) per their conventional meanings throughout. The following terms have specific meanings in this Standard:
+
+**Output.** A text artifact produced by an AI model in response to a prompt. The Standard's primary validated input format is Markdown analytical documents in English; conforming implementations claiming extended scope MUST document the validation supporting that claim (§9.2).
+
+**Source.** A text artifact the Output may reference or derive content from. Source is optional for some layers and required for others (Layers 4, 5, 6, 8, 11 require source). The Standard makes no claim about the source's own correctness; it measures structural relationships between Output and Source.
+
+**Claim.** A unit of asserted content extracted from an Output by a measurement layer. Layer 2 (claim density) and Layer 4 (source matching) extract digit-formatted numerical claims; Layer 5 (entity provenance) extracts named-entity claims. The Standard's extraction patterns are layer-specific and documented in §5.
+
+**Evidence.** Material in the Source that supports a Claim. Evidence is established by exact string search (Layer 4 for numbers, Layer 5 for entities, lowercase substring), by structural derivation (Layer 11 for arithmetic combinations of source numbers), or by lexical overlap (Layer 6 for vocabulary proximity). The Standard does not establish semantic evidence; truth-judgment is out of scope (§1.3).
+
+**Layer.** One of the eleven measurement constructs defined in §5. Each layer produces a structured output (specified by the layer's subsection) and is independently runnable; the composite quality_profile (Layer 10) aggregates a subset.
+
+**Conforming implementation.** A software artifact that meets the requirements in §11 against a specific Standard version. Conformance is a property of an implementation paired with a Standard version (e.g., "Touchstone Standard 1.0-conformant"), not of the artifact alone.
+
+**Threshold.** A numeric cutoff used by a layer to classify a measurement into bands (e.g., the Layer 4 unsourced_rate "fabrication zone" / "grounded zone" boundaries). Default thresholds are specified in §7. Implementations MAY adjust thresholds for their context but MUST document the adjustment (§7.5).
+
+**Baseline generator.** For Layer 1a only: a callable that produces a baseline document on a given topic. Touchstone is vendor-neutral; callers supply their own implementation. The Standard does not specify which model class is appropriate; implementations SHOULD document the model class and prompting parameters used when reporting Layer 1a results.
+
+**Regression baseline.** A pinned expected-value snapshot against which a measurement layer's output is checked for drift. The shipped benchmarks in `benchmarks/` are regression baselines (§8); they verify that the reference implementation has not drifted from previously-recorded behavior. They are not external replications and do not establish construct generalization beyond the packaged corpora.
 
 ---
 
@@ -88,9 +106,16 @@ Threshold values for accept/reject decisions MUST be explicit, versioned, and ov
 
 The Standard, its threshold values, and its reference test cases are public. Conforming implementations MAY be open or proprietary; the Standard itself remains under CC-BY 4.0.
 
----
+### 3.5 Falsifiable construct claims
 
-## 4. Output structure
+Each layer's construct claim is falsifiable in principle. The Standard names the evidence that would invalidate each:
+
+- **Layer 4 (source matching).** Falsified if, on a corpus where every output's numerical claim is independently verified to exist verbatim in the source, the layer reports an unsourced_rate above 5% in aggregate. Recall is currently 97.1% on 70 manually annotated claims; a drop below the threshold indicates the extraction patterns no longer match the construct.
+- **Layer 10 (quality_profile gap).** Falsified if, on a corpus where the faithful/embellished distinction has been independently re-annotated by a non-Clarethium party (e.g., a TRUE / LLM-AggreFact / HaluBench / HaluEval subset), the gap signal fails to discriminate the two conditions at Cohen's d magnitude > 1.0 (a large effect). The current internal d = -5.238 is on a project-authored corpus; external corpus replication is the falsification test.
+- **Layer 11 (G/F/P decomposition).** Falsified if, on a corpus hand-classified by at least two independent annotators with documented inter-annotator agreement (Cohen's κ ≥ 0.7), the layer's P-existence direction agreement drops below 80%. The current 100% direction agreement is on a single-annotator corpus.
+- **The "scoring substrate is independent" claim (§3.1).** Falsified if any non-Layer-1a layer's output is shown to depend on the choice of model that generated the input text in a way the layer's documented construct does not predict. The reference implementation runs identically on text from any generator; a measurement that shifts systematically with generator identity (beyond what Layer 1b/1c/10 are designed to surface) indicates an undocumented dependence.
+
+Reports of falsification evidence are submitted via the Suggestion process. A confirmed falsification of a layer's construct claim triggers either a Standard amendment (layer redefinition) or a layer retirement under the versioning rules of §10.
 
 The Standard primarily addresses Markdown analytical documents. Reference implementation operates on this format; validated scope is documented in Section 9. Extension to structured outputs (JSON, structured markup) and to other text formats is layer-specific and MAY be implementation-defined; conforming implementations claiming extended scope MUST document the validation supporting that claim.
 
@@ -118,7 +143,7 @@ REQUIRED. Extracts sentences containing digit-formatted numbers (six pattern typ
 
 REQUIRED when two or more independently generated versions of the output are provided. Extracts all digit-formatted numbers from the versions; classifies each unique (value, type) pair as stable (present in all versions) or unstable (present in only some). Instability rate = unstable / total. Implementations MUST filter year-like values and explicit word counts.
 
-Note: Layer 3 measures instability, not fabrication directly. Instability is an upper bound on fabrication. The deprecated alias `fabrication_rate` MAY be retained for backwards compatibility and MUST be removed in version 2.0.
+Note: Layer 3 measures instability, not fabrication directly. Instability is an upper bound on fabrication. A legacy `fabrication_rate` alias existed in pre-1.0 drafts; it was removed during greenfield cleanup before 1.0 and is not part of the Standard or reference implementation. The canonical field name is `instability_rate`.
 
 ### 5.4 Layer 4: Source matching
 
@@ -187,9 +212,11 @@ Implementation algorithm:
 4. Sentences below threshold with P-markers classify as P.
 5. Remaining sentences below threshold classify as F.
 
-Conservative and liberal P-detection modes MAY be implemented; conservative is the default and required for conformance.
+Conservative P-detection is required for conformance to Standard 1.0. Implementations MAY add additional P-detection modes via the Suggestion process; such additions ship as Standard minor-version bumps per §10.
 
 When a document includes an explicit prohibition recommendation (e.g., "do not project beyond source"), implementations SHOULD verify projection elimination as a downstream metric.
+
+The set of external-entity P-markers (drug names, product names, indices, and similar domain-specific patterns that signal a sentence is introducing material not in the source) is a per-implementation configuration. The reference implementation ships a default list empirically seeded from its three benchmark source domains; implementations targeting other domains MUST document the entity set they use. The default list is exposed as a public constant in the reference implementation so adopter implementations can extend or replace it without monkey-patching.
 
 ---
 
@@ -240,15 +267,19 @@ Layers 5, 7, and 9 do not carry normative pass/fail thresholds at Standard 1.0: 
 
 ## 8. Reference test cases
 
-> **Operator finalization required.** Confirm conformance bands in §8.1 and §8.2 below; author normative framing for what the conformance test asserts (reproduction on the packaged corpus vs construct generalization to other corpora) and the fast-tier-corpus caveat (signal validated on fast-tier model outputs; flagship-tier construct generalization is open research). A minimal conformance subset extracted into `tests/conformance/` is reserved for Standard 1.0.1.
+Reference test cases for Standard 1.0 are the internal regression benchmarks at `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`, byte-pinned via pytest snapshot assertion in the reference implementation's CI. The benchmarks' corpora and expected values were authored by this project; they are regression baselines, not external replications.
 
-For v1.0, reference test cases are the published reproducibility benchmarks at `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`. Both are byte-pinned via pytest snapshot assertion in the reference implementation's CI. Implementations claiming conformance MUST pass the bands declared at the Standard version they implement.
+**What the conformance bands assert.** Passing the bands in §8.1 and §8.2 asserts that a conforming implementation reproduces the reference implementation's behavior on the packaged corpora to within the stated tolerances. Passing does NOT assert construct generalization to other corpora, other vendors, or other model tiers; those are open research per §9.2. Implementations claiming extended construct validity MUST cite the validation supporting that claim per §9.2.
+
+**Fast-tier corpus caveat.** Both benchmarks are validated on fast-tier model outputs (xAI grok-4-1-fast on EXP-081; gpt-4o, gemini-3-flash-preview, grok-4-1-fast on EXP-095). Construct generalization to flagship-tier models is open work. Signal may attenuate when stronger models decline embellishment instructions or produce content not surfaced by the deterministic signal set.
+
+**Future reference suite.** A minimal conformance subset extracted into `tests/reference/` is reserved for Standard 1.0.1 ratification. Until then, the unit tests under `tests/` and the benchmark assertions under `benchmarks/` together are the conformance surface per §11.1(1).
 
 ### 8.1 EXP-081 adversarial discrimination
 
 - Path: `benchmarks/exp_081_discrimination/`
-- Corpus: 12 documents (faithful N=6, embellished N=6); fast-tier model variants from Anthropic, Gemini, OpenAI, and xAI/Grok families
-- Reference result: Cohen's d = -5.238 vs published d = -5.43 (CI [-9.077, -4.681])
+- Corpus: 12 documents (faithful N=6, embellished N=6); single-vendor (xAI grok-4-1-fast)
+- Reference result: Cohen's d = -5.238; the recorded expected values were produced by an earlier internal detector (`detector_v031`) at d = -5.43 (CI [-9.077, -4.681])
 - Reference per-output MAE: unsourced_rate 0.014, gap 0.010, substance 0.010, presentation 0.000
 - Per-output gap-direction agreement: 100% (12/12)
 
@@ -262,11 +293,13 @@ Conformance bands (corpus-bound, proposed):
 | Per-output MAE: gap | ≤ 0.05 |
 | Per-output MAE: substance | ≤ 0.05 |
 
+Cross-vendor and flagship-tier construct generalization is open work and is not asserted by passing these bands.
+
 ### 8.2 EXP-095 grounding decomposition
 
 - Path: `benchmarks/exp_095_grounding/`
-- Corpus: 13 hand-classified outputs; 3 source documents; 3 model families
-- Reference result: P-direction agreement on existence (P>0 vs P=0) is 100% (13/13); aggregate MAE vs detector v0.3.1 is 0.02-0.04 across G/F/P; per-output P-magnitude drift on 4/13 outputs is documented in benchmark README
+- Corpus: 13 hand-classified outputs; 3 source documents; 3 model families (gpt-4o, gemini-3-flash-preview, grok-4-1-fast)
+- Reference result: P-direction agreement on existence (P>0 vs P=0) is 100% (13/13); aggregate MAE vs an earlier internal detector (`detector_v031`) is 0.02-0.04 across G/F/P. Aggregate MAE vs full manual classification (n=7 with complete annotations) is 0.12-0.13 across G/F/P. Per-output P-magnitude drift on 4/13 outputs is documented in the benchmark README.
 
 Conformance bands (corpus-bound, proposed):
 
@@ -299,14 +332,12 @@ A conforming implementation MAY:
 
 ### 9.2 Validated scope
 
-The Standard's reference implementation has been validated on:
-- Markdown analytical documents (strategic analysis, product specifications, research summaries, code documentation)
-- Generators: fast-tier model variants from Anthropic, Gemini, OpenAI, and xAI/Grok families. Construct generalization to flagship-tier model outputs is open research; signal may attenuate when stronger models reject the embellishment prompt or produce sophisticated content not tripped by the simpler signals.
+The Standard's reference implementation has been internally validated on:
+- Markdown analytical documents (financial summaries, product analyses, research summaries)
+- Generators on the two shipped benchmarks: EXP-081 is single-vendor (xAI grok-4-1-fast, 12 documents); EXP-095 covers three vendors at fast-tier scale (gpt-4o, gemini-3-flash-preview, grok-4-1-fast). Construct generalization to flagship-tier model outputs and to vendors not in the EXP-095 set is open research; signal may attenuate when stronger models decline embellishment instructions or produce content not surfaced by the deterministic signal set.
 - English language
 
-Use outside this validated scope is explicitly OUT-OF-SCOPE for the Standard at version 1.0; conforming implementations MAY claim extended scope with documented validation.
-
-> **Operator finalization required.** Confirm or refine the fast-tier qualifier and flagship-tier caveat phrasing above. The qualifier is load-bearing for honest scope claim against future flagship-model corpora.
+Use outside this internally-validated scope is explicitly OUT-OF-SCOPE for the Standard at version 1.0; conforming implementations MAY claim extended scope with documented validation.
 
 ### 9.3 Versioning of conformance claims
 
@@ -322,19 +353,44 @@ The Standard follows semantic versioning:
 - **Minor (1.0 → 1.1):** Additive changes - new optional layers, new requirement types, additional threshold defaults. Existing implementations remain conformant for the previous version.
 - **Patch (1.0 → 1.0.1):** Editorial changes, clarifications, expanded examples. No methodology changes.
 
-The deprecated `fabrication_rate` alias for `instability_rate` is retained at v1.0 for backwards compatibility and MUST be removed in v2.0.
-
 Evolution is governed by the Suggestion process documented in `SUGGESTIONS/PROCESS.md` (modeled on PEP-1 / BIP-1).
 
 ---
 
 ## 11. Conformance
 
+### 11.1 Conformance requirements
+
 Conformance is by self-certification. An implementation is conformant against Standard 1.0 when it:
 
-1. Passes the reference test suite shipped in `tests/` of the reference implementation.
-2. Documents any threshold adjustments away from the defaults specified in §7.
-3. Surfaces the standard version it implements through whatever interface the implementation exposes.
+1. **Passes the conformance surface**, defined as: every unit test under `tests/` and every benchmark assertion under `benchmarks/` of the reference implementation at the Standard's published commit. Standard 1.0.1 will extract a representative subset into `tests/reference/` as the canonical conformance suite; until 1.0.1 ships, `tests/` and `benchmarks/` together are the conformance surface.
+2. **Documents threshold adjustments.** Any deviation from the default thresholds in §7 MUST be documented at the point the implementation exposes its results (config file, API surface, or report). The documentation MUST state the original default, the adjusted value, and the rationale.
+3. **Declares the Standard version.** The implementation MUST surface the Standard version it implements through whatever interface it exposes to callers. The reference implementation surfaces this through the `standard_version` field of `MeasureResult` and the `__standard_version__` module attribute.
+
+### 11.2 Declaration mechanism
+
+A conforming implementation declares conformance in the form:
+
+> "<implementation-name> <version> conforms to Touchstone Standard <version>."
+
+The declaration MUST be visible in at least one of: the implementation's README, its package metadata, or its API output. Implementations MAY additionally publish their conformance verification (e.g., CI logs from running the conformance surface).
+
+There is no central registry of conforming implementations at Standard 1.0. Implementations self-declare; verification is by anyone running the conformance surface against the implementation.
+
+### 11.3 Invalidation criteria
+
+A conformance claim is invalidated when any of the following is true:
+
+- The implementation fails any test in the conformance surface at the declared Standard version.
+- The implementation uses thresholds that diverge from §7 defaults without documenting the adjustment per §11.1(2).
+- The implementation misrepresents the Standard version it conforms to (e.g., claims Standard 1.0 but implements only a subset of the required layers per §5).
+- The implementation modifies the structure of a layer's output dict (per the TypedDicts in `clarethium_touchstone.types`) without declaring an extension per §9.1.
+
+Discovery of an invalidating discrepancy SHOULD be reported via the Suggestion process for resolution; the resolution is either a Standard amendment (if the Standard is ambiguous), a reference-implementation fix (if the reference is wrong), or a withdrawal of the conformance claim (if the implementation is wrong).
+
+### 11.4 Transitional state at Standard 1.0-draft
+
+Until an editor body is constituted, the conformance surface at §11.1(1) is authored by the same maintainers who author the Standard. Self-certification against this surface is consistency with the reference implementation's current behavior, not independent verification. A second-party implementation that diverges from the reference surface indicates either an implementation defect or a Standard ambiguity, both of which route through the Suggestion process for resolution.
 
 Optional formal certification by an editor body is reserved for a future Standard version once an editor body is constituted.
 
@@ -342,25 +398,39 @@ Optional formal certification by an editor body is reserved for a future Standar
 
 ## 12. References
 
-The reproducible empirical validation studies that ship with this Standard are in `benchmarks/` of the reference implementation:
+### 12.1 Internal regression benchmarks shipped with this Standard
 
-- **EXP-081** (adversarial discrimination): `benchmarks/exp_081_discrimination/`. Reproduces a published Cohen's d=-5.43 finding on a 12-document corpus.
-- **EXP-095** (grounding decomposition): `benchmarks/exp_095_grounding/`. 13 hand-classified outputs from 3 model families against 3 source documents.
+| ID | Path | Construct | Corpus |
+|----|------|-----------|--------|
+| EXP-081 | `benchmarks/exp_081_discrimination/` | Adversarial discrimination between faithful and embellished AI outputs against the same source | 12 documents (6 faithful, 6 embellished); single-vendor xAI grok-4-1-fast |
+| EXP-095 | `benchmarks/exp_095_grounding/` | Layer 11 G/F/P decomposition agreement with manual classification | 13 hand-classified outputs; 3 source documents; 3 model families (gpt-4o, gemini-3-flash-preview, grok-4-1-fast) |
 
-Additional empirical validation studies referenced during the drafting of this Standard are in preparation; their citations will land as Standard 1.0.1 editorial patches once the corresponding papers publish.
+Both benchmarks ship with `README.md` files documenting methodology, expected values, and known drift; both are byte-pinned via pytest snapshot assertion (§8).
 
-External references:
+### 12.2 Normative external references
 
-- RFC 2119 (Key words for use in RFCs to Indicate Requirement Levels)
-- Creative Commons Attribution 4.0 International License (CC-BY 4.0)
+- **RFC 2119** — Key words for use in RFCs to Indicate Requirement Levels (Bradner, 1997). https://www.rfc-editor.org/rfc/rfc2119
+- **CC-BY 4.0** — Creative Commons Attribution 4.0 International License. https://creativecommons.org/licenses/by/4.0/
 
-Field positioning context (related approaches and their distinctions):
+### 12.3 Field positioning
 
-- **FActScore** (per-claim truth checking against external knowledge): different construct; LLM-heavy; truth-judging not generation profiling.
-- **MiniCheck, HHEM, AlignScore** (semantic faithfulness sentence-level): different construct; semantic models; produces single score not decomposition.
-- **SelfCheckGPT** (multi-sample consistency): adjacent to Layer 3; full-text NLI vs Touchstone's digit-formatted exact-match.
-- **RAGAS, TruLens** (RAG pipeline evaluation): pipeline-scoped not output-scoped.
-- **C2PA Content Credentials** (metadata-on-artifact): different layer entirely; signed provenance metadata not structural measurement.
+Touchstone occupies a different construct space from existing AI-output evaluation methodologies. Distinctions are not value judgments; they describe what each approach measures.
+
+| Approach | What it measures | How it differs from Touchstone |
+|----------|------------------|--------------------------------|
+| FActScore (Min et al., EMNLP 2023) | Atomic-claim truth against an external knowledge base | LLM-based truth-judging; needs a KB, not a source document |
+| MiniCheck (Tang et al., EMNLP 2024) | Fine-tuned model fact-checking against grounding documents | Semantic NLI-style model output; not regex/structural |
+| HHEM 2.1 (Vectara) | Factual consistency probability against evidence | Cross-encoder model; single scalar output |
+| AlignScore (Zha et al., ACL 2023) | Unified alignment function across 7 tasks | Small discriminator model; not a generative judge but still a learned function |
+| SelfCheckGPT (Manakul et al., EMNLP 2023) | Multi-sample consistency for hallucination detection | NLI-based over multiple samples; zero-source, where Touchstone Layer 3 needs source-anchored digit comparison |
+| RAGAS (Es et al., EACL 2024) / TruLens | RAG pipeline evaluation (faithfulness, relevancy, retrieval quality) | Pipeline-scoped; assumes a retrieval step |
+| G-Eval (Liu et al., EMNLP 2023) | LLM-as-judge with chain-of-thought | The category Touchstone explicitly does not implement |
+| HaluEval (Li et al., EMNLP 2023) / HaluBench (Patronus, 2024) | Annotated hallucination corpora and detection benchmarks | External corpora the Standard's construct claims have not yet been benchmarked against; see §Limitations of the reference implementation README |
+| C2PA Content Credentials | Signed provenance metadata on the artifact | Different layer entirely (metadata, not text-content measurement) |
+
+### 12.4 Validation work cited in the reference implementation
+
+Additional empirical work referenced in the reference implementation's docstrings and benchmark READMEs is documented at the point of use. Formal citations for any such work that publishes externally will land as Standard 1.0.1 editorial patches.
 
 ---
 
@@ -384,8 +454,8 @@ Field positioning context (related approaches and their distinctions):
 | 1b Mechanism ratio | Implemented; validated d=0.93 |
 | 1c Assertion ratio | Implemented; validated d=0.83-0.95 |
 | 2 Claim density | Implemented; validated 97% recall |
-| 3 Temporal instability | Implemented; renamed from fabrication_rate v1.4 |
-| 4 Source matching | Implemented; 0% FPR validated |
+| 3 Temporal instability | Implemented; canonical field name is `instability_rate` |
+| 4 Source matching | Implemented; 97.1% extraction recall on 70 manually annotated digit-formatted claims; 0/309 numbers incorrectly flagged unsourced on self-source documents (string-equality regression check, not independent validation) |
 | 5 Entity provenance | Implemented; directional validation N=18 |
 | 6 Vocabulary proximity | Implemented; directional validation N=18 |
 | 7 Presentation features | Implemented; descriptive |
@@ -401,20 +471,19 @@ Field positioning context (related approaches and their distinctions):
 Sections substantively complete:
 
 - Section 1 (Introduction)
-- Section 3 (Substrate principles)
+- Section 2 (Terminology)
+- Section 3 (Substrate principles, including §3.5 falsification protocol)
 - Section 4 (Output structure)
 - Section 5 (Output measurement layers, all eleven)
 - Section 7 (Thresholds and calibration discipline)
-- Section 9 (Implementation guidance, with §9.2 fast-tier qualifier pending operator confirmation)
+- Section 8 (Reference test cases, with explicit normative framing)
+- Section 9 (Implementation guidance)
 - Section 10 (Versioning)
+- Section 11 (Conformance, including declaration mechanism and invalidation criteria)
+- Section 12 (References, with structured field-positioning)
 - Appendix C (Implementation status)
 
-Sections requiring operator authoring before ratification:
-
-- Section 2 (Terminology: output, source, claim, evidence, layer, conforming implementation)
-- Section 8 (Reference test cases: confirm conformance bands, author normative framing for corpus-bound conformance and fast-tier-corpus caveat)
-- Section 11 (Conformance: self-certification process, declaration mechanism, what invalidates a claim)
-- Section 12 (References: convert EXP-series list into formal citations)
+All sections of Standard 1.0 have substantive content. The "draft" qualifier on the version string is retained to flag that the Standard has not yet undergone independent editor review; the maintainers continue to invite Suggestion-process contributions.
 
 Reserved for Standard 1.1:
 
@@ -424,5 +493,5 @@ Reserved for Standard 1.1:
 
 Reserved for Standard 1.0.1 patch:
 
-- Minimal conformance subset extraction to `tests/conformance/`
+- Minimal conformance subset extraction to `tests/reference/`
 - AIRP R-series citations (gated on R-series papers publishing)

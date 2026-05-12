@@ -1,0 +1,56 @@
+# Pre-commit hooks for clarethium-touchstone.
+#
+# Install:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Runs on every commit. To run manually against all files:
+#   pre-commit run --all-files
+#
+# CI runs the same checks (plus the full test suite); pre-commit is
+# the local fast feedback loop, not the canonical gate.
+
+repos:
+  # Ruff: lint + format check on src/ tests/ examples/ benchmarks/
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        name: ruff (lint)
+        args: [--fix]
+        files: ^(src|tests|examples|benchmarks)/
+      - id: ruff-format
+        name: ruff (format check)
+        args: [--check]
+        files: ^(src|tests|examples|benchmarks)/
+
+  # Whitespace and EOF hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+
+  # Public-canon discipline check (see AGENTS.md). Catches the
+  # forbidden vocabulary, internal-doc references, and operator-shape
+  # paths. The self-test runs first so audit drift is caught locally
+  # before working-tree hits.
+  - repo: local
+    hooks:
+      - id: canon-audit-self-test
+        name: canon audit (self-test)
+        entry: bash scripts/canon_audit.sh --self-test
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: canon-audit
+        name: canon audit (working tree)
+        entry: bash scripts/canon_audit.sh
+        language: system
+        pass_filenames: false
+        always_run: true

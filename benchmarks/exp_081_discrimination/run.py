@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import random
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -123,6 +124,56 @@ def cohens_d(group_a: list[float], group_b: list[float]) -> float:
     return (mean_a - mean_b) / pooled_sd
 
 
+def hedges_g(group_a: list[float], group_b: list[float]) -> float:
+    """Hedges' g: Cohen's d with the standard small-N correction factor.
+
+    g = d * (1 - 3 / (4 * (n_a + n_b) - 9))
+
+    For n_a + n_b > 50 the correction is negligible; at n_a + n_b = 12
+    (the EXP-081 corpus size) the correction shrinks |d| by ~7.7%. The
+    correction is standard practice for two-group designs with N below
+    ~50 and is reported alongside (not instead of) Cohen's d.
+    """
+    d = cohens_d(group_a, group_b)
+    n = len(group_a) + len(group_b)
+    if n <= 2:
+        return d
+    correction = 1 - 3 / (4 * n - 9)
+    return d * correction
+
+
+def bootstrap_ci_cohens_d(
+    group_a: list[float],
+    group_b: list[float],
+    *,
+    n_resamples: int = 2000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> tuple[float, float]:
+    """Stratified bootstrap percentile CI for Cohen's d.
+
+    Resamples each group independently with replacement at its original
+    size, recomputes Cohen's d on each pair, and returns the alpha/2 and
+    1-alpha/2 percentiles. Default n_resamples=2000 and seed=0 produce a
+    deterministic interval suitable for snapshot pinning.
+
+    Returns (NaN, NaN) when either group has fewer than two observations.
+    """
+    n_a, n_b = len(group_a), len(group_b)
+    if n_a < 2 or n_b < 2:
+        return (float("nan"), float("nan"))
+    rng = random.Random(seed)
+    ds: list[float] = []
+    for _ in range(n_resamples):
+        sample_a = [rng.choice(group_a) for _ in range(n_a)]
+        sample_b = [rng.choice(group_b) for _ in range(n_b)]
+        ds.append(cohens_d(sample_a, sample_b))
+    ds.sort()
+    lo_idx = int(n_resamples * (alpha / 2))
+    hi_idx = min(int(n_resamples * (1 - alpha / 2)), n_resamples - 1)
+    return (round(ds[lo_idx], 3), round(ds[hi_idx], 3))
+
+
 def aggregate(results: list[PerDocResult]) -> dict[str, object]:
     """Compute aggregate discrimination statistics."""
     faithful_gaps = [r.predicted_gap for r in results if r.condition == "faithful"]
@@ -163,6 +214,13 @@ def aggregate(results: list[PerDocResult]) -> dict[str, object]:
         1 for r in results if (r.predicted_gap > 0) == (float(r.expected["gap"]) > 0)
     )
 
+    # Hedges' g (small-N correction) and 95% bootstrap CI on Cohen's d.
+    # The bootstrap uses a fixed seed so the CI is deterministic across
+    # runs and snapshot-pinnable.
+    d = cohens_d(faithful_gaps, embellished_gaps)
+    g = hedges_g(faithful_gaps, embellished_gaps)
+    ci_lo, ci_hi = bootstrap_ci_cohens_d(faithful_gaps, embellished_gaps)
+
     return {
         "n": len(results),
         "n_faithful": len(faithful_gaps),
@@ -173,7 +231,9 @@ def aggregate(results: list[PerDocResult]) -> dict[str, object]:
         "mean_gap_embellished": (
             round(sum(embellished_gaps) / len(embellished_gaps), 4) if embellished_gaps else None
         ),
-        "cohens_d_faithful_vs_embellished": round(cohens_d(faithful_gaps, embellished_gaps), 3),
+        "cohens_d_faithful_vs_embellished": round(d, 3),
+        "hedges_g_faithful_vs_embellished": round(g, 3),
+        "cohens_d_bootstrap_ci_95": [ci_lo, ci_hi],
         "gap_direction_agreement_with_published": (
             round(direction_agreement / len(results), 3) if results else None
         ),

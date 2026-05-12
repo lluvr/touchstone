@@ -27,9 +27,14 @@ the Standard takes precedence.
 """
 
 from clarethium_touchstone._version import __version__
-from clarethium_touchstone.measure import assess_derivation_regime, measure
+from clarethium_touchstone.measure import (
+    EXTERNAL_ENTITIES_DEFAULT,
+    assess_derivation_regime,
+    measure,
+)
 
 __all__ = [
+    "EXTERNAL_ENTITIES_DEFAULT",
     "__version__",
     "assess_derivation_regime",
     "measure",

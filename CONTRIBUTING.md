@@ -32,7 +32,7 @@ The basic flow:
 1. Opening an issue describing the proposed change and its motivation.
 2. Discussing in the issue thread until the change is well-scoped.
 3. Opening a pull request against `STANDARDS/touchstone-1.0.md` with the specific edit and reasoning.
-4. The pull request is reviewed by the editor body.
+4. The pull request is reviewed by the maintainers.
 
 Standard changes follow semantic versioning per Section 10. Major changes (breaking) require version bumps; additive changes are minor.
 
@@ -98,13 +98,13 @@ The library's value depends on being correct. Specifically:
 
 ## Conduct
 
-Touchstone is an open project. Discussions stay technical. Personal attacks, harassment, and bad-faith behavior are not tolerated. If something feels off, contact the editor body.
+Touchstone is an open project. Discussions stay technical. Personal attacks, harassment, and bad-faith behavior are not tolerated. If something feels off, file a GitHub Security Advisory for sensitive reports or open a GitHub issue otherwise.
 
 See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for the full Contributor Code of Conduct (Contributor Covenant 2.1).
 
 ## Recognition
 
-Contributors are acknowledged in the changelog and on the Touchstone [documentation site](https://touchstone.clarethium.com). Substantial contributions to the Standard receive co-author recognition where appropriate per editor body discretion.
+Contributors are acknowledged in the changelog. Substantial contributions to the Standard receive co-author recognition at the maintainers' discretion.
 
 ## Questions
 

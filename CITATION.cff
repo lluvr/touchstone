@@ -2,17 +2,19 @@ cff-version: 1.2.0
 message: "If you use Touchstone (Standard or library), please cite both the Standard and the library."
 title: "Touchstone"
 abstract: >
-  Touchstone is a model-independent verification methodology and reference
-  implementation for AI-coupled work. The Standard defines eleven measurement
-  layers for output profiling (Section 5) and five layers for specification
-  compliance verification (Section 6), all designed to operate without
-  depending on AI models to judge AI outputs. The library is the canonical
-  reference implementation; v0.1 ships Section 5 measurement only,
-  empirically validated by reproducing the published EXP-081 adversarial-validity
-  finding (Touchstone Cohen's d=-5.238 vs published d=-5.43, 100% per-output
-  gap-direction agreement, MAE 0.014 on unsourced rate) and the EXP-095
-  grounding decomposition corpus. Section 6 (Specification Compliance) is
-  reserved for a future release.
+  Touchstone is a verification methodology and reference implementation
+  for AI-coupled work whose scoring functions do not invoke an AI model
+  on the output being measured. Standard 1.0 defines eleven measurement
+  layers for output profiling (Section 5); Section 6 (Specification
+  Compliance) is reserved for Standard 1.1. The library is the canonical
+  reference implementation. v0.1 ships Section 5 measurement only, with
+  two internal regression benchmarks: EXP-081 (12-document single-vendor
+  corpus; Cohen's d=-5.238 tracking the recorded detector_v031 baseline
+  of -5.43; 100% per-output gap-direction agreement; MAE 0.014 on
+  unsourced rate) and EXP-095 (13 outputs, three model families;
+  P-existence direction agreement 100%). Both benchmarks are
+  project-authored regression baselines, not external replications;
+  external-corpus validation is open work.
 type: software
 authors:
   - family-names: Lucic
@@ -35,12 +37,14 @@ keywords:
   - touchstone-standard
 references:
   - type: standard
-    title: "Touchstone Standard 1.0"
+    title: "Touchstone Standard 1.0 (draft)"
+    version: "1.0.0-draft.4"
     url: "https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
     license: CC-BY-4.0
     abstract: >
-      The canonical specification defining model-independent verification
-      methodology for AI-coupled work outputs.
+      Draft specification for verification methodology whose scoring
+      functions do not invoke an AI model on the output being measured.
+      Independent editor review is pending.
 preferred-citation:
   type: software
   title: "Touchstone: model-independent verification for AI-coupled work"
