@@ -1,0 +1,86 @@
+{
+  "experiment": "SummEval external validation",
+  "corpus": "mteb/summeval (test split, machine_summaries flattened)",
+  "library": "clarethium-touchstone",
+  "minicheck_model": "flan-t5-large",
+  "binarization_threshold": 4.0,
+  "n_total_pairs": 1600,
+  "n_articles": 100,
+  "n_summaries_per_article": 16,
+  "label_distribution": {
+    "n_supported_consistency_ge_threshold": 1439,
+    "n_not_supported_consistency_lt_threshold": 161,
+    "positive_rate": 0.1006
+  },
+  "auc_roc_by_signal": {
+    "minicheck_flan_t5_large": {
+      "auc_roc": 0.8978,
+      "n_used": 1600
+    },
+    "touchstone_layer4_unsourced_rate": {
+      "auc_roc": 0.5688,
+      "n_used": 967,
+      "n_skipped_none": 633
+    },
+    "touchstone_layer5_entity_unsourced_rate": {
+      "auc_roc": null,
+      "n_used": 0
+    },
+    "touchstone_layer6_inverse_proximity": {
+      "auc_roc": 0.753,
+      "n_used": 1600,
+      "n_skipped_none": 0
+    },
+    "touchstone_layer10_gap": {
+      "auc_roc": 0.5,
+      "n_used": 1600,
+      "n_skipped_none": 0
+    },
+    "touchstone_layer11_p_proportion": {
+      "auc_roc": 0.5207,
+      "n_used": 1600,
+      "n_skipped_none": 0
+    }
+  },
+  "spearman_by_signal": {
+    "minicheck_flan_t5_large_raw_prob": {
+      "spearman_rho": 0.4066,
+      "n_used": 1600,
+      "direction_note": "MiniCheck raw_prob and SummEval consistency both increase with 'more supported' -> expect positive rho"
+    },
+    "touchstone_layer4_unsourced_rate": {
+      "spearman_rho": -0.2566,
+      "n_used": 967,
+      "direction_note": "Touchstone signals oriented 'higher = more hallucinated' -> expect negative rho with consistency"
+    },
+    "touchstone_layer5_entity_unsourced_rate": {
+      "spearman_rho": null,
+      "n_used": 0
+    },
+    "touchstone_layer6_inverse_proximity": {
+      "spearman_rho": -0.3481,
+      "n_used": 1600,
+      "direction_note": "Touchstone signals oriented 'higher = more hallucinated' -> expect negative rho with consistency"
+    },
+    "touchstone_layer10_gap": {
+      "spearman_rho": 0.0,
+      "n_used": 1600,
+      "direction_note": "Touchstone signals oriented 'higher = more hallucinated' -> expect negative rho with consistency"
+    },
+    "touchstone_layer11_p_proportion": {
+      "spearman_rho": -0.1227,
+      "n_used": 1600,
+      "direction_note": "Touchstone signals oriented 'higher = more hallucinated' -> expect negative rho with consistency"
+    }
+  },
+  "layer10_substance_fire_rate": {
+    "assertiveness": "1600/1600 (100.0%)",
+    "formatting_intensity": "1600/1600 (100.0%)",
+    "vocabulary_diversity": "1600/1600 (100.0%)"
+  },
+  "training_test_leakage_caveat": "MiniCheck Flan-T5-Large was trained on LLM-AggreFact, which includes AggreFact-CNN derived from SummEval. The MiniCheck baseline has seen the SummEval source distribution during training; absolute MiniCheck AUC on this corpus is not comparable to its AUC on a held-out corpus.",
+  "runtime_seconds": {
+    "touchstone": 2.1,
+    "minicheck": 4123.9
+  }
+}
