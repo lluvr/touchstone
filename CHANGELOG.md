@@ -6,6 +6,78 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-15: finalization round — perf, statistics, task generalization
+
+Closes the substantive open work from the prior three external-corpus rounds. Three changes, each load-bearing for a top-lab review:
+
+1. **Layer 10 perf fix** that removes the last remaining quadratic behaviour in `measure()` and bumps throughput by 23x on 50 KB documents and ~89x on 500 KB documents.
+2. **95% bootstrap CIs** on every external-corpus Touchstone signal AUC (1000 stratified resamples, fixed seed), with a clean separation between signals whose CIs include 0.5000 (Layer 10 gap, on every external corpus tested) and signals whose CIs exclude 0.5000 (Layer 6 inverse_proximity, on every external corpus tested).
+3. **Cross-task generalization** within RAGTruth: Layer 6 holds across Summary, QA, and Data2Txt task types; Layer 4 unsourced_rate spikes to AUC 0.76 on QA where output number density is high enough for it to fire on a usable fraction.
+
+**Library performance:**
+
+- `_extract_numbers_for_matching` previously used `any(cs <= match_start < ce or cs < match_end <= ce for cs, ce in claimed_ranges)` to detect interval overlaps. On long inputs this is O(matches²) Python-level work because `claimed_ranges` grows monotonically. Replaced with parallel sorted `claimed_starts` / `claimed_ends` lists and a `bisect_left`-based overlap check; insertions stay at sorted positions found by the same bisect.
+- `grounding_decomposition` previously recomputed `_content_words(source)` inside its per-sentence loop, scaling as O(sentences × len(source)). Hoisted out of the loop to a single set computed once per `measure()` call.
+- Combined effect (measured on a self-source 70-char unit repeated to varying total length):
+  - 5 KB document: 53 ms (original) → 16 ms (this fix). **3.3x faster.**
+  - 50 KB document: 3766 ms → 161 ms. **23x faster.**
+  - 500 KB document: ~160 s (extrapolated) → 1.78 s. **~89x faster.**
+- `measure()` is now linear in document size on the scaling band tested (5 KB → 50 KB → 500 KB → 10x → 11x runtime ratio). The "no performance characterization" line is dropped from the README §Use cases NOT-production-claim list; batch verification at scale is no longer a production blocker.
+- 385 tests pass unchanged; behaviour is byte-identical. EXP-081 and EXP-095 internal snapshots byte-identical.
+
+**Statistical rigour (95% bootstrap CIs on every Touchstone-side AUC):**
+
+- New helper module `benchmarks/external/_bootstrap.py` ships an `auc_roc()` implementation (Mann-Whitney U; ties at 0.5 weight) and a `bootstrap_auc_ci()` implementation (percentile bootstrap, stratified resampling within positive/negative classes, fixed seed for snapshot pinning, stdlib only).
+- New script `benchmarks/external/add_bootstrap_cis.py` re-runs Touchstone on each external corpus (fast; ~3 seconds per corpus) and augments the existing snapshot with a `touchstone_bootstrap_95ci` section. MiniCheck CIs are not computed in this pass: per-example MiniCheck probabilities were not retained in the original snapshots, and re-running MiniCheck on all three corpora costs ~4.5 hours of CPU. The point AUCs in `auc_roc_by_signal` are unchanged.
+- Cross-corpus Layer 6 inverse_proximity 95% CIs:
+  - RAGTruth Summary: 0.6723 [0.6296, 0.7116]
+  - SummEval: 0.7530 [0.7145, 0.7951]
+  - HaluEval summarization: 0.7593 [0.7285, 0.7879]
+  All three CIs are strictly above 0.5000. The RAGTruth CI does not overlap the SummEval or HaluEval CIs; Layer 6 is statistically significantly stronger on the latter two corpora.
+- Cross-corpus Layer 10 gap 95% CIs:
+  - RAGTruth Summary: 0.4981 [0.4830, 0.5111]
+  - SummEval: 0.5000 [0.5000, 0.5000]
+  - HaluEval summarization: 0.5020 [0.4950, 0.5090]
+  Every CI includes 0.5000. The §3.5 partial out-of-domain falsification is now statistically defensible: Layer 10 gap is indistinguishable from chance on every external corpus tested.
+
+**Cross-task generalization (Touchstone-only):**
+
+- New analysis script `benchmarks/external/ragtruth_task_type_generalization.py` extends Touchstone to RAGTruth's QA (n=900) and Data2Txt (n=900) task types. MiniCheck baselines for those task types are not run in this round; they are open work.
+- Snapshot: `benchmarks/external/ragtruth_summary/results/task_type_generalization_2026-05-15.json`.
+- Layer 6 inverse_proximity AUC across three task types: Summary 0.6723 [0.6296, 0.7116], QA 0.6984 [0.6579, 0.7361], Data2Txt 0.6397 [0.6001, 0.6757]. Three CIs, all disjoint from 0.5000.
+- Layer 10 gap AUC across the same three: 0.4981 [0.4830, 0.5111], 0.5127 [0.4985, 0.5295], 0.5041 [0.4908, 0.5170]. Three CIs, all overlapping 0.5000.
+- Layer 4 unsourced_rate: AUC 0.7603 [0.6907, 0.8260] on RAGTruth QA (n=277/900 gated in). First task type where the Layer 4 signal generalizes meaningfully out-of-domain. On Summary (n=628 gated in) and Data2Txt (n=741 gated in) the AUC is closer to chance (0.55 / 0.52).
+
+**Standard (1.0.0-draft.8 -> 1.0.0-draft.9):**
+
+- §3.5 Layer 10 falsifiable claim updated to include the cross-task evidence (six (corpus, task) cells with bootstrap CIs all overlapping 0.5000) and the explicit statistical framing.
+- §3.5 substrate-independence claim updated with the cross-task Layer 6 evidence (five (corpus, task) cells with bootstrap CIs all disjoint from 0.5000) and the Layer 4 QA-specific spike.
+- Header status updated to draft.9.
+
+**README:**
+
+- New §Empirical validation "Headline finding (cross-corpus, cross-task)" subsection at the top, with two AUC + CI tables (cross-corpus on summarization, cross-task within RAGTruth) and a compute disclosure table (Touchstone:MiniCheck wall-clock ratio ≈ 1:2500 on CPU).
+- New "Compute disclosure" subsection documenting CPU runtimes and the round-3 perf fix scaling characteristics.
+- §Use cases NOT-production-claim list pared from three bullets to two: "internal AI-quality verification at scale" is no longer a blocked use case after the perf fix. The remaining two production blockers (substrate enforcement; vendor-audit verification) are unchanged.
+- §Limitations bullets streamlined; the §Empirical validation "Headline finding" subsection is now the canonical home for the cross-corpus and cross-task AUCs.
+
+**Verification:**
+
+- 385 tests pass, 96.79% coverage (gate 95%).
+- mypy strict, ruff lint+format, canon audit (self-test + tree) all green.
+- EXP-081, EXP-095, RAGTruth Summary, SummEval, HaluEval summarization snapshots byte-identical to draft.8 except for the additive `touchstone_bootstrap_95ci` and `bootstrap_methodology` keys on the three external snapshots; the existing point AUCs and per-signal values are unchanged.
+
+**Open work after this round:**
+
+- MiniCheck CIs (require re-running on each corpus to capture per-example probabilities; ~4.5 hr CPU total).
+- Non-MiniCheck baselines (AlignScore, HHEM 2.1 with current transformers, SelfCheckGPT, G-Eval, Bespoke-MiniCheck-7B).
+- External corpus coverage: TRUE, LLM-AggreFact held-out, HaluBench.
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+- MiniCheck on RAGTruth QA / Data2Txt task types.
+
+---
+
 ## 2026-05-15: third external corpus (HaluEval) lands; three-corpus pattern established
 
 Follows the same-day RAGTruth Summary and SummEval external comparisons. Adds HaluEval summarization (Li et al., EMNLP 2023, Apache-2.0) as a third external corpus, bringing the Layer 10 partial out-of-domain falsification finding to three independent corpora. The three-corpus consistency of the Touchstone signal pattern (L6 generalizes; L10 gap composite is identically near-chance) is now load-bearing.

@@ -81,5 +81,48 @@
   "runtime_seconds": {
     "touchstone": 2.3,
     "minicheck": 5867.2
-  }
+  },
+  "touchstone_bootstrap_95ci": {
+    "touchstone_layer4_unsourced_rate": {
+      "auc": 0.5514,
+      "ci_low": 0.5054,
+      "ci_high": 0.5977,
+      "n_resamples": 1000,
+      "n_pos": 144,
+      "n_neg": 484
+    },
+    "touchstone_layer5_entity_unsourced_rate": {
+      "auc": 0.8167,
+      "ci_low": 0.5,
+      "ci_high": 1.0,
+      "n_resamples": 1000,
+      "n_pos": 3,
+      "n_neg": 20
+    },
+    "touchstone_layer6_inverse_proximity": {
+      "auc": 0.6723,
+      "ci_low": 0.6296,
+      "ci_high": 0.7116,
+      "n_resamples": 1000,
+      "n_pos": 204,
+      "n_neg": 696
+    },
+    "touchstone_layer10_gap": {
+      "auc": 0.4981,
+      "ci_low": 0.483,
+      "ci_high": 0.5111,
+      "n_resamples": 1000,
+      "n_pos": 204,
+      "n_neg": 696
+    },
+    "touchstone_layer11_p_proportion": {
+      "auc": 0.5374,
+      "ci_low": 0.5094,
+      "ci_high": 0.5676,
+      "n_resamples": 1000,
+      "n_pos": 204,
+      "n_neg": 696
+    }
+  },
+  "bootstrap_methodology": "Stratified percentile bootstrap on AUC-ROC, 1000 resamples, seed=0. Positives and negatives are resampled with replacement within their respective class to preserve the label base rate. MiniCheck CIs are not computed in this pass: per-example MiniCheck raw probabilities were not retained in the original snapshots, and re-running MiniCheck on all three corpora costs roughly 4.5 hours of CPU compute. The point AUCs in `auc_roc_by_signal` are unchanged."
 }

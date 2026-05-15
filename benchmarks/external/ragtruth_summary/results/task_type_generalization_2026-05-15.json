@@ -1,0 +1,170 @@
+{
+  "experiment": "RAGTruth task-type generalization (Touchstone only)",
+  "corpus": "wandb/RAGTruth-processed (test split)",
+  "library": "clarethium-touchstone",
+  "task_types_evaluated": [
+    "Summary",
+    "QA",
+    "Data2txt"
+  ],
+  "minicheck_note": "MiniCheck baselines for QA and Data2Txt task types are not computed in this analysis. The Summary task type has a full MiniCheck baseline in `ragtruth_summary/results/2026-05-15.json`; extending the head-to-head to QA and Data2Txt is open work.",
+  "results_by_task": {
+    "Summary": {
+      "n_total": 900,
+      "n_hallucinated": 204,
+      "hallucination_rate": 0.2267,
+      "touchstone_signals": {
+        "layer4_unsourced_rate": {
+          "auc": 0.5514,
+          "ci_low": 0.5054,
+          "ci_high": 0.5977,
+          "n_resamples": 1000,
+          "n_pos": 144,
+          "n_neg": 484,
+          "n_skipped_none": 272
+        },
+        "layer5_entity_unsourced_rate": {
+          "auc": 0.8167,
+          "ci_low": 0.5,
+          "ci_high": 1.0,
+          "n_resamples": 1000,
+          "n_pos": 3,
+          "n_neg": 20,
+          "n_skipped_none": 877
+        },
+        "layer6_inverse_proximity": {
+          "auc": 0.6723,
+          "ci_low": 0.6296,
+          "ci_high": 0.7116,
+          "n_resamples": 1000,
+          "n_pos": 204,
+          "n_neg": 696,
+          "n_skipped_none": 0
+        },
+        "layer10_gap": {
+          "auc": 0.4981,
+          "ci_low": 0.483,
+          "ci_high": 0.5111,
+          "n_resamples": 1000,
+          "n_pos": 204,
+          "n_neg": 696,
+          "n_skipped_none": 0
+        },
+        "layer11_p_proportion": {
+          "auc": 0.5374,
+          "ci_low": 0.5094,
+          "ci_high": 0.5676,
+          "n_resamples": 1000,
+          "n_pos": 204,
+          "n_neg": 696,
+          "n_skipped_none": 0
+        }
+      },
+      "touchstone_runtime_s": 2.74
+    },
+    "QA": {
+      "n_total": 900,
+      "n_hallucinated": 160,
+      "hallucination_rate": 0.1778,
+      "touchstone_signals": {
+        "layer4_unsourced_rate": {
+          "auc": 0.7603,
+          "ci_low": 0.6907,
+          "ci_high": 0.826,
+          "n_resamples": 1000,
+          "n_pos": 57,
+          "n_neg": 220,
+          "n_skipped_none": 623
+        },
+        "layer5_entity_unsourced_rate": {
+          "auc": null,
+          "ci_low": null,
+          "ci_high": null,
+          "n_used": 1,
+          "n_skipped_none": 899
+        },
+        "layer6_inverse_proximity": {
+          "auc": 0.6984,
+          "ci_low": 0.6579,
+          "ci_high": 0.7361,
+          "n_resamples": 1000,
+          "n_pos": 160,
+          "n_neg": 740,
+          "n_skipped_none": 0
+        },
+        "layer10_gap": {
+          "auc": 0.5127,
+          "ci_low": 0.4985,
+          "ci_high": 0.5295,
+          "n_resamples": 1000,
+          "n_pos": 160,
+          "n_neg": 740,
+          "n_skipped_none": 0
+        },
+        "layer11_p_proportion": {
+          "auc": 0.5591,
+          "ci_low": 0.5283,
+          "ci_high": 0.5895,
+          "n_resamples": 1000,
+          "n_pos": 160,
+          "n_neg": 740,
+          "n_skipped_none": 0
+        }
+      },
+      "touchstone_runtime_s": 1.9
+    },
+    "Data2txt": {
+      "n_total": 900,
+      "n_hallucinated": 579,
+      "hallucination_rate": 0.6433,
+      "touchstone_signals": {
+        "layer4_unsourced_rate": {
+          "auc": 0.5177,
+          "ci_low": 0.481,
+          "ci_high": 0.5488,
+          "n_resamples": 1000,
+          "n_pos": 450,
+          "n_neg": 291,
+          "n_skipped_none": 159
+        },
+        "layer5_entity_unsourced_rate": {
+          "auc": 0.2727,
+          "ci_low": 0.0,
+          "ci_high": 0.5758,
+          "n_resamples": 1000,
+          "n_pos": 11,
+          "n_neg": 3,
+          "n_skipped_none": 886
+        },
+        "layer6_inverse_proximity": {
+          "auc": 0.6397,
+          "ci_low": 0.6001,
+          "ci_high": 0.6757,
+          "n_resamples": 1000,
+          "n_pos": 579,
+          "n_neg": 321,
+          "n_skipped_none": 0
+        },
+        "layer10_gap": {
+          "auc": 0.5041,
+          "ci_low": 0.4908,
+          "ci_high": 0.517,
+          "n_resamples": 1000,
+          "n_pos": 579,
+          "n_neg": 321,
+          "n_skipped_none": 0
+        },
+        "layer11_p_proportion": {
+          "auc": 0.5026,
+          "ci_low": 0.5,
+          "ci_high": 0.506,
+          "n_resamples": 1000,
+          "n_pos": 579,
+          "n_neg": 321,
+          "n_skipped_none": 0
+        }
+      },
+      "touchstone_runtime_s": 3.49
+    }
+  }
+}
