@@ -6,6 +6,51 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-15: fresh-eyes honesty pass
+
+A second external-perspective stress test surfaced a tighter band of claims that did not track to public-surface artifacts plus residual pre-polish phrasing. This round closes them. No methodology change; no library API change; benchmark snapshots are byte-identical.
+
+**Standard (1.0.0-draft.4 → 1.0.0-draft.5):**
+
+- **§4 Output structure restored.** §4 had been folded into §3.5 in the prior round, leaving the top-level numbering jumping §3 → §5 while the Drafting status block still listed §4 as substantively complete. §4 is now a free-standing section again; cross-references are unchanged.
+- **§5.1 Layer 1a phrasing.** Dropped the "such as Gemini Flash" vendor-specific aside; the layer is vendor-neutral via a caller-supplied `BaselineGenerator` callable, as the README and library docstrings already state.
+- **§8.2 conformance band disambiguated.** "Aggregate G/F/P MAE ≤ 0.10" is now explicitly against the `detector_v031` regression reference, not against full manual classification. The full-manual MAE (0.12-0.13) is documented in the section's Reference result paragraph; tightening it is open work and is not asserted by the band. The pytest assertion in `tests/test_benchmarks.py` already enforces the disambiguated reading.
+- **Appendix C rewritten.** The prior table made eight confident validation claims (`d=0.93`, `d=0.83-0.95`, `N=18` ×2, `97% recall` mislabeled against Layer 2 when it belonged to Layer 4, `4 studies`, internal `v1.3` ×2, internal `v1.4` + `19 tests passing`) that did not trace to any artifact in this repository, plus a misleading "conditional on Gemini API" annotation on Layer 1a. The new table cites the public-surface validation artifact per row (unit-test path or benchmark) and qualifies each claim explicitly; internal validation that is not in the public surface is no longer cited as if it were.
+- **Header status block.** Updated to mention §4 and the Appendix C revision; date bumped to 2026-05-14; version `1.0.0-draft.5`.
+- **§12.2 References.** Em-dash separators in the RFC 2119 and CC-BY 4.0 entries replaced with periods; matches the project's style discipline applied elsewhere in the prior em-dash strip.
+
+**Library (no API or measurement changes):**
+
+- `src/clarethium_touchstone/measure.py`: docstring for `quality_profile` previously cited four prior studies including three on Gemini-internal validation that is not in the public surface. Replaced with a citation to EXP-081 (the public regression benchmark) plus a pointer to README §Limitations and Standard §3.5 for what is not yet demonstrated.
+- `src/clarethium_touchstone/measure.py`: two internal-version comments (`v1.3`) on the Layer 8 calibration assertion set replaced with construct-level comments. The internal versioning was a leak shape that the canon-audit pattern set did not catch; the rewrites describe what the patterns do and why they are split out of Layer 1c, without invoking an internal version number.
+- `_filter_numbers` fast path: short-circuit when the text contains no `word count` / `total words` callout. The prior implementation ran `re.finditer` over the full text for every extracted number; on documents above ~5 kB this dominated `measure()` runtime. Median latency on a 5 kB self-source dropped from 53 ms to 34 ms; a 54 kB self-source dropped from 3.77 s to 1.87 s. No behaviour change; the slow path is preserved for documents that contain the callout phrases.
+- `__standard_version__` bumped to `1.0.0-draft.5`; `CITATION.cff`, `README.md` BibTeX, and `tests/reference/README.md` synced.
+
+**Benchmarks:**
+
+- `benchmarks/exp_095_grounding/README.md`: dropped references to a private paper artifact with no public resolver and to internal patch / detector-version lineage; rephrased the caveats around outputs #7 and #16 in construct terms. Fixed the grammar break around line 58 that had survived a prior copyedit.
+- `benchmarks/exp_095_grounding/ground_truth.json`: note for output #16 rewritten to drop the internal version reference; the recorded `detector_v031` figure is preserved verbatim (regression baseline unchanged).
+- `benchmarks/README.md`: dropped "the published EXP-081 adversarial-validity finding" and "strong empirical validation" framing; aligned with the careful README phrasing (internal regression baseline; embellishment instruction overlaps with detector vocabulary).
+- `benchmarks/exp_081_discrimination/README.md`: clarified that `ground_truth.json` records project-authored expected values produced by `detector_v031`, not external ground truth.
+
+**Documentation:**
+
+- `docs/index.md` Use cases section rewritten to mirror the README's three-tier framing (exercised / plausible but unvalidated / not yet a production claim). The prior list presented "Internal AI quality verification", "Substrate enforcement", and "Independent third-party verification of vendor claims" as if they were current capabilities; the README §Limitations explicitly says they are not.
+- `docs/getting-started.md` empirical-validation section rewritten to match the README and benchmark READMEs: drops "reproduce the published numbers" framing on internal regression benchmarks; adds the `(P>0 vs P=0)` qualifier on EXP-095's P-direction agreement claim; reports both `detector_v031` and full-manual MAEs as the README and Standard §8.2 do.
+
+**Verification surface unchanged.** Tests: 385 pass. Coverage: 97% (gate 95%). Lint, format, mypy strict, canon audit (self-test + working tree) all green. EXP-081 / EXP-095 benchmark snapshots are byte-identical to draft.4.
+
+**What this round did not do (named, carried forward):**
+
+- External corpus validation (TRUE, LLM-AggreFact, HaluBench, HaluEval). Still the single highest-leverage open work per Standard §3.5.
+- Head-to-head baselines against AlignScore, MiniCheck, HHEM 2.1, SelfCheckGPT, G-Eval.
+- Inter-annotator agreement on EXP-095.
+- Second-round perf pass on `_extract_numbers_for_matching` (O(matches²) `claimed_ranges` scan, ~1600 per-sentence re-extractions per `measure()` on a 54 kB document).
+- Constitution of an editor body; §11.4 still names the transitional state.
+- Extracting a minimal conformance subset into `tests/reference/`. Standard 1.0.1 still owns this.
+
+---
+
 ## 2026-05-12: production-readiness round
 
 Follows the same-day polish pass below. Closes a structured gap list identified in an external-perspective stress test: completes Standard sections that were marked pending, adds small-N statistical corrections to the benchmark headline, cleans up dead-end API surface, exposes Layer 11 extensibility, expands adopter documentation, and adds release / CI discipline.

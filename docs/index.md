@@ -50,11 +50,21 @@ See the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for full speci
 
 ## Use cases
 
-- AI integrity research and benchmarking
-- Internal AI quality verification at organizations
-- Substrate enforcement for AI-coupled work platforms
-- Independent third-party verification of AI vendor claims
-- Educational use in AI methodology courses
+What this release has been exercised on:
+
+- Regression testing of AI-output verification implementations (the bundled benchmarks demonstrate this).
+- Research-style profiling of analytical documents against their sources.
+
+Plausibly suited but not yet validated against an externally curated corpus:
+
+- AI integrity research and benchmarking, including head-to-head comparison against published faithfulness metrics.
+- Educational use in AI methodology courses where the regex-and-arithmetic substrate is the pedagogical point.
+
+NOT yet a production claim (see README §Limitations):
+
+- Internal AI-quality verification at organizations operating at scale (no batch API, no performance characterization).
+- Substrate enforcement on AI-coupled work platforms (no adversarial-robustness claim; patterns are public and evadable).
+- Independent third-party verification of AI vendor claims (no external-corpus validation; no head-to-head baselines).
 
 ## Related projects
 

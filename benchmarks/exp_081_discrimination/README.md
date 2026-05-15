@@ -101,8 +101,9 @@ Does not establish:
 
 ## Files
 
-- `ground_truth.json` - machine-readable corpus index with the published
-  per-doc expected metrics
+- `ground_truth.json` - machine-readable corpus index with the
+  project-authored per-doc expected metrics (recorded by an earlier
+  internal detector `detector_v031`; not external ground truth)
 - `sources/` - 3 source documents (Owl Labs hybrid work survey,
   communication research, AI workflows research)
 - `outputs/` - 12 model outputs (3 topics × 2 conditions × 2 versions)
