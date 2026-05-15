@@ -134,7 +134,7 @@ Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `alig
 
 ## Empirical validation
 
-Two internal regression benchmarks plus two external corpus comparisons ship in `benchmarks/`. The internal benchmarks (`exp_081_discrimination/`, `exp_095_grounding/`) reproduce the recorded numbers exactly from a clone; the external benchmarks (`external/ragtruth_summary/`, `external/summeval/`) stream third-party permissively-licensed corpora from HuggingFace at runtime and compare Touchstone head-to-head against MiniCheck (Tang et al. 2024). The internal benchmarks are regression baselines on project-authored corpora; the external benchmarks are construct-generalization tests, with results recorded under each benchmark's `results/` subdirectory.
+Two internal regression benchmarks plus three external corpus comparisons ship in `benchmarks/`. The internal benchmarks (`exp_081_discrimination/`, `exp_095_grounding/`) reproduce the recorded numbers exactly from a clone; the external benchmarks (`external/ragtruth_summary/`, `external/summeval/`, `external/halueval_summarization/`) stream third-party permissively-licensed corpora from HuggingFace at runtime and compare Touchstone head-to-head against MiniCheck (Tang et al. 2024). The internal benchmarks are regression baselines on project-authored corpora; the external benchmarks are construct-generalization tests, with results recorded under each benchmark's `results/` subdirectory.
 
 ### EXP-081 adversarial discrimination
 
@@ -196,17 +196,34 @@ Second external corpus. n=1600 (article, summary) pairs from the test split of `
 
 Layer 6 lands in the "substantive generalization" band (≥0.75) on SummEval, ~0.14 below MiniCheck (with the leakage caveat). **Layer 10 gap is identically AUC = 0.5000 and Spearman ρ = 0.0000** — second-corpus confirmation of the §3.5 partial out-of-domain falsification. 0/1600 outputs have any substance components firing on this corpus, vs 3% on RAGTruth: SummEval's even shorter summaries (median 338 chars vs RAGTruth's 626) leave the substance side completely dark. See `benchmarks/external/summeval/README.md` for methodology and construct caveats.
 
+### HaluEval summarization external comparison
+
+Third external corpus. n=1000 (article, summary) pairs from 500 randomly sampled documents in the HaluEval summarization subset (Li et al., EMNLP 2023; `pminervini/HaluEval` mirror, Apache-2.0). Each document contributes one `right_summary` (real CNN/DM summary) and one `hallucinated_summary` (ChatGPT-synthesized variant with intentionally introduced errors). Perfect 50/50 class balance by construction; primary readout is **paired-ranking accuracy** (does the signal rank the hallucinated summary higher than the right one on the same document?), which is robust to any synthetic-vs-real distributional confound that absolute AUC would inherit.
+
+| System | AUC-ROC | Paired-ranking accuracy | n used | Runtime (CPU, n=1000) |
+|---|---|---|---|---|
+| **Touchstone Layer 6 inverse_proximity** | **0.7593** | **0.8030 (401/500 pairs)** | 1000 | 1.9 s |
+| MiniCheck Flan-T5-Large | 0.6752 | 0.6980 (349/500 pairs) | 1000 | ~100 min |
+| Touchstone Layer 4 unsourced_rate | 0.4993 | 0.5189 (159 pairs usable) | 474 | |
+| Touchstone Layer 10 gap (composite) | 0.5020 | 0.5020 (490/500 ties) | 1000 | |
+| Touchstone Layer 11 P proportion | 0.4941 | 0.4960 (474/500 ties) | 1000 | |
+| Touchstone Layer 5 entity (gated) | 0.4286 | 0.5000 | 12 | |
+
+The HaluEval finding requires careful framing: **Touchstone L6 outperforms MiniCheck on this corpus, but for a corpus-construction reason, not a methodology-superiority reason.** HaluEval is adversarially constructed (ChatGPT-synthesized hallucinations on CNN/DM articles); the hallucinated summaries are by design lexically distributed away from the source article. Layer 6 measures exactly this kind of vocabulary distance, so it is well-aligned with what the adversarial process produces. MiniCheck, a fine-tuned semantic fact-checker, drops to AUC 0.68 because HaluEval's adversarial hallucinations are easier to detect via vocabulary distance than via semantic NLI. The substantive finding remains the **three-corpus consistency** of the Touchstone signals, not the headline ordering on any single corpus. See `benchmarks/external/halueval_summarization/README.md` for the adversarial-construction caveat in full.
+
 ### Cross-corpus comparison
 
-The two external corpora consistently show:
+The three external corpora consistently show:
 
-| Signal | RAGTruth Summary AUC | SummEval AUC |
-|---|---|---|
-| Touchstone Layer 6 inverse_proximity | 0.6723 | 0.7530 |
-| Touchstone Layer 10 gap (composite) | 0.4981 | 0.5000 |
-| MiniCheck Flan-T5-Large | 0.7125 | 0.8978* |
+| Signal | RAGTruth Summary AUC | SummEval AUC | HaluEval AUC |
+|---|---|---|---|
+| Touchstone Layer 6 inverse_proximity | 0.6723 | 0.7530 | **0.7593** |
+| Touchstone Layer 10 gap (composite) | 0.4981 | 0.5000 | 0.5020 |
+| MiniCheck Flan-T5-Large | 0.7125 | 0.8978* | 0.6752 |
 
-The Layer 6 generalization signal and the Layer 10 composite degeneration are both stable across corpora. The MiniCheck-Touchstone gap is corpus-dependent (smaller on the held-out RAGTruth Summary, larger on the training-set-overlapping SummEval).
+The Layer 6 generalization signal (0.67-0.76) and the Layer 10 composite degeneration (0.498-0.502) are both **stable across three independent corpora** spanning RAG-context summaries, CNN/DM news summaries, and adversarial CNN/DM summaries. MiniCheck's AUC varies by 0.22 across the three corpora; Touchstone L6's varies by 0.09. The Standard's §3.5 partial out-of-domain falsification of Layer 10 gap is now load-bearing on three independent corpora.
+
+* SummEval MiniCheck figure inflated by training-test leakage (MiniCheck was trained on AggreFact-CNN, which is SummEval-derived).
 
 ### Snapshot drift detection
 
@@ -216,9 +233,9 @@ Both internal benchmarks pin a dated JSON snapshot via byte-match pytest asserti
 
 What this release does **not** demonstrate:
 
-- **Two external corpus runs; more open.** The first two external comparisons land in `benchmarks/external/ragtruth_summary/` (RAGTruth Summary test split, n=900, MIT, six instruction-tuned LLM families) and `benchmarks/external/summeval/` (SummEval test, n=1600 (article, summary) pairs, MIT, 16 older summarization systems). Touchstone's strongest signal on both out-of-domain corpora is Layer 6 inverse vocabulary proximity, at AUC 0.6723 (RAGTruth) and 0.7530 (SummEval). MiniCheck Flan-T5-Large baseline AUC is 0.7125 (RAGTruth) and 0.8978 (SummEval); the SummEval figure is inflated by training-test leakage (MiniCheck was trained on AggreFact-CNN, which is SummEval-derived). Layer 10 gap is falsified out-of-domain on both corpora (AUC 0.498 / 0.500) per Standard §3.5. Validation against TRUE (Honovich et al. 2022), LLM-AggreFact (Tang et al. 2024), HaluBench / Lynx (Patronus 2024), and HaluEval (Li et al. 2023) remains open work.
-- **One head-to-head baseline; more open.** MiniCheck Flan-T5-Large (Tang et al. 2024) is the only baseline run so far. Touchstone has not yet been benchmarked against AlignScore (Zha et al. 2023), HHEM 2.1 (Vectara), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), or Bespoke-MiniCheck-7B (the SOTA MiniCheck variant).
-- **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does not hold on short summary outputs: on RAGTruth Summary the substance components fire on 3% of outputs (AUC 0.4981); on SummEval, on 0% of outputs (AUC 0.5000). Adopters running on short-form text should pair Touchstone with a different fidelity signal; on Touchstone alone, Layer 6 inverse_proximity is the surviving out-of-domain option but at substantially lower discriminative power than the in-domain composite.
+- **Three external corpus runs; more open.** External validations land in `benchmarks/external/ragtruth_summary/` (RAGTruth Summary test split, n=900, MIT, six instruction-tuned LLM families), `benchmarks/external/summeval/` (SummEval test, n=1600 (article, summary) pairs, MIT, 16 older summarization systems), and `benchmarks/external/halueval_summarization/` (HaluEval summarization, n=1000 (article, summary) pairs from 500 documents with ChatGPT-synthesized adversarial hallucinations, Apache-2.0). Touchstone's strongest signal on all three corpora is Layer 6 inverse vocabulary proximity, at AUC 0.6723 / 0.7530 / 0.7593. MiniCheck Flan-T5-Large baseline AUC is 0.7125 / 0.8978 / 0.6752; MiniCheck on SummEval is inflated by training-test leakage, and MiniCheck on HaluEval underperforms Touchstone L6 because HaluEval's adversarial construction produces vocabulary distribution shifts that L6 measures directly. Layer 10 gap is falsified out-of-domain on all three corpora (AUC 0.498 / 0.500 / 0.502) per Standard §3.5. Validation against TRUE (Honovich et al. 2022), LLM-AggreFact (Tang et al. 2024), and HaluBench / Lynx (Patronus 2024) remains open work.
+- **One head-to-head baseline; more open.** MiniCheck Flan-T5-Large (Tang et al. 2024) is the only baseline run so far. Touchstone has not yet been benchmarked against AlignScore (Zha et al. 2023), HHEM 2.1 (Vectara), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), or Bespoke-MiniCheck-7B (the SOTA MiniCheck variant). Two candidate baselines investigated for this round (HHEM 2.1 and AlignScore) had install incompatibilities with modern Python that prevented inclusion; resolving these is open work.
+- **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does not hold on short summary outputs across any of the three external corpora tested (RAGTruth Summary AUC 0.4981 with 3% substance fire; SummEval AUC 0.5000 with 0% substance fire; HaluEval AUC 0.5020 with 490/500 paired document scores tied at zero). Adopters running on short-form text should pair Touchstone with a different fidelity signal; on Touchstone alone, Layer 6 inverse_proximity is the surviving out-of-domain option (AUC 0.67-0.76 across the three corpora).
 - **EXP-081 corpus is single-vendor.** All 12 documents are xAI grok-4-1-fast. Cross-vendor generalization within the fast tier and to flagship-tier model outputs is open research.
 - **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-8.926, -4.498] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.835) is reported alongside.
 - **Layer 11 entity list is domain-biased.** The hardcoded external-entity P-markers (`_GFP_EXTERNAL_ENTITIES` in `measure.py`) cover GLP-1 drugs, Apple products, and BLS labor terms (the three EXP-095 source domains). On new domains, the secondary P-signal goes silent; adopters extending to new domains must author new entity lists with their own false-positive control.
@@ -274,7 +291,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.7). When citing it, please
+The Standard is currently in draft (1.0.0-draft.8). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -283,7 +300,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.7},
+  note         = {Version 1.0.0-draft.8},
   license      = {CC-BY-4.0}
 }
 ```

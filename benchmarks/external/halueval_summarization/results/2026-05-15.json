@@ -1,0 +1,85 @@
+{
+  "experiment": "HaluEval summarization external validation",
+  "corpus": "pminervini/HaluEval (summarization subset, data split, stratified sample)",
+  "library": "clarethium-touchstone",
+  "minicheck_model": "flan-t5-large",
+  "n_documents_sampled": 500,
+  "n_total_pairs": 1000,
+  "n_right": 500,
+  "n_hallucinated": 500,
+  "sampling_seed": 0,
+  "construct_caveat": "HaluEval is adversarially constructed: hallucinated_summary fields are ChatGPT-synthesized variants of real CNN/DM summaries with intentionally introduced errors. Touchstone's signals may capture synthetic-vs-real distributional differences in addition to the construct of interest. The paired-ranking accuracy readout (within-document right vs hallucinated) is the natural metric for this construction and bypasses any synthetic-vs-real population confound.",
+  "auc_roc_by_signal": {
+    "minicheck_flan_t5_large": {
+      "auc_roc": 0.6752,
+      "n_used": 1000
+    },
+    "touchstone_layer4_unsourced_rate": {
+      "auc_roc": 0.4993,
+      "n_used": 474,
+      "n_skipped_none": 526
+    },
+    "touchstone_layer5_entity_unsourced_rate": {
+      "auc_roc": 0.4286,
+      "n_used": 12,
+      "n_skipped_none": 988
+    },
+    "touchstone_layer6_inverse_proximity": {
+      "auc_roc": 0.7593,
+      "n_used": 1000,
+      "n_skipped_none": 0
+    },
+    "touchstone_layer10_gap": {
+      "auc_roc": 0.502,
+      "n_used": 1000,
+      "n_skipped_none": 0
+    },
+    "touchstone_layer11_p_proportion": {
+      "auc_roc": 0.4941,
+      "n_used": 1000,
+      "n_skipped_none": 0
+    }
+  },
+  "paired_ranking_accuracy_by_signal": {
+    "minicheck_flan_t5_large": {
+      "n_doc_pairs_with_both_scores": 500,
+      "n_correct": 349,
+      "n_tied": 0,
+      "accuracy": 0.698
+    },
+    "touchstone_layer4_unsourced_rate": {
+      "n_doc_pairs_with_both_scores": 159,
+      "n_correct": 19,
+      "n_tied": 127,
+      "accuracy": 0.5189
+    },
+    "touchstone_layer5_entity_unsourced_rate": {
+      "n_doc_pairs_with_both_scores": 2,
+      "n_correct": 0,
+      "n_tied": 2,
+      "accuracy": 0.5
+    },
+    "touchstone_layer6_inverse_proximity": {
+      "n_doc_pairs_with_both_scores": 500,
+      "n_correct": 401,
+      "n_tied": 1,
+      "accuracy": 0.803
+    },
+    "touchstone_layer10_gap": {
+      "n_doc_pairs_with_both_scores": 500,
+      "n_correct": 6,
+      "n_tied": 490,
+      "accuracy": 0.502
+    },
+    "touchstone_layer11_p_proportion": {
+      "n_doc_pairs_with_both_scores": 500,
+      "n_correct": 11,
+      "n_tied": 474,
+      "accuracy": 0.496
+    }
+  },
+  "runtime_seconds": {
+    "touchstone": 1.9,
+    "minicheck": 5971.3
+  }
+}
