@@ -4,7 +4,7 @@ This directory is reserved for the canonical reference test cases shipped with t
 
 ## Status
 
-The reference suite is not yet populated. Standard 1.0 is at `1.0.0-draft.8`; the reference cases extracted into this directory will land alongside ratification. Until then, the regression benchmarks under `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/` plus the unit tests under `tests/` are the practical conformance surface, as Standard §11 directs.
+The reference suite is not yet populated. Standard 1.0 is at `1.0.0-draft.9`; the reference cases extracted into this directory will land alongside ratification. Until then, the regression benchmarks under `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/` plus the unit tests under `tests/` are the practical conformance surface, as Standard §11 directs.
 
 ## Planned structure
 

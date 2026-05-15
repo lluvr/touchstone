@@ -34,6 +34,7 @@ See Appendix C of the Standard for layer-by-layer status.
 from __future__ import annotations
 
 import re
+from bisect import bisect_left
 from collections.abc import Callable, Sequence
 from typing import Literal, cast
 
@@ -200,12 +201,22 @@ def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
     """
     numbers: list[dict[str, str]] = []
     seen: set[tuple[str, str, int]] = set()
-    claimed_ranges: list[tuple[int, int]] = []
+    # Parallel sorted lists of claimed-range (start, end) tuples; sorted
+    # by start. Overlap check uses bisect for O(log M) per match instead
+    # of the prior O(M) linear scan over `claimed_ranges`. On long
+    # documents the linear scan dominated _extract_numbers_for_matching.
+    claimed_starts: list[int] = []
+    claimed_ends: list[int] = []
 
     for pattern, num_type in _NUMBER_PATTERNS:
         for m in re.finditer(pattern, text):
             match_start, match_end = m.start(), m.end()
-            if any(cs <= match_start < ce or cs < match_end <= ce for cs, ce in claimed_ranges):
+            i = bisect_left(claimed_starts, match_start)
+            # Overlap iff the range immediately to the left extends past
+            # match_start, or the range at index i starts before match_end.
+            if (i > 0 and claimed_ends[i - 1] > match_start) or (
+                i < len(claimed_starts) and claimed_starts[i] < match_end
+            ):
                 continue
 
             val = m.group(1) if m.lastindex else m.group(0)
@@ -236,7 +247,11 @@ def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
             if key in seen:
                 continue
             seen.add(key)
-            claimed_ranges.append((match_start, match_end))
+            # Insert into the sorted parallel lists at the position
+            # already located by bisect above (state has not changed
+            # between the lookup and this insertion).
+            claimed_starts.insert(i, match_start)
+            claimed_ends.insert(i, match_end)
 
             ctx_start = max(0, m.start() - 50)
             ctx_end = min(len(text), m.end() + 50)
@@ -2150,6 +2165,12 @@ def grounding_decomposition(
     # Source years for unsourced-year gating.
     source_years = {int(m.group(1)) for m in re.finditer(r"\b((?:19|20)\d{2})\b", source)}
 
+    # Hoist source content-word set out of the per-sentence loop. The
+    # prior implementation recomputed `_content_words(source)` once per
+    # sentence, which scales as O(sentences * len(source)) and dominated
+    # measure() runtime on documents above ~50 KB.
+    src_words = set(_content_words(source))
+
     classifications: list[dict[str, object]] = []
 
     for sent in sentences:
@@ -2224,10 +2245,10 @@ def grounding_decomposition(
             )
             continue
 
-        # G score (only when not P).
+        # G score (only when not P). `src_words` is hoisted out of the
+        # loop above; here we only compute the per-sentence words.
         has_sourced = bool(sourced) or bool(derived)
         sent_words = set(_content_words(sent))
-        src_words = set(_content_words(source))
         vocab_overlap = len(sent_words & src_words) / len(sent_words) if sent_words else 0.0
 
         grounding = 0.0
