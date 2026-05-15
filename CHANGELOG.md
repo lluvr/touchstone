@@ -6,6 +6,73 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-15: third external corpus (HaluEval) lands; three-corpus pattern established
+
+Follows the same-day RAGTruth Summary and SummEval external comparisons. Adds HaluEval summarization (Li et al., EMNLP 2023, Apache-2.0) as a third external corpus, bringing the Layer 10 partial out-of-domain falsification finding to three independent corpora. The three-corpus consistency of the Touchstone signal pattern (L6 generalizes; L10 gap composite is identically near-chance) is now load-bearing.
+
+**Plan refinement performed before this round (recorded for next round):**
+
+- Bespoke-MiniCheck-7B (the SOTA MiniCheck variant) was the original top recommendation but requires GPU at realistic speed; on CPU a 7B model is ~30 s/example, infeasible for 2500+ pairs across the existing corpora. Deferred until GPU access is available.
+- Two alternative baselines were investigated as the next baseline addition: HHEM 2.1 (Vectara) and AlignScore-base (Zha et al. 2023). Both had install incompatibilities with modern Python on this venv (HHEM's `trust_remote_code=True` custom modeling code uses a renamed transformers API; AlignScore is documented as Python 3.11+ incompatible). The cleaner next move was determined to be a third corpus rather than persisting through baseline install debugging.
+
+**New benchmark: `benchmarks/external/halueval_summarization/`**
+
+- **Corpus.** `pminervini/HaluEval` (Apache-2.0). Summarization subset, `data` split. 10000 (article, right_summary, hallucinated_summary) triplets sampled from CNN/DM; this run uses a stratified random sample of 500 documents (seed=0) yielding 1000 (article, summary) pairs with perfect 50/50 class balance.
+- **Construction caveat.** HaluEval is adversarially built: hallucinated_summary fields are ChatGPT-synthesized variants of real CNN/DM summaries with intentionally introduced errors. Touchstone's vocabulary-based signal may capture synthetic-vs-real distributional differences in addition to the construct of interest. The benchmark README documents this fully; the paired-ranking-accuracy readout (within-document right vs hallucinated) is the primary metric and bypasses any synthetic-vs-real population confound.
+- **Two readouts.** AUC-ROC on the binary label, plus paired-ranking accuracy: for each of the 500 documents, does the signal rank the hallucinated_summary higher than the right_summary in supported-ness?
+
+**Results (snapshot `results/2026-05-15.json`, n=1000):**
+
+| System | AUC | Paired-ranking accuracy |
+|---|---|---|
+| Touchstone Layer 6 inverse_proximity | **0.7593** | **0.8030 (401/500 pairs)** |
+| MiniCheck Flan-T5-Large | 0.6752 | 0.6980 (349/500 pairs) |
+| Touchstone L4 unsourced_rate (n=474) | 0.4993 | 0.5189 (159 pairs usable) |
+| Touchstone L10 gap (composite) | 0.5020 | 0.5020 (490/500 ties at zero) |
+| Touchstone L11 P proportion | 0.4941 | 0.4960 (474/500 ties) |
+| Touchstone L5 entity (n=12) | 0.4286 | 0.5000 |
+
+Headline: Touchstone L6 outperforms MiniCheck Flan-T5-Large on HaluEval by 8 AUC points and 10 paired-accuracy points. **This is a corpus-construction artifact, not a methodology-superiority finding.** HaluEval's adversarial construction produces hallucinated summaries that are lexically distributed away from the source article; Layer 6 measures exactly this kind of vocabulary distance. The substantive finding is the three-corpus consistency, not the headline ordering on any single corpus.
+
+**Three-corpus consistency:**
+
+| Signal | RAGTruth | SummEval | HaluEval |
+|---|---|---|---|
+| Touchstone Layer 6 inverse_proximity | 0.6723 | 0.7530 | 0.7593 |
+| Touchstone Layer 10 gap (composite) | 0.4981 | 0.5000 | 0.5020 |
+| MiniCheck Flan-T5-Large | 0.7125 | 0.8978* | 0.6752 |
+
+Layer 6 AUC varies by 0.09 across three independent corpora; Layer 10 gap is identically near-chance with variance < 0.01; MiniCheck varies by 0.22 (most volatility comes from corpus-construction characteristics). The Standard's §3.5 partial out-of-domain falsification of Layer 10 gap is now load-bearing on three corpora.
+
+**Standard (1.0.0-draft.7 -> 1.0.0-draft.8):**
+
+- §3.5 Layer 10 falsifiable claim updated to record all three corpus results. The construct is now characterized as "partially falsified out-of-domain across three independent corpora".
+- §3.5 §3.1 substrate-independence claim updated with the three-corpus Layer 6 AUC range (0.67-0.76) and an explicit note about the HaluEval construct-alignment artifact (Layer 6 directly measures what HaluEval's adversarial construction produces, so the HaluEval AUC is partly construct-aligned rather than independently confirmatory).
+- Header status updated to draft.8.
+
+**README:**
+
+- New §Empirical validation subsection "HaluEval summarization external comparison" with the head-to-head table, the adversarial-construction caveat, and the construct-alignment honest framing.
+- Cross-corpus comparison table extended from two to three corpora.
+- §Limitations bullets updated to reflect three external corpora; the HHEM/AlignScore install incompatibilities are recorded under the head-to-head baseline bullet.
+- Citation BibTeX bumped to 1.0.0-draft.8.
+
+**Verification:**
+
+- All main-library gates green: 385 tests, 97% coverage, mypy strict, ruff lint+format, canon audit (self-test + tree).
+- EXP-081, EXP-095, RAGTruth Summary, and SummEval snapshots byte-identical to draft.7.
+
+**Carried forward:**
+
+- TRUE, LLM-AggreFact (held-out), HaluBench external runs. Three external corpora is now the floor, not the ceiling.
+- AlignScore (resolve Python compat), HHEM 2.1 (resolve transformers compat), SelfCheckGPT, G-Eval baselines.
+- Bespoke-MiniCheck-7B comparison (requires GPU access).
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+- Performance round 2 on `_extract_numbers_for_matching`.
+
+---
+
 ## 2026-05-15: second external corpus (SummEval) lands; cross-corpus pattern confirmed
 
 Follows the same-day RAGTruth Summary external comparison. Adds SummEval (Fabbri et al. TACL 2021, MIT) as a second external corpus to strengthen the Standard §3.5 finding from "single-corpus partial falsification" to "two-corpus consistent partial falsification". No methodology or library API change; no impact to internal benchmark snapshots.
