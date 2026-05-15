@@ -6,6 +6,63 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-15: first external corpus comparison lands (RAGTruth + MiniCheck)
+
+First external-corpus comparison for Touchstone, paired with the first head-to-head against an LLM-based fact-checking baseline. Exercises Standard §3.5 (falsifiable construct claims) on a third-party corpus and updates the §Limitations section in the README from "no external corpus / no head-to-head" to recorded empirical findings.
+
+**New benchmark: `benchmarks/external/ragtruth_summary/`**
+
+- **Corpus.** `wandb/RAGTruth-processed` (MIT license; mirror of RAGTruth, Wu et al. ACL 2024), test split filtered to `task_type='Summary'`. n=900, six model families (gpt-3.5-turbo-0613, gpt-4-0613, llama-2-7B/13B/70B-chat, mistral-7B-instruct; 150 outputs each), 22.7% overall hallucination rate (per-model: 3-57%). No corpus content is included in this repository; the runner streams from HF at runtime.
+- **Baseline.** MiniCheck Flan-T5-Large (Tang, Laban, Durrett, EMNLP 2024), Apache-2.0. Runner downloads the ~3 GB model on first invocation; CPU-only by default for cross-machine determinism.
+- **Methodology.** AUC-ROC via Mann-Whitney U computed for MiniCheck's `1 - raw_prob` and for five Touchstone signals oriented "higher = more hallucinated". Each signal is gated by its precision threshold (e.g. Layer 4 only when the output has at least one digit-formatted number; Layer 5 only when at least 5 entities are extracted). Balanced accuracy is reported at MiniCheck's native binary threshold; Touchstone signals have no natural binary cutoff for this task and are reported on AUC only.
+
+**Results (snapshot `results/2026-05-15.json`, n=900):**
+
+| System | AUC-ROC | n used | CPU runtime |
+|---|---|---|---|
+| MiniCheck Flan-T5-Large | 0.7125 | 900 | 5867 s (~98 min) |
+| Touchstone Layer 6 inverse_proximity | 0.6723 | 900 | 2.3 s |
+| Touchstone Layer 5 entity_unsourced_rate | 0.8167 | 23 | (gated) |
+| Touchstone Layer 4 unsourced_rate | 0.5514 | 628 | (gated) |
+| Touchstone Layer 11 P proportion | 0.5374 | 900 | |
+| Touchstone Layer 10 gap (composite) | 0.4981 | 900 | (chance) |
+
+Headline: Touchstone's best single signal (Layer 6) is 0.04 AUC below MiniCheck at ~2500x less compute, on a corpus Touchstone was never calibrated for. The Layer 10 composite degenerates as the construct claim predicted it might out-of-domain: 97% of these short-summary outputs have ZERO substance components firing (`source_fidelity` 0.7%, `entity_grounding` 2.6%, `epistemic_calibration` 0.1%), so the composite reduces to presentation-only.
+
+**Standard (1.0.0-draft.5 -> 1.0.0-draft.6):**
+
+- §3.5 Layer 10 falsifiable claim updated to record the RAGTruth Summary result as a partial out-of-domain falsification. The Layer 10 construct holds within its calibrated long-form analytical regime but not on short summary outputs; §9.2's scope statement is the controlling document for in-domain claims.
+- §3.5 §3.1 substrate-independence claim updated with the per-model AUC variation (0.59-0.73 across six model families) observed on RAGTruth Summary; the variation is within noise expected from per-model hallucination-rate imbalance.
+- §3.5 falsification protocol now distinguishes full falsification (triggers layer redefinition or retirement) from partial falsification (triggers §9.2 scope update). The Layer 10 result is the first concrete instance of the latter.
+
+**README:**
+
+- New §Empirical validation subsection "RAGTruth Summary external comparison" with the head-to-head table.
+- §Limitations first two bullets ("No external corpus" / "No head-to-head baselines") rewritten as recorded empirical findings; the open-work list now names only the corpora and baselines that have not yet been run.
+- New limitation bullet: "Layer 10 gap is input-regime-conditional" with adopter guidance for short-form text.
+
+**Library and infrastructure:**
+
+- New `pyproject.toml` `[external]` optional-dependencies group declaring the runner's external surface (`datasets`, `accelerate`, `minicheck @ git+...`). Base library `dependencies` list is unchanged (still empty).
+- `.gitignore` excludes `.venv-external/`, `ckpts_minicheck/`, `ckpts/`.
+- `scripts/canon_audit.sh` EXCLUDES extended to skip the new external venv and model-weight cache directories.
+
+**Tests, gates, snapshots:**
+
+- All main-library gates green: 385 tests, 97% coverage, mypy strict, ruff lint+format, canon audit (self-test + tree). The external runner is not in the default test path; it's invoked manually because it depends on the `[external]` extras and network access to HF Hub.
+- EXP-081 and EXP-095 internal benchmark snapshots are byte-identical to draft.5.
+
+**What this round did not do (named, carried forward):**
+
+- TRUE, LLM-AggreFact, HaluBench, HaluEval external runs. RAGTruth Summary is the first, not the only, external corpus.
+- Head-to-head against AlignScore, HHEM 2.1, SelfCheckGPT, G-Eval. MiniCheck is the first, not the only, baseline.
+- Bespoke-MiniCheck-7B comparison (the SOTA variant in the MiniCheck series; would likely beat the Flan-T5-Large variant in AUC).
+- Inter-annotator agreement on EXP-095. Carried over from prior round.
+- Editor body constitution. Carried over from prior round.
+- Performance round 2 on `_extract_numbers_for_matching`. Carried over from prior round.
+
+---
+
 ## 2026-05-15: fresh-eyes honesty pass
 
 A second external-perspective stress test surfaced a tighter band of claims that did not track to public-surface artifacts plus residual pre-polish phrasing. This round closes them. No methodology change; no library API change; benchmark snapshots are byte-identical.
