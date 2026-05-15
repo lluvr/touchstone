@@ -263,6 +263,14 @@ def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
 
 def _filter_numbers(numbers: list[dict[str, str]], text: str) -> list[dict[str, str]]:
     """Drop year-like values and word-count callouts from a number list."""
+    # Fast path: if the text contains no callout phrase, no number can be
+    # word-count-flagged, and we can skip the per-number context re-scan.
+    # This matters on large documents: without the short-circuit,
+    # _is_word_count runs re.finditer over the full text for every number,
+    # which is O(numbers * text_len).
+    text_lower = text.lower()
+    if "word count" not in text_lower and "total words" not in text_lower:
+        return [n for n in numbers if not _is_year(n["value"])]
     return [n for n in numbers if not _is_year(n["value"]) and not _is_word_count(n, text)]
 
 
@@ -1466,7 +1474,11 @@ _CALIBRATION_ASSERTION_PATTERNS: tuple[str, ...] = (
     r"\bis\s+essential\b",
     r"\bis\s+critical\b",
     r"\bis\s+(?:the\s+)?key\b",
-    # Expanded calibration-only patterns (v1.3)
+    # Calibration-only assertion patterns. Layer 8 uses a broader
+    # assertion set than Layer 1c so calibration-bearing phrases
+    # ("it is clear that", "indisputably", "demonstrates that") are
+    # counted toward the precision threshold without disturbing
+    # Layer 1c's structural ratio.
     r"\bit\s+is\s+clear\s+that\b",
     r"\bthere\s+is\s+no\s+doubt\b",
     r"\bwithout\s+(?:question|doubt|exception)\b",
@@ -1524,11 +1536,10 @@ def epistemic_calibration(text: str, source: str) -> EpistemicCalibration:
     OVERCLAIMING. Returns the calibration score (grounded fraction),
     the overclaiming rate, and a precision indicator.
 
-    The expanded assertion set (v1.3 calibration-only) catches phrases
-    like "it is clear that", "indisputable", "conclusively",
-    "definitive(ly)", "inevitable", "demonstrates that"
-    augmentation that Layer 1c's structural ratio omits to preserve
-    validated reference distributions.
+    The calibration-only assertion set catches phrases like "it is
+    clear that", "indisputable", "conclusively", "definitive(ly)",
+    "inevitable", "demonstrates that" that Layer 1c's structural ratio
+    omits to keep its reference distribution stable.
 
     Returns 0.0 / "low" precision when no assertion-bearing sentences
     are found (the TypedDict requires float values; the implementation's
@@ -1750,13 +1761,15 @@ def quality_profile(
     side has contributors (e.g. empty text without source), all three
     values are ``0.0``.
 
-    Validation (prior studies): four studies showed strong d effects.
-    (1) source present vs absent: d=-5.78, N=24.
-    (2) faithful vs embellished on xAI: d=-5.43, N=12.
-    (3) faithful vs embellished on Gemini: d=-2.28, N=12.
-    (4) 4-dose Gemini gradient: monotonic, endpoint d=-2.13, N=24.
-    Cross-generator and dose-response evidence support construct validity.
-    Composite metrics inherit component limitations.
+    Validation in public surface: EXP-081 (`benchmarks/exp_081_discrimination/`)
+    records Cohen's d = -5.238 on a 12-document single-vendor corpus
+    against the `detector_v031` reference of d = -5.43; this is an
+    internal regression baseline, not an external replication.
+    External-corpus validation (TRUE, LLM-AggreFact, HaluBench,
+    HaluEval) and head-to-head baselines (AlignScore, MiniCheck,
+    HHEM, SelfCheckGPT, G-Eval) are open work per the README
+    §Limitations and Standard §3.5. The composite inherits each
+    component's stated limitations.
 
     Args:
         text: The output to evaluate.

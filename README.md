@@ -227,7 +227,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.4). When citing it, please
+The Standard is currently in draft (1.0.0-draft.5). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -236,7 +236,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.4},
+  note         = {Version 1.0.0-draft.5},
   license      = {CC-BY-4.0}
 }
 ```

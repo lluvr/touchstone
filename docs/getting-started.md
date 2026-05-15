@@ -280,21 +280,25 @@ Section 7 of the Standard.
 
 ## Empirical validation
 
-Two reproducible benchmarks ship in `benchmarks/`. Anyone with a clone can
-run them and reproduce the published numbers:
+Two internal regression benchmarks ship in `benchmarks/`. Anyone with
+a clone can run them and reproduce the recorded numbers exactly:
 
 ```bash
 python -m benchmarks.exp_081_discrimination.run
 python -m benchmarks.exp_095_grounding.run
 ```
 
-EXP-081 reproduces the published Cohen's d = -5.43 with d = -5.238 on the
-same 12-document corpus. EXP-095 validates Layer 11 against 13
-hand-classified outputs with 100% P-direction agreement against manual
-classification.
+EXP-081 records Cohen's d = -5.238 on a 12-document single-vendor
+corpus against the recorded `detector_v031` baseline of d = -5.43.
+EXP-095 records P-existence direction agreement (P>0 vs P=0) of
+100% on 13 hand-classified outputs across three model families;
+aggregate G/F/P MAE is 0.02-0.04 vs `detector_v031` and 0.12-0.13
+vs full manual classification (n=7).
 
-Both benchmarks pin a dated JSON snapshot via byte-match pytest assertion;
-CI catches silent regression on any change affecting per-doc predictions.
+Both benchmarks pin a dated JSON snapshot via byte-match pytest
+assertion; CI catches silent regression on any change affecting
+per-doc predictions. The corpora are project-authored; external
+corpus validation is open work per the README §Limitations.
 
 ## Next steps
 

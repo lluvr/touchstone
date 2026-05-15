@@ -1,8 +1,8 @@
 # Touchstone Standard 1.0 (DRAFT)
 
-**Status:** Draft v0.4. All Section 5-11 content substantively complete, including Terminology (§2), Conformance declaration mechanism + invalidation criteria (§11), confirmed reference-test conformance bands (§8), structured Field positioning references (§12), and falsifiable construct claims (§3.5). Section 6 (Specification Compliance) and Appendices A and B remain reserved for Standard 1.1. Independent editor review is pending.
-**Version:** 1.0.0-draft.4
-**Date:** 2026-05-12 (drafting in progress)
+**Status:** Draft v0.5. All Section 4-12 content substantively complete, including Terminology (§2), Output structure (§4), Conformance declaration mechanism + invalidation criteria (§11), confirmed reference-test conformance bands (§8) disambiguated against the regression reference, structured Field positioning references (§12), falsifiable construct claims (§3.5), and Appendix C now citing public-surface validation artifacts only. Section 6 (Specification Compliance) and Appendices A and B remain reserved for Standard 1.1. Independent editor review is pending.
+**Version:** 1.0.0-draft.5
+**Date:** 2026-05-15 (drafting in progress)
 **License:** CC-BY 4.0
 **Canonical URL:** https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md
 
@@ -117,6 +117,10 @@ Each layer's construct claim is falsifiable in principle. The Standard names the
 
 Reports of falsification evidence are submitted via the Suggestion process. A confirmed falsification of a layer's construct claim triggers either a Standard amendment (layer redefinition) or a layer retirement under the versioning rules of §10.
 
+---
+
+## 4. Output structure
+
 The Standard primarily addresses Markdown analytical documents. Reference implementation operates on this format; validated scope is documented in Section 9. Extension to structured outputs (JSON, structured markup) and to other text formats is layer-specific and MAY be implementation-defined; conforming implementations claiming extended scope MUST document the validation supporting that claim.
 
 ---
@@ -129,7 +133,7 @@ The Standard defines eleven measurement layers for output profiling. Implementat
 
 The structural profile decomposes into three sub-layers measuring different structural dimensions:
 
-**Layer 1a: Heading defaultness.** OPTIONAL. Generates baseline documents from a generic prompt (using an external LLM API such as Gemini Flash) and computes word-level Jaccard overlap between the document's headings and the baseline headings. Low overlap indicates non-default structure. This is the only layer with an LLM dependency.
+**Layer 1a: Heading defaultness.** OPTIONAL. Generates baseline documents from a generic prompt (via a caller-supplied LLM client; the reference implementation accepts any vendor through a ``BaselineGenerator`` callable) and computes word-level Jaccard overlap between the document's headings and the baseline headings. Low overlap indicates non-default structure. This is the only layer with an LLM dependency.
 
 **Layer 1b: Mechanism ratio.** REQUIRED. Counts regex matches against canonical causal-language patterns and buzzword patterns. Score = causal / (causal + buzzword). Measures reasoning style, not quality.
 
@@ -306,7 +310,9 @@ Conformance bands (corpus-bound, proposed):
 | Measurement | Required band |
 |-------------|---------------|
 | P-existence agreement on packaged corpus | 100% (13/13) |
-| Aggregate G/F/P MAE | ≤ 0.10 |
+| Aggregate G/F/P MAE vs `detector_v031` | ≤ 0.10 |
+
+The MAE band is against the `detector_v031` reference recorded in `ground_truth.json` (regression baseline), not against full manual classification. Reference-implementation MAE vs full manual classification (0.12-0.13 across G/F/P) is documented in §8.2's Reference result and in the benchmark README; tightening that figure is open work and is not asserted by the band above.
 
 ---
 
@@ -409,8 +415,8 @@ Both benchmarks ship with `README.md` files documenting methodology, expected va
 
 ### 12.2 Normative external references
 
-- **RFC 2119** — Key words for use in RFCs to Indicate Requirement Levels (Bradner, 1997). https://www.rfc-editor.org/rfc/rfc2119
-- **CC-BY 4.0** — Creative Commons Attribution 4.0 International License. https://creativecommons.org/licenses/by/4.0/
+- **RFC 2119.** Key words for use in RFCs to Indicate Requirement Levels (Bradner, 1997). https://www.rfc-editor.org/rfc/rfc2119
+- **CC-BY 4.0.** Creative Commons Attribution 4.0 International License. https://creativecommons.org/licenses/by/4.0/
 
 ### 12.3 Field positioning
 
@@ -448,21 +454,23 @@ Additional empirical work referenced in the reference implementation's docstring
 
 ## Appendix C: Implementation status
 
-| Layer | Status in `clarethium-touchstone` v0.x |
-|-------|----------------------------------------|
-| 1a Heading defaultness | Implemented; conditional on Gemini API |
-| 1b Mechanism ratio | Implemented; validated d=0.93 |
-| 1c Assertion ratio | Implemented; validated d=0.83-0.95 |
-| 2 Claim density | Implemented; validated 97% recall |
-| 3 Temporal instability | Implemented; canonical field name is `instability_rate` |
-| 4 Source matching | Implemented; 97.1% extraction recall on 70 manually annotated digit-formatted claims; 0/309 numbers incorrectly flagged unsourced on self-source documents (string-equality regression check, not independent validation) |
-| 5 Entity provenance | Implemented; directional validation N=18 |
-| 6 Vocabulary proximity | Implemented; directional validation N=18 |
-| 7 Presentation features | Implemented; descriptive |
-| 8 Epistemic calibration | Implemented; experimental v1.3 |
-| 9 Information novelty | Implemented; experimental v1.3; length-confounded |
-| 10 Quality profile | Implemented; validated across 4 studies |
-| 11 G/F/P decomposition | Implemented v1.4; 19 tests passing |
+The table below records each layer's status in the reference implementation. "Validation in public surface" cites the artifacts in this repository that exercise the layer. Layers without a public validation artifact are implemented and unit-tested; their construct claims are open work per §3.5.
+
+| Layer | Status in `clarethium-touchstone` v0.x | Validation in public surface |
+|-------|----------------------------------------|------------------------------|
+| 1a Heading defaultness | Implemented; runs only when caller supplies both `topic` and a vendor-neutral `BaselineGenerator` callable | Unit tests (`tests/test_structural_profile.py`) cover stub-generator paths: full overlap, disjoint, failed calls, partial exceptions, non-string returns |
+| 1b Mechanism ratio | Implemented | Unit tests in `tests/test_structural_profile.py` |
+| 1c Assertion ratio | Implemented; precision banding (high / adequate / low) on `assertion_precision` output field | Unit tests in `tests/test_structural_profile.py`; precision-band classifier covered |
+| 2 Claim density | Implemented | Unit tests in `tests/test_claim_density.py` |
+| 3 Temporal instability | Implemented; canonical field name is `instability_rate` | Unit tests in `tests/test_temporal_instability.py` |
+| 4 Source matching | Implemented; 97.1% extraction recall on 70 manually annotated digit-formatted claims (internal annotation set, 3 documents × 6 categories); 0/309 numbers incorrectly flagged unsourced on self-source documents (string-equality regression check, not independent validation against an external faithfulness corpus) | Unit tests in `tests/test_source_matching.py`; component of `quality_profile.gap` exercised by EXP-081 |
+| 5 Entity provenance | Implemented | Unit tests in `tests/test_entity_provenance.py`; component of `quality_profile` exercised by EXP-081 |
+| 6 Vocabulary proximity | Implemented | Unit tests in `tests/test_vocabulary_proximity.py`; used as a grounding signal in Layer 11 |
+| 7 Presentation features | Implemented; descriptive (no normative pass/fail thresholds per §7.5) | Unit tests in `tests/test_presentation_features.py`; presentation-side components exercised by EXP-081 |
+| 8 Epistemic calibration | Implemented; EXPERIMENTAL in v1.0 (§5.8); precision flag when assertion count < 5 | Unit tests in `tests/test_epistemic_calibration.py`; substance-index contributor exercised by EXP-081 |
+| 9 Information novelty | Implemented; EXPERIMENTAL in v1.0; length-confounded by Heaps' law per §5.9 | Unit tests in `tests/test_information_novelty.py` |
+| 10 Quality profile | Implemented; composite of L3/L4/L5/L8 (substance) and L7 (presentation), with L1a `structural_effort` reserved until LLM-baseline runs are wired into the composite | EXP-081 (`benchmarks/exp_081_discrimination/`) records Cohen's d = -5.238 on 12 single-vendor documents against the `detector_v031` reference of d = -5.43; per-output gap-direction agreement 100% (12/12). Internal regression baseline; not external replication. |
+| 11 G/F/P decomposition | Implemented; conservative P-detection (§5.11); domain-biased default external-entity P-marker list with `external_entities` extension hook | EXP-095 (`benchmarks/exp_095_grounding/`) records P-existence direction agreement 100% (13/13) across 3 model families; aggregate G/F/P MAE 0.02-0.04 vs `detector_v031`, 0.12-0.13 vs full manual classification (n=7). Unit tests in `tests/test_grounding_decomposition.py`. |
 
 ---
 

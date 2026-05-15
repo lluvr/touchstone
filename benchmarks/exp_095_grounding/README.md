@@ -54,35 +54,28 @@ runs are in the ground-truth set.
 
 ### Caveats and known drift
 
-The `detector_v031` column in `ground_truth.json` reflects values
-**published in EXP-095** (post-v1.4.1 fix), not what the current
-the prior detector produces. Two outputs show measurable
-drift between the published EXP-095 paper and the current
-implementation:
+The `detector_v031` column in `ground_truth.json` records the
+reference values produced by an earlier internal detector against
+this corpus; it is not external ground truth. Two outputs show
+measurable drift between the recorded `detector_v031` figures and
+the current reference implementation:
 
-- **Output #7 (xAI BLS run 1):** detector_v031 published 0.21,
-  Touchstone produces 0.10. Both are below the
-  manual P=0.48 baseline, but the detector_v031 figure is a more
-  optimistic structural-P count than the current code yields.
-- **Output #16 (xAI BLS run 3):** detector_v031 published 0.18 (the
-  v1.4.1 fix figure recorded in the EXP-095 paper),
-  Touchstone now produces **0.051** (post-Patch-3, was 0.026 in
-  pre-Patch-3 baseline). Manual estimate is 0.10-0.15. Patch 3
-  (scaled-integer extraction) improved this by making source-side
-  derivation stricter: source's "7.2 million" no longer extracts as
-  decimal "7.2" that falsely derives unsourced numbers via
-  coincidental arithmetic. Still below manual range; further
-  improvement requires the deferred Patch 2 (multi-currency) and
-  proper magnitude-aware source matching.
+- **Output #7 (xAI BLS run 1):** `detector_v031` recorded 0.21,
+  Touchstone produces 0.10. Both are below the manual P=0.48
+  baseline; the `detector_v031` figure is a more optimistic
+  structural-P count than the current code yields.
+- **Output #16 (xAI BLS run 3):** `detector_v031` recorded 0.18,
+  Touchstone produces **0.051**. Manual estimate is 0.10-0.15.
+  Scaled-integer extraction (source's "7.2 million" no longer
+  extracts as decimal "7.2" that falsely derives unsourced numbers
+  via coincidental arithmetic) made source-side derivation stricter,
+  which is the principal source of the drift. The result is still
+  below the manual range; further improvement requires multi-currency
+  source matching and proper magnitude-aware derivation.
 
-This means the v1.4.1 derivation fix credited in the EXP-095 paper
-with improving xAI BLS detection does NOT fully reproduce
-in the reference implementation; either the fix's effect is
-input-specific or it was partially regressed since the doc was
-written. **Touchstone v0.1 inherits this state.**
-The drift is real evidence pointing to a follow-up investigation
-(redesign of the derivation checker for small-number sources, per
-the deferred Patches 1-3 plan).
+The drift is real and pointed at the derivation checker for
+small-number sources. Tightening that path is open work tracked in
+the implementation, not in this benchmark.
 
 The pytest harness asserts non-fragile invariants (90% direction
 agreement, 0.10 MAE bound) so these per-output drifts pass current
