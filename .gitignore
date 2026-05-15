@@ -86,3 +86,9 @@ scratch/
 local/
 *.local.md
 .venv/
+.venv-external/
+
+# External-benchmark model weight caches (~3 GB; downloaded by the
+# ``benchmarks/external/*`` runners on first run; never committed).
+ckpts_minicheck/
+ckpts/

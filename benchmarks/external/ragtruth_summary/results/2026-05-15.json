@@ -1,0 +1,85 @@
+{
+  "experiment": "RAGTruth Summary external validation",
+  "corpus": "wandb/RAGTruth-processed (test split, Summary task_type)",
+  "library": "clarethium-touchstone",
+  "minicheck_model": "flan-t5-large",
+  "n_total": 900,
+  "n_hallucinated": 204,
+  "n_supported": 696,
+  "hallucination_rate": 0.2267,
+  "auc_roc_by_signal": {
+    "minicheck_flan_t5_large": {
+      "auc_roc": 0.7125,
+      "balanced_accuracy_at_native_threshold": 0.646,
+      "n_used": 900,
+      "direction_note": "AUC computed on (1 - raw_prob); raw_prob is MiniCheck's P(supported)"
+    },
+    "touchstone_layer4_unsourced_rate": {
+      "auc_roc": 0.5514,
+      "n_used": 628,
+      "n_skipped_none": 272
+    },
+    "touchstone_layer5_entity_unsourced_rate": {
+      "auc_roc": 0.8167,
+      "n_used": 23,
+      "n_skipped_none": 877
+    },
+    "touchstone_layer6_inverse_proximity": {
+      "auc_roc": 0.6723,
+      "n_used": 900,
+      "n_skipped_none": 0
+    },
+    "touchstone_layer10_gap": {
+      "auc_roc": 0.4981,
+      "n_used": 900,
+      "n_skipped_none": 0
+    },
+    "touchstone_layer11_p_proportion": {
+      "auc_roc": 0.5374,
+      "n_used": 900,
+      "n_skipped_none": 0
+    }
+  },
+  "auc_roc_by_model": {
+    "gpt-3.5-turbo-0613": {
+      "n": 150,
+      "n_hallucinated": 4,
+      "minicheck_auc": 0.5342,
+      "touchstone_layer11_p_auc": 0.5
+    },
+    "gpt-4-0613": {
+      "n": 150,
+      "n_hallucinated": 6,
+      "minicheck_auc": 0.7847,
+      "touchstone_layer11_p_auc": 0.5735
+    },
+    "llama-2-13b-chat": {
+      "n": 150,
+      "n_hallucinated": 33,
+      "minicheck_auc": 0.6068,
+      "touchstone_layer11_p_auc": 0.5028
+    },
+    "llama-2-70b-chat": {
+      "n": 150,
+      "n_hallucinated": 24,
+      "minicheck_auc": 0.8052,
+      "touchstone_layer11_p_auc": 0.5341
+    },
+    "llama-2-7b-chat": {
+      "n": 150,
+      "n_hallucinated": 51,
+      "minicheck_auc": 0.7122,
+      "touchstone_layer11_p_auc": 0.5096
+    },
+    "mistral-7B-instruct": {
+      "n": 150,
+      "n_hallucinated": 86,
+      "minicheck_auc": 0.6822,
+      "touchstone_layer11_p_auc": 0.5453
+    }
+  },
+  "runtime_seconds": {
+    "touchstone": 2.3,
+    "minicheck": 5867.2
+  }
+}
