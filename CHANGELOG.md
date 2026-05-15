@@ -6,6 +6,61 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-15: second external corpus (SummEval) lands; cross-corpus pattern confirmed
+
+Follows the same-day RAGTruth Summary external comparison. Adds SummEval (Fabbri et al. TACL 2021, MIT) as a second external corpus to strengthen the Standard §3.5 finding from "single-corpus partial falsification" to "two-corpus consistent partial falsification". No methodology or library API change; no impact to internal benchmark snapshots.
+
+**New benchmark: `benchmarks/external/summeval/`**
+
+- **Corpus.** `mteb/summeval` (MIT license; mirror of SummEval, Fabbri et al. TACL 2021). Test split, all 100 CNN/DM articles × 16 machine summaries each = 1600 (article, summary) pairs. Per-summary consistency rating on a 1-5 Likert scale aggregated from three annotators; median 5.0, mean 4.66, stdev 0.92.
+- **Two readouts.** AUC-ROC on the binarized label (`consistency < 4` = not-supported = positive class; 10.1% positive rate) and Spearman ρ on the continuous rating. The continuous readout is the primary signal-quality measure on this corpus because the 1-5 scale is heavily skewed toward "supported" and binarization at any single threshold throws away rank information.
+- **Training-test leakage caveat recorded.** MiniCheck Flan-T5-Large was trained on LLM-AggreFact, which includes AggreFact-CNN derived from SummEval. MiniCheck's source distribution is in its training set; its absolute AUC on SummEval (0.8978) is not held-out. Touchstone has not been calibrated on any SummEval-derived data; its AUC on SummEval is a fair test of substrate generalization.
+
+**Results (snapshot `results/2026-05-15.json`, n=1600):**
+
+| System | AUC | Spearman ρ vs continuous rating |
+|---|---|---|
+| MiniCheck Flan-T5-Large* | 0.8978 | +0.4066 |
+| Touchstone L6 inverse_proximity | 0.7530 | -0.3481 |
+| Touchstone L4 unsourced_rate (n=967) | 0.5688 | -0.2566 |
+| Touchstone L11 P proportion | 0.5207 | -0.1227 |
+| Touchstone L10 gap (composite) | 0.5000 | 0.0000 |
+| Touchstone L5 entity (n=0) | — | — |
+
+*Training-test leakage caveat applies.
+
+**Cross-corpus pattern.** The two external corpora consistently show: Layer 6 inverse_proximity generalizes at AUC 0.67-0.75 (with the higher figure on SummEval); Layer 10 gap is identically near-chance (AUC 0.498 on RAGTruth, 0.500 on SummEval, Spearman ρ = 0.000 on SummEval); substance components fire on 3% (RAGTruth) and 0% (SummEval) of outputs. The Layer 10 partial out-of-domain falsification recorded in draft.6 is now reinforced by a second independently-licensed corpus.
+
+**Standard (1.0.0-draft.6 -> 1.0.0-draft.7):**
+
+- §3.5 Layer 10 falsifiable claim updated to record both corpus results. The construct is now characterized as "partially falsified out-of-domain across two corpora" rather than "across one corpus". The falsification protocol's §9.2 scope-update path is the controlling resolution.
+- §3.5 §3.1 substrate-independence claim updated with SummEval evidence (Layer 6 AUC 0.7530 across 16 older summarization-system architectures, alongside the prior RAGTruth Summary breakdown across six instruction-tuned LLM families). No systematic model-identity dependence observed on either corpus beyond what label-balance variation predicts.
+- Header status updated to draft.7; date 2026-05-15.
+
+**README:**
+
+- New §Empirical validation subsection "SummEval external comparison" with the head-to-head table and the training-test leakage caveat.
+- New §Empirical validation subsection "Cross-corpus comparison" with the L6 and L10 numbers side-by-side across both external corpora.
+- §Limitations bullets for external corpora and head-to-head baselines updated to reflect two corpora and named baselines remaining open. Adopter guidance on Layer 10 gap input-regime-conditionality strengthened with the SummEval substance-component fire rate (0%).
+- Citation BibTeX bumped to 1.0.0-draft.7.
+
+**Verification:**
+
+- All main-library gates green: 385 tests, 97% coverage, mypy strict, ruff lint+format, canon audit (self-test + tree). New runner passes lint and format.
+- EXP-081 and EXP-095 internal benchmark snapshots byte-identical to draft.6.
+- RAGTruth Summary snapshot byte-identical to its 2026-05-15 baseline (this round did not re-run the RAGTruth benchmark).
+
+**Carried forward:**
+
+- TRUE, LLM-AggreFact (dev or test held-out subsets), HaluBench, HaluEval external runs.
+- AlignScore, HHEM 2.1, SelfCheckGPT, G-Eval baselines.
+- Bespoke-MiniCheck-7B (SOTA variant) comparison.
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+- Performance round 2 on `_extract_numbers_for_matching`.
+
+---
+
 ## 2026-05-15: first external corpus comparison lands (RAGTruth + MiniCheck)
 
 First external-corpus comparison for Touchstone, paired with the first head-to-head against an LLM-based fact-checking baseline. Exercises Standard §3.5 (falsifiable construct claims) on a third-party corpus and updates the §Limitations section in the README from "no external corpus / no head-to-head" to recorded empirical findings.
