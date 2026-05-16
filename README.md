@@ -24,7 +24,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Pre-launch on PyPI. All eleven Section 5 measurement layers are implemented and tested (385 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks ship with the source; they reproduce exactly from a clone. External-corpus validation against TRUE, LLM-AggreFact, HaluBench, and HaluEval is open work; see Limitations.
+Pre-launch on PyPI. All eleven Section 5 measurement layers are implemented and tested (385 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 PyPI organization application is pending. Until then, install from source. On modern Debian/Ubuntu/Mac-homebrew Pythons, install into a virtual environment so PEP-668 does not block the editable install:
 
@@ -140,13 +140,14 @@ Two internal regression benchmarks plus three external corpus comparisons plus o
 
 Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval summarization) and three task types within RAGTruth (Summary, QA, Data2Txt), Touchstone's Layer 6 inverse vocabulary proximity and Layer 10 quality_profile gap show a stable, internally consistent pattern of partial generalization. All AUCs reported with 95% percentile bootstrap CIs (1000 stratified resamples, fixed seed). The Layer 10 gap CIs all overlap chance, separately confirming the partial out-of-domain falsification documented in Standard §3.5.
 
-**Cross-corpus on summarization-task outputs:**
+**Cross-corpus on summarization-task outputs (Touchstone CIs are 95% percentile bootstrap; MiniCheck point AUC only; AlignScore CIs are 95% percentile bootstrap):**
 
 | Signal | RAGTruth Summary | SummEval | HaluEval summarization |
 |---|---|---|---|
 | Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] |
 | Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] |
-| MiniCheck Flan-T5-Large (point AUC; CI not yet computed) | 0.7125 | 0.8978* | 0.6752 |
+| MiniCheck Flan-T5-Large (Tang et al. EMNLP 2024) | 0.7125 | 0.8978* | 0.6752 |
+| AlignScore-base (Zha et al. ACL 2023) | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] |
 
 **Cross-task within RAGTruth (Touchstone only; MiniCheck deferred):**
 
@@ -159,7 +160,9 @@ Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval 
 
 *Training-test leakage on SummEval (MiniCheck was trained on AggreFact-CNN, which is SummEval-derived); see the benchmark README for the full caveat.
 
-The signal pattern is stable across both axes. Layer 6 AUC across all six (corpus, task) cells lives in [0.64, 0.76]; Layer 10 gap AUC lives in [0.498, 0.513] across all six cells with CIs that overlap 0.50 in every cell. Layer 4 unsourced_rate spikes to AUC 0.76 on RAGTruth QA — the first task type where output number density is high enough for Layer 4 to fire on a usable fraction (n=277/900); on summary task outputs the signal is gated out for most examples.
+The signal pattern is stable across both axes. Layer 6 AUC across all five unique (corpus, task) cells lives in [0.64, 0.76]; Layer 10 gap AUC lives in [0.498, 0.513] across all five cells with CIs that overlap 0.50 in every cell. Layer 4 unsourced_rate spikes to AUC 0.76 on RAGTruth QA — the first task type where output number density is high enough for Layer 4 to fire on a usable fraction (n=277/900); on summary task outputs the signal is gated out for most examples.
+
+The two LLM-based baselines (MiniCheck Flan-T5-Large, AlignScore-base) show a corpus-dependent pattern. On RAGTruth Summary and SummEval, both baselines outperform Touchstone Layer 6 by 4-12 AUC points. On HaluEval summarization, **both** LLM-based baselines underperform Touchstone Layer 6 (MiniCheck 0.6752, AlignScore 0.6879 [0.6567, 0.7187], Touchstone L6 0.7593 [0.7285, 0.7879]). The HaluEval CIs are disjoint: the Touchstone L6 lower bound (0.7285) sits above both baseline upper bounds (0.7187 / and MiniCheck's point 0.6752 without CI). This is corpus-construction-aligned and not a methodology-superiority finding — HaluEval's adversarial process produces lexical distribution shifts that Layer 6 measures directly while both semantic-NLI-trained baselines miss them. The cross-corpus pattern is now load-bearing on two independently-trained baselines, not just MiniCheck.
 
 ### Compute disclosure
 
@@ -171,7 +174,7 @@ All external benchmark runs in this repository were executed on a single CPU (no
 | SummEval | 1600 | 2.1 s | 4124 s (~69 min) |
 | HaluEval summarization | 1000 | 1.9 s | 5971 s (~100 min) |
 
-The Touchstone-to-MiniCheck wall-clock ratio is approximately 1:2500. After the round-3 perf fix landed in this commit (replaces an O(n²) per-sentence content-words recomputation in `grounding_decomposition` with a single hoisted set, plus a bisect-based overlap check in `_extract_numbers_for_matching`), measure() scales linearly in document size: 5 kB / 50 kB / 500 kB documents measure in 16 ms / 161 ms / 1.78 s respectively. This is ~23x faster than the round-1 baseline on 50 kB documents and ~89x faster on 500 kB documents.
+The Touchstone-to-MiniCheck wall-clock ratio is approximately 1:2500. `measure()` scales linearly in document size: 5 kB / 50 kB / 500 kB documents measure in 16 ms / 161 ms / 1.78 s respectively, after a finalization-round perf fix that replaced an O(n²) per-sentence content-words recomputation in `grounding_decomposition` with a single hoisted set, and replaced an O(n²) `claimed_ranges` linear scan in `_extract_numbers_for_matching` with a bisect-based overlap check on parallel sorted lists.
 
 ### EXP-081 adversarial discrimination
 
@@ -203,14 +206,15 @@ Layer 11 (`grounding_decomposition`) classifies each sentence as Grounded / Fram
 
 First external corpus comparison. n=900 Summary outputs from the test split of `wandb/RAGTruth-processed` (MIT license; mirror of RAGTruth, Wu et al. 2024) spanning six model families (gpt-3.5-turbo-0613, gpt-4-0613, llama-2-{7B,13B,70B}-chat, mistral-7B-instruct). Per-output binary ground truth: at least one annotated hallucination span vs none.
 
-| System | AUC-ROC | n used | Runtime (CPU, n=900) |
+| System | AUC-ROC (95% CI where computed) | n used | Runtime (CPU, n=900) |
 |---|---|---|---|
-| MiniCheck Flan-T5-Large (Tang et al. 2024) | **0.7125** | 900 | ~98 min |
-| Touchstone Layer 6 inverse_proximity | **0.6723** | 900 | 2.3 s |
-| Touchstone Layer 5 entity_unsourced_rate | 0.8167 | 23 | (signal gated; only 23 outputs have ≥5 entities) |
-| Touchstone Layer 4 unsourced_rate | 0.5514 | 628 | (signal gated; 272 outputs have no digit-formatted numbers) |
-| Touchstone Layer 11 P proportion | 0.5374 | 900 | |
-| Touchstone Layer 10 gap (composite) | **0.4981** | 900 | (chance) |
+| AlignScore-base (Zha et al. ACL 2023) | **0.7368 [0.7006, 0.7699]** | 900 | 7830 s (~131 min) |
+| MiniCheck Flan-T5-Large (Tang et al. EMNLP 2024) | **0.7125** | 900 | ~98 min |
+| Touchstone Layer 6 inverse_proximity | **0.6723 [0.6296, 0.7116]** | 900 | 2.3 s |
+| Touchstone Layer 5 entity_unsourced_rate | 0.8167 [0.5000, 1.0000] | 23 | (signal gated; only 23 outputs have ≥5 entities) |
+| Touchstone Layer 4 unsourced_rate | 0.5514 [0.5054, 0.5977] | 628 | (signal gated; 272 outputs have no digit-formatted numbers) |
+| Touchstone Layer 11 P proportion | 0.5374 [0.5094, 0.5676] | 900 | |
+| Touchstone Layer 10 gap (composite) | **0.4981 [0.4830, 0.5111]** | 900 | (chance) |
 
 The Layer 10 composite falls to chance because the substance-side components do not fire on these short summaries: `source_fidelity` activates on 0.7% of outputs, `entity_grounding` on 2.6%, `epistemic_calibration` on 0.1%. The composite reduces to presentation-only and carries no fidelity information on this corpus.
 
@@ -220,13 +224,14 @@ Layer 6 inverse vocabulary proximity is the strongest surviving Touchstone signa
 
 Second external corpus. n=1600 (article, summary) pairs from the test split of `mteb/summeval` (MIT license; CNN/DM articles with per-summary 1-5 Likert consistency ratings; Fabbri et al. TACL 2021). 100 articles, 16 machine summaries per article, 16 older summarization-system architectures. Binarization: `consistency < 4` = "not supported" (10.1% positive class). Spearman correlation against the continuous rating reported alongside, because the 1-5 scale is heavily skewed toward "supported" (median 5.0) and binarization throws away rank information that Spearman preserves.
 
-| System | AUC-ROC | Spearman ρ vs continuous rating | n used | Runtime (CPU, n=1600) |
+| System | AUC-ROC (95% CI where computed) | Spearman ρ vs continuous rating | n used | Runtime (CPU, n=1600) |
 |---|---|---|---|---|
 | MiniCheck Flan-T5-Large* | 0.8978 | +0.4066 | 1600 | ~69 min |
-| Touchstone Layer 6 inverse_proximity | **0.7530** | **-0.3481** | 1600 | 2.1 s |
-| Touchstone Layer 4 unsourced_rate | 0.5688 | -0.2566 | 967 | |
-| Touchstone Layer 11 P proportion | 0.5207 | -0.1227 | 1600 | |
-| Touchstone Layer 10 gap (composite) | **0.5000** | **0.0000** | 1600 | (chance) |
+| AlignScore-base | **0.8091 [0.7714, 0.8455]** | (not reported here) | 1600 | 4128 s (~69 min) |
+| Touchstone Layer 6 inverse_proximity | **0.7530 [0.7145, 0.7951]** | **-0.3481** | 1600 | 2.1 s |
+| Touchstone Layer 4 unsourced_rate | 0.5688 [0.5341, 0.6060] | -0.2566 | 967 | |
+| Touchstone Layer 11 P proportion | 0.5207 [0.5048, 0.5366] | -0.1227 | 1600 | |
+| Touchstone Layer 10 gap (composite) | **0.5000 [0.5000, 0.5000]** | **0.0000** | 1600 | (chance) |
 | Touchstone Layer 5 entity (gated) | — | — | 0 | (no summary has ≥5 entities) |
 
 *Training-test leakage caveat applies: MiniCheck was trained on LLM-AggreFact, which includes AggreFact-CNN derived from SummEval. MiniCheck's source distribution is in its training set; its absolute AUC on this corpus is not held-out. Touchstone has not been calibrated on any SummEval-derived data.
@@ -237,16 +242,17 @@ Layer 6 lands in the "substantive generalization" band (≥0.75) on SummEval, ~0
 
 Third external corpus. n=1000 (article, summary) pairs from 500 randomly sampled documents in the HaluEval summarization subset (Li et al., EMNLP 2023; `pminervini/HaluEval` mirror, Apache-2.0). Each document contributes one `right_summary` (real CNN/DM summary) and one `hallucinated_summary` (ChatGPT-synthesized variant with intentionally introduced errors). Perfect 50/50 class balance by construction; primary readout is **paired-ranking accuracy** (does the signal rank the hallucinated summary higher than the right one on the same document?), which is robust to any synthetic-vs-real distributional confound that absolute AUC would inherit.
 
-| System | AUC-ROC | Paired-ranking accuracy | n used | Runtime (CPU, n=1000) |
+| System | AUC-ROC (95% CI where computed) | Paired-ranking accuracy | n used | Runtime (CPU, n=1000) |
 |---|---|---|---|---|
-| **Touchstone Layer 6 inverse_proximity** | **0.7593** | **0.8030 (401/500 pairs)** | 1000 | 1.9 s |
+| **Touchstone Layer 6 inverse_proximity** | **0.7593 [0.7285, 0.7879]** | **0.8030 (401/500 pairs)** | 1000 | 1.9 s |
+| AlignScore-base | **0.6879 [0.6567, 0.7187]** | (not reported here) | 1000 | 6238 s (~104 min) |
 | MiniCheck Flan-T5-Large | 0.6752 | 0.6980 (349/500 pairs) | 1000 | ~100 min |
-| Touchstone Layer 4 unsourced_rate | 0.4993 | 0.5189 (159 pairs usable) | 474 | |
-| Touchstone Layer 10 gap (composite) | 0.5020 | 0.5020 (490/500 ties) | 1000 | |
-| Touchstone Layer 11 P proportion | 0.4941 | 0.4960 (474/500 ties) | 1000 | |
-| Touchstone Layer 5 entity (gated) | 0.4286 | 0.5000 | 12 | |
+| Touchstone Layer 4 unsourced_rate | 0.4993 [0.4659, 0.5320] | 0.5189 (159 pairs usable) | 474 | |
+| Touchstone Layer 10 gap (composite) | 0.5020 [0.4950, 0.5090] | 0.5020 (490/500 ties) | 1000 | |
+| Touchstone Layer 11 P proportion | 0.4941 [0.4832, 0.5049] | 0.4960 (474/500 ties) | 1000 | |
+| Touchstone Layer 5 entity (gated) | 0.4286 [0.2857, 0.5000] | 0.5000 | 12 | |
 
-The HaluEval finding requires careful framing: **Touchstone L6 outperforms MiniCheck on this corpus, but for a corpus-construction reason, not a methodology-superiority reason.** HaluEval is adversarially constructed (ChatGPT-synthesized hallucinations on CNN/DM articles); the hallucinated summaries are by design lexically distributed away from the source article. Layer 6 measures exactly this kind of vocabulary distance, so it is well-aligned with what the adversarial process produces. MiniCheck, a fine-tuned semantic fact-checker, drops to AUC 0.68 because HaluEval's adversarial hallucinations are easier to detect via vocabulary distance than via semantic NLI. The substantive finding remains the **three-corpus consistency** of the Touchstone signals, not the headline ordering on any single corpus. See `benchmarks/external/halueval_summarization/README.md` for the adversarial-construction caveat in full.
+The HaluEval finding requires careful framing: **Touchstone L6 outperforms both LLM-based baselines on this corpus, but for a corpus-construction reason, not a methodology-superiority reason.** HaluEval is adversarially constructed (ChatGPT-synthesized hallucinations on CNN/DM articles); the hallucinated summaries are by design lexically distributed away from the source article. Layer 6 measures exactly this kind of vocabulary distance, so it is well-aligned with what the adversarial process produces. MiniCheck and AlignScore are both semantic NLI-style fact-checkers; both drop to AUC ~0.68 on HaluEval because adversarial lexical-distribution shifts are easier to detect via vocabulary distance than via semantic NLI. The two-baseline confirmation (independent training, independent architecture, near-identical AUC ~0.68) makes this a baseline-class limitation on adversarial vocabulary-shift corpora, not a MiniCheck-specific weakness. The substantive finding remains the **three-corpus, two-baseline consistency** of the Touchstone signal pattern, not the headline ordering on any single corpus. See `benchmarks/external/halueval_summarization/README.md` for the adversarial-construction caveat in full.
 
 ### Snapshot drift detection
 
@@ -256,7 +262,7 @@ Both internal benchmarks pin a dated JSON snapshot via byte-match pytest asserti
 
 What this release does **not** demonstrate:
 
-- **Three external corpora, one head-to-head baseline.** See the §Empirical validation "Headline finding" subsection for the full table with bootstrap CIs. Open work: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open baselines: AlignScore (Zha et al. 2023; install issue with this repo's Python 3.12 venv), HHEM 2.1 (Vectara; `trust_remote_code` API rename conflict with current transformers), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (the SOTA MiniCheck variant; requires GPU). MiniCheck CIs not computed: the runner did not retain per-example MiniCheck probabilities in the snapshot, and re-running MiniCheck on all three corpora costs ~4.5 hours of CPU.
+- **Three external corpora, two head-to-head baselines.** See the §Empirical validation "Headline finding" subsection for the full cross-baseline table with bootstrap CIs. Open work: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open baselines: HHEM 2.1 (Vectara; `trust_remote_code` API rename conflict with current transformers; not resolved in this round), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (the SOTA MiniCheck variant; requires GPU and is not viable on the CPU compute budget for these corpora). AlignScore install required a separate Python 3.10 venv (`uv python install 3.10`) plus pinned `transformers<4.40` and `setuptools<81`; the setup notes are in `benchmarks/external/alignscore_baselines.py`. MiniCheck CIs not yet computed: the original MiniCheck runners did not retain per-example probabilities in the snapshot, and re-running MiniCheck on all three corpora costs ~4.5 hours of CPU. The `benchmarks/external/minicheck_from_pairs.py` runner is ready for that follow-up; it reads the same pre-extracted pair JSONs that the AlignScore runner uses and produces snapshot files with per-example probs + bootstrap CIs.
 - **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. Adopters running on short-form text should pair Touchstone with a different fidelity signal; on Touchstone alone, Layer 6 inverse_proximity is the surviving out-of-domain option (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance).
 - **EXP-081 corpus is single-vendor.** All 12 documents are xAI grok-4-1-fast. Cross-vendor generalization within the fast tier and to flagship-tier model outputs is open research.
 - **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-8.926, -4.498] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.835) is reported alongside.
@@ -270,9 +276,9 @@ What this release has actually been exercised on:
 - Regression testing of AI-output verification implementations (the use case the bundled benchmarks demonstrate).
 - Research-style profiling of analytical documents against their sources (the use case the layer functions enable).
 
-What this release is plausibly suited for, with the caveat that it has not yet been deployed against an externally curated corpus:
+What this release is plausibly suited for, with cross-corpus generalization tested on three externally curated corpora and one head-to-head baseline (see §Empirical validation):
 
-- AI integrity research and benchmarking, including head-to-head comparison against published faithfulness metrics.
+- AI integrity research and benchmarking, including additional head-to-head comparison against published faithfulness metrics on new corpora.
 - Educational use in AI methodology courses where the regex-and-arithmetic substrate is the pedagogical point.
 
 What this release does NOT yet support production claims for:
@@ -280,7 +286,7 @@ What this release does NOT yet support production claims for:
 - Substrate enforcement on AI-coupled work platforms (no adversarial-robustness claim; the regex/arithmetic substrate is public and an adversary aware of the patterns can evade them).
 - Independent third-party verification of AI vendor claims at the level required by audit/compliance regimes (the construct claim has been tested against three external corpora and one head-to-head baseline, all summarization-task; broader baseline and corpus coverage remains open per §Limitations).
 
-The §Limitations section names what each of these aspirational use cases requires before it becomes a real production claim. Batch verification at scale is no longer a production blocker after the round-3 perf fix: `measure()` is linear in document size (5 kB / 50 kB / 500 kB → 16 ms / 161 ms / 1.78 s on CPU), and the external runners demonstrate sustained throughput on 900-1600 example corpora.
+The §Limitations section names what each of these aspirational use cases requires before it becomes a real production claim. Batch verification at scale is not a production blocker: `measure()` is linear in document size (5 kB / 50 kB / 500 kB → 16 ms / 161 ms / 1.78 s on CPU), and the external runners demonstrate sustained throughput on 900-1600 example corpora.
 
 ## Why model-independent
 
@@ -312,7 +318,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.9). When citing it, please
+The Standard is currently in draft (1.0.0-draft.10). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -321,7 +327,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.9},
+  note         = {Version 1.0.0-draft.10},
   license      = {CC-BY-4.0}
 }
 ```

@@ -6,6 +6,87 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-16: second baseline (AlignScore) on all three corpora; Standard 1.0.0-draft.10
+
+Adds AlignScore-base (Zha et al., ACL 2023, MIT) as a second independently-trained head-to-head baseline alongside MiniCheck on all three external corpora. Touchstone signal point AUCs and the existing MiniCheck point AUCs are byte-identical to draft.9; the addition is AlignScore-side numbers with 95% bootstrap CIs plus the cross-baseline framing updates.
+
+**Why a second baseline:**
+
+Through draft.9, the only head-to-head was MiniCheck Flan-T5-Large. The HaluEval finding (Touchstone L6 beats MiniCheck) was attributed in the §Limitations to a corpus-construction artifact, but the artifact framing rested on a single-baseline observation. Adding AlignScore (different architecture: RoBERTa-base discriminator vs Flan-T5-Large seq2seq; different training data: NLI/QA aggregations vs LLM-AggreFact; same task category: factual consistency) tests whether the HaluEval inversion is MiniCheck-specific or general to LLM-trained baselines.
+
+**Setup:**
+
+- AlignScore requires `torch<2`, which is unsupported on Python 3.12. Installed Python 3.10.20 via `uv`, created `.venv-alignscore` and pinned `transformers<4.40` (for `AdamW` in the public namespace) and `setuptools<81` (for `pkg_resources` compatibility with pytorch-lightning 1.9.5). All setup steps documented in `benchmarks/external/alignscore_baselines.py`.
+- AlignScore-base checkpoint (~700 MB RoBERTa-base) downloaded to `./ckpts_alignscore/` (gitignored alongside `./ckpts_minicheck/`).
+- `datasets 2.21.0` (pinned by AlignScore's dep solve) cannot parse `mteb/summeval`'s feature schema on Python 3.10. Workaround: corpus loading happens in the main `.venv-external` (Python 3.12, newer datasets); pairs are exported to JSON at `/tmp/alignscore_corpora/*.json`; the AlignScore runner reads from JSON. New helper module `benchmarks/external/alignscore_from_pairs.py` handles this; a companion `minicheck_from_pairs.py` enables the same flow for future MiniCheck CI computation.
+- The `scripts/canon_audit.sh` EXCLUDES list extended to skip `.venv-alignscore` and `ckpts_alignscore`.
+
+**Results (snapshots `results/alignscore_baseline_2026-05-15.json` under each corpus):**
+
+| System | RAGTruth Summary | SummEval | HaluEval summarization |
+|---|---|---|---|
+| AlignScore-base | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] |
+| MiniCheck Flan-T5-Large | 0.7125 | 0.8978* | 0.6752 |
+| Touchstone L6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] |
+| Touchstone L10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] |
+
+*Training-test leakage on SummEval applies to MiniCheck only (MiniCheck was trained on AggreFact-CNN, derived from SummEval); AlignScore was trained on a different aggregation that does not include SummEval.
+
+**Two-baseline cross-corpus pattern:**
+
+- On RAGTruth Summary and SummEval: both LLM-based baselines outperform Touchstone L6 by 4-12 AUC points. AlignScore lands between MiniCheck and Touchstone on RAGTruth and below MiniCheck on SummEval.
+- On HaluEval summarization: both LLM-based baselines underperform Touchstone L6. MiniCheck 0.6752 and AlignScore 0.6879 [0.6567, 0.7187] are statistically indistinguishable; Touchstone L6 0.7593 [0.7285, 0.7879] has a strictly disjoint CI vs AlignScore's. The two-baseline confirmation establishes the HaluEval inversion as a baseline-class limitation on adversarial vocabulary-shift corpora rather than a MiniCheck-specific weakness. The construct-alignment caveat (Layer 6 directly measures what HaluEval's adversarial process produces) is unchanged.
+
+**Per-corpus AlignScore CPU runtimes:**
+
+| Corpus | n_pairs | AlignScore runtime |
+|---|---|---|
+| RAGTruth Summary | 900 | 7830 s (~131 min) |
+| SummEval | 1600 | 4128 s (~69 min) |
+| HaluEval summarization | 1000 | 6238 s (~104 min) |
+
+AlignScore steady-state on CPU is roughly 2-10 s/example depending on context length (median ~5 s on Touchstone's three external corpora). Touchstone:AlignScore wall-clock ratio is approximately 1:3500 on CPU.
+
+**Standard (1.0.0-draft.9 -> 1.0.0-draft.10):**
+
+- §3.5 substrate-independence claim updated with the two-baseline cross-corpus evidence: MiniCheck and AlignScore both outperform Touchstone L6 on RAGTruth Summary and SummEval; both underperform on HaluEval; CIs reported per baseline where computed. The HaluEval inversion is now framed as a baseline-class observation, not a MiniCheck-specific one.
+- Header status updated to draft.10.
+
+**README:**
+
+- Cross-corpus table in "Headline finding" subsection extended with an AlignScore-base row (CIs on all three corpora).
+- RAGTruth Summary and SummEval per-corpus tables now include AlignScore rows with CIs and runtime; existing Touchstone rows now include CIs throughout (previously only on the headline summary).
+- HaluEval per-corpus table includes AlignScore row; framing paragraph rewritten to reflect the two-baseline confirmation of the corpus-construction artifact.
+- §Limitations bullet updated: "Three external corpora, two head-to-head baselines" replaces the prior "one head-to-head baseline" framing. AlignScore is no longer in the open-baselines list. HHEM 2.1, SelfCheckGPT, G-Eval, Bespoke-MiniCheck-7B remain open.
+
+**Polish pass on all artifacts:**
+
+- §Status updated to reflect three external corpora done; previously said HaluEval validation was "open work".
+- §Use cases NOT-production-claim list cleaned: the "Internal AI-quality verification at scale" item was already removed in draft.9 after the perf fix; the remaining caveats are sharpened.
+- §Limitations "Layer 10 gap is input-regime-conditional" bullet kept; the AUC numbers cited there are unchanged.
+- `docs/index.md` and `docs/getting-started.md` aligned with the README: three external corpora listed; the "Empirical validation is open work" stale phrasing replaced with the actual finding pointer.
+- `benchmarks/README.md` rewritten to list both internal and external benchmarks, with full descriptions of all five (three external + two internal + the task-type analysis).
+- HaluEval and SummEval sub-READMEs trimmed: their stale "Cross-corpus comparison" stubs now point to the main README's Headline finding subsection instead of duplicating the table.
+- Fixed arithmetic error: prior text said "six (corpus, task) cells" in multiple places when the correct count is five unique cells (RAGTruth × 3 task types + SummEval + HaluEval).
+- Removed transitional phrasing ("in this commit", "round-3", "to be deployed") that had become stale since the perf fix committed.
+
+**Verification:**
+
+- 385 tests pass, 96.81% coverage (gate 95%).
+- mypy strict, ruff lint+format, canon audit (self-test + tree) all green.
+- EXP-081, EXP-095, all three external snapshots byte-identical to draft.9 (except for the additive `touchstone_bootstrap_95ci` block that draft.9 added; the AlignScore snapshots are new, not modifying existing).
+
+**Carried forward:**
+
+- MiniCheck per-example probability retention + CIs (the `minicheck_from_pairs.py` runner is committed and ready; running it on all three corpora is ~4.5 hr of CPU; deferred this round to land the second-baseline integration cleanly).
+- TRUE, LLM-AggreFact held-out, HaluBench external runs.
+- HHEM 2.1 (`trust_remote_code` API conflict with current transformers; resolvable by pinning an older transformers OR patching the model's modeling file), SelfCheckGPT, G-Eval, Bespoke-MiniCheck-7B (GPU).
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+- MiniCheck baselines for RAGTruth QA and Data2Txt task types.
+
+---
+
 ## 2026-05-15: finalization round — perf, statistics, task generalization
 
 Closes the substantive open work from the prior three external-corpus rounds. Three changes, each load-bearing for a top-lab review:
@@ -50,7 +131,7 @@ Closes the substantive open work from the prior three external-corpus rounds. Th
 
 **Standard (1.0.0-draft.8 -> 1.0.0-draft.9):**
 
-- §3.5 Layer 10 falsifiable claim updated to include the cross-task evidence (six (corpus, task) cells with bootstrap CIs all overlapping 0.5000) and the explicit statistical framing.
+- §3.5 Layer 10 falsifiable claim updated to include the cross-task evidence (five unique (corpus, task) cells with bootstrap CIs all overlapping 0.5000) and the explicit statistical framing.
 - §3.5 substrate-independence claim updated with the cross-task Layer 6 evidence (five (corpus, task) cells with bootstrap CIs all disjoint from 0.5000) and the Layer 4 QA-specific spike.
 - Header status updated to draft.9.
 

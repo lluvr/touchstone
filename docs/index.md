@@ -74,12 +74,17 @@ NOT yet a production claim (see README §Limitations):
 Pre-launch on PyPI. All eleven Section 5 measurement layers are
 implemented and tested (385 tests; CI green on lint, mypy strict, and
 test matrix Python 3.10/3.11/3.12). Two internal regression benchmarks
-ship in `benchmarks/`: EXP-081 (Cohen's d = -5.238 on a 12-document
-single-vendor corpus, vs the recorded `detector_v031` baseline of -5.43)
-and EXP-095 (P-existence direction agreement 100% on 13 outputs). Both
-are internal regression baselines, not external replications; the
-corpora are project-authored. External-corpus validation (TRUE,
-LLM-AggreFact, HaluBench, HaluEval) is open work.
+plus three external corpus comparisons ship in `benchmarks/`. Internal:
+EXP-081 (Cohen's d = -5.238 on a 12-document single-vendor corpus, vs
+the recorded `detector_v031` baseline of -5.43) and EXP-095 (P-existence
+direction agreement 100% on 13 outputs). External: RAGTruth Summary,
+SummEval, HaluEval summarization (n totals 900 / 1600 / 1000;
+permissively licensed; the runners stream from HuggingFace Hub at
+runtime). The cross-corpus Touchstone signal pattern is internally
+consistent across three corpora and three task types, with 95%
+percentile bootstrap CIs reported per signal; see the main README
+§Empirical validation. Validation against TRUE, LLM-AggreFact held-out,
+and HaluBench remains open work.
 
 Section 6 (Specification Compliance) is reserved for Standard 1.1.
 

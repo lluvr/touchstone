@@ -87,8 +87,12 @@ local/
 *.local.md
 .venv/
 .venv-external/
+.venv-alignscore/
 
-# External-benchmark model weight caches (~3 GB; downloaded by the
+# External-benchmark model weight caches (downloaded by the
 # ``benchmarks/external/*`` runners on first run; never committed).
+# ckpts_minicheck/ is ~3 GB (Flan-T5-Large for MiniCheck);
+# ckpts_alignscore/ is ~700 MB (RoBERTa-base AlignScore checkpoint).
 ckpts_minicheck/
+ckpts_alignscore/
 ckpts/

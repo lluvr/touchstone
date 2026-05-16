@@ -280,8 +280,10 @@ Section 7 of the Standard.
 
 ## Empirical validation
 
-Two internal regression benchmarks ship in `benchmarks/`. Anyone with
-a clone can run them and reproduce the recorded numbers exactly:
+Two internal regression benchmarks plus three external corpus
+comparisons plus one cross-task generalization analysis ship in
+`benchmarks/`. The internal benchmarks reproduce the recorded numbers
+exactly from a clone:
 
 ```bash
 python -m benchmarks.exp_081_discrimination.run
@@ -295,10 +297,24 @@ EXP-095 records P-existence direction agreement (P>0 vs P=0) of
 aggregate G/F/P MAE is 0.02-0.04 vs `detector_v031` and 0.12-0.13
 vs full manual classification (n=7).
 
-Both benchmarks pin a dated JSON snapshot via byte-match pytest
-assertion; CI catches silent regression on any change affecting
-per-doc predictions. The corpora are project-authored; external
-corpus validation is open work per the README §Limitations.
+The external runners stream third-party corpora from the
+HuggingFace Hub at runtime:
+
+```bash
+pip install -e ".[external]"
+python -m benchmarks.external.ragtruth_summary.run --output \
+    benchmarks/external/ragtruth_summary/results/$(date +%F).json
+python -m benchmarks.external.summeval.run --output \
+    benchmarks/external/summeval/results/$(date +%F).json
+python -m benchmarks.external.halueval_summarization.run --output \
+    benchmarks/external/halueval_summarization/results/$(date +%F).json
+```
+
+The cross-corpus and cross-task Touchstone signal pattern (Layer 6
+generalizes; Layer 10 gap composite degenerates out-of-domain) is
+documented in the main README §Empirical validation with 95% bootstrap
+CIs. The external corpora are not in this repository; the runners
+download them at runtime.
 
 ## Next steps
 
