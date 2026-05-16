@@ -1,26 +1,62 @@
 # Touchstone Benchmarks
 
-Internal regression benchmarks for the `clarethium-touchstone`
-library against project-authored ground-truth corpora.
+Two kinds of benchmark live here:
 
-These benchmarks live in the source repository (not in the installed
-package) so anyone with a clone can reproduce the numbers, and so
-detection-accuracy regressions are visible across commits. The
-corpora and expected values are authored by this project; these are
-not external replications.
+1. **Internal regression benchmarks** at `exp_081_discrimination/` and
+   `exp_095_grounding/`. Project-authored corpora with expected values
+   committed in `ground_truth.json`; the runners reproduce the
+   recorded numbers exactly from a clone.
+2. **External corpus comparisons** at `external/ragtruth_summary/`,
+   `external/summeval/`, and `external/halueval_summarization/`. Third-
+   party permissively-licensed corpora streamed from HuggingFace Hub
+   at runtime; no corpus content is committed. Each external runner
+   compares Touchstone signals against MiniCheck (Tang et al. 2024) as
+   a head-to-head baseline, with 95% percentile bootstrap CIs reported
+   per Touchstone signal AUC. A task-type generalization analysis
+   (`external/ragtruth_task_type_generalization.py`) extends Touchstone
+   to RAGTruth's QA and Data2Txt subsets.
+
+The internal regression benchmarks are baselines, not external
+replications; the external comparisons are the construct-generalization
+tests. See the main README's §Empirical validation for the cross-corpus
+and cross-task headline finding with full CIs.
 
 ## Running
 
-From the repository root:
+Internal regression benchmarks (no extra dependencies required):
 
 ```bash
+python -m benchmarks.exp_081_discrimination.run
 python -m benchmarks.exp_095_grounding.run
-# or write a JSON snapshot:
+# or write dated snapshots:
+python -m benchmarks.exp_081_discrimination.run --output benchmarks/exp_081_discrimination/results/$(date +%F).json
 python -m benchmarks.exp_095_grounding.run --output benchmarks/exp_095_grounding/results/$(date +%F).json
 ```
 
-The benchmark prints a JSON report to stdout. Aggregate statistics
-appear at the top of the output; per-output predictions follow.
+External corpus comparisons require the `external` extras (`datasets`,
+`accelerate`, `minicheck`):
+
+```bash
+pip install -e ".[external]"
+python -m benchmarks.external.ragtruth_summary.run --output \
+    benchmarks/external/ragtruth_summary/results/$(date +%F).json
+python -m benchmarks.external.summeval.run --output \
+    benchmarks/external/summeval/results/$(date +%F).json
+python -m benchmarks.external.halueval_summarization.run --output \
+    benchmarks/external/halueval_summarization/results/$(date +%F).json
+```
+
+After running the external benchmarks, the bootstrap-CI augmentation
+script (re-runs Touchstone, fast) adds 95% percentile bootstrap CIs to
+each Touchstone signal AUC in the existing snapshots without touching
+the MiniCheck-side aggregates:
+
+```bash
+python -m benchmarks.external.add_bootstrap_cis
+```
+
+Each runner prints a JSON report to stdout (or to `--output`); aggregate
+statistics appear at the top of the output, per-output details follow.
 
 ## Available benchmarks
 
@@ -58,6 +94,38 @@ d statistic measures the system catching what the instruction told
 the generator to add.
 
 See `exp_081_discrimination/README.md` for methodology and findings.
+
+### `external/ragtruth_summary/`
+
+RAGTruth Summary test split (Wu et al. ACL 2024, MIT mirror at
+`wandb/RAGTruth-processed`). 900 (article, summary) pairs across six
+instruction-tuned LLM families. 22.7% hallucination rate.
+Touchstone L6 inverse_proximity AUC 0.6723 [0.6296, 0.7116];
+MiniCheck Flan-T5-Large 0.7125. See sub-README.
+
+### `external/summeval/`
+
+SummEval test corpus (Fabbri et al. TACL 2021, MIT mirror at
+`mteb/summeval`). 1600 (article, summary) pairs from 100 CNN/DM
+articles × 16 machine summaries. Touchstone L6 0.7530 [0.7145, 0.7951];
+MiniCheck 0.8978 (training-test leakage caveat: MiniCheck was trained
+on AggreFact-CNN). See sub-README.
+
+### `external/halueval_summarization/`
+
+HaluEval summarization subset (Li et al. EMNLP 2023, Apache-2.0).
+500 documents × 2 summary types = 1000 (article, summary) pairs;
+perfect 50/50 class balance. Touchstone L6 0.7593 [0.7285, 0.7879];
+MiniCheck 0.6752. HaluEval is adversarially constructed
+(ChatGPT-synthesized hallucinations); construct caveat in sub-README.
+
+### Task-type generalization
+
+`external/ragtruth_task_type_generalization.py` runs Touchstone on
+RAGTruth's QA (n=900) and Data2Txt (n=900) subsets in addition to
+Summary. Layer 6 AUC band 0.64-0.76 across all five (corpus, task)
+cells; Layer 10 gap composite identically near-chance on all five.
+MiniCheck on QA / Data2Txt is open work.
 
 ## Versioning
 

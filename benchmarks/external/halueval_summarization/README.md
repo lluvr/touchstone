@@ -91,19 +91,21 @@ runtime is on the order of single-digit seconds for 1000 pairs;
 MiniCheck on CPU takes the bulk of the wall-clock budget on this
 corpus (CNN/DM articles are larger than RAGTruth contexts).
 
-## Cross-corpus comparison (when all three lands)
+## Cross-corpus and cross-task comparison
 
-| Signal | RAGTruth Summary AUC | SummEval AUC | HaluEval AUC |
-|---|---|---|---|
-| Touchstone Layer 6 inverse_proximity | 0.6723 | 0.7530 | (in results JSON) |
-| Touchstone Layer 10 gap | 0.4981 | 0.5000 | (in results JSON) |
-| MiniCheck Flan-T5-Large | 0.7125 | 0.8978* | (in results JSON) |
+The HaluEval result anchors the Layer 6 generalization finding on a
+third corpus and adds a paired-ranking readout that the prior corpora's
+construction did not support. With this round, Touchstone has been
+evaluated on five (corpus, task) cells: RAGTruth Summary / QA /
+Data2Txt, SummEval, and HaluEval summarization. The full cross-corpus
+and cross-task tables with 95% bootstrap CIs live in the main README's
+§Empirical validation "Headline finding" subsection.
 
-*Training-test leakage on SummEval.
+Headline pattern across the five cells:
 
-The HaluEval result anchors the Layer 6 generalization finding on
-a third corpus and adds a paired-ranking readout that the prior
-corpora's construction did not support.
+- Touchstone Layer 6 inverse_proximity: AUC 0.64-0.76, all 95% CIs disjoint from chance.
+- Touchstone Layer 10 gap composite: AUC 0.498-0.513, all 95% CIs include 0.5000.
+- Touchstone Layer 4 unsourced_rate: AUC 0.7603 [0.6907, 0.8260] on RAGTruth QA (where output number density is high enough to gate it in); near-chance on the other four cells.
 
 ## Citations
 

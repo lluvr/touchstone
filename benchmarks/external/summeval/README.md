@@ -91,20 +91,16 @@ reused from `./ckpts_minicheck/` if the RAGTruth runner ran first.
 is on the order of single-digit seconds for the full 1600; MiniCheck
 on CPU takes the bulk of the wall-clock budget.
 
-## Cross-corpus comparison with RAGTruth
+## Cross-corpus and cross-task comparison
 
-When both runs have landed, the comparison shape is:
-
-| Signal | RAGTruth Summary AUC | SummEval AUC |
-|---|---|---|
-| L6 inverse_proximity | 0.6723 | 0.7530 |
-| L10 gap | 0.4981 | 0.5000 |
-| MiniCheck Flan-T5-Large | 0.7125 | (recorded in results JSON; subject to training-test leakage caveat above) |
-
-The consistency of the Layer 10 gap finding across both corpora
-(approximately chance) is the load-bearing observation; it is
-recorded as a partial out-of-domain falsification of the Layer 10
-construct claim in Standard §3.5.
+The full cross-corpus and cross-task tables with 95% bootstrap CIs
+live in the main README's §Empirical validation "Headline finding"
+subsection. SummEval is one of three external corpora and one of five
+unique (corpus, task) cells evaluated. The consistency of the Layer 10
+gap finding (AUC 0.498-0.513 with 95% CIs all including 0.5000) across
+all five cells is the load-bearing observation; it is recorded as a
+partial out-of-domain falsification of the Layer 10 construct claim
+in Standard §3.5.
 
 ## Citations
 

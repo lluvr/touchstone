@@ -38,7 +38,7 @@ keywords:
 references:
   - type: standard
     title: "Touchstone Standard 1.0 (draft)"
-    version: "1.0.0-draft.9"
+    version: "1.0.0-draft.10"
     url: "https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
     license: CC-BY-4.0
     abstract: >
