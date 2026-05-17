@@ -1,0 +1,22 @@
+{
+  "id": "L4_004_multicurrency",
+  "description": "Layer 4: multi-currency extraction (\u20ac, $) preserves currency-aware matching.",
+  "standard_section": "5.4",
+  "inputs": {
+    "text": "European revenue was \u20ac450M. US revenue was $620M.",
+    "source": "European revenue was \u20ac450M. US revenue was $620M."
+  },
+  "expected": {
+    "source_matching": {
+      "unsourced_rate": 0.0,
+      "n_in_source": 2,
+      "n_unsourced": 0,
+      "n_total": 2,
+      "precision": "low",
+      "unsourced_details": []
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "L6_001_vocab_full_overlap",
+  "description": "Layer 6: when text == source, content-word overlap should be 1.0.",
+  "standard_section": "5.6",
+  "inputs": {
+    "text": "The quick brown fox jumps over the lazy dog.",
+    "source": "The quick brown fox jumps over the lazy dog."
+  },
+  "expected": {
+    "vocabulary_proximity": {
+      "mean_proximity": 1.0,
+      "per_sentence_proximity": [
+        1.0
+      ]
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

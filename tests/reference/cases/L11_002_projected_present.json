@@ -1,0 +1,57 @@
+{
+  "id": "L11_002_projected_present",
+  "description": "Layer 11: a sentence with a number not in source and not derivable should classify as P (projected).",
+  "standard_section": "5.11",
+  "inputs": {
+    "text": "Revenue grew 12% to $143 million in Q1. Industry-wide growth was 18% according to McKinsey. The next quarter will show 25% expansion.",
+    "source": "Revenue grew 12% to $143 million in Q1."
+  },
+  "expected": {
+    "grounding_decomposition": {
+      "proportions": {
+        "G": 0.333,
+        "F": 0.0,
+        "P": 0.667
+      },
+      "sentence_classifications": [
+        {
+          "sentence": "Revenue grew 12% to $143 million in Q1.",
+          "primary": "G",
+          "grounding_score": 1.0
+        },
+        {
+          "sentence": "Industry-wide growth was 18% according to McKinsey.",
+          "primary": "P",
+          "p_markers": [
+            "unsourced_numbers"
+          ]
+        },
+        {
+          "sentence": "The next quarter will show 25% expansion.",
+          "primary": "P",
+          "p_markers": [
+            "unsourced_numbers"
+          ]
+        }
+      ],
+      "p_detection_mode": "conservative",
+      "n_sentences": 3,
+      "n_grounded": 1,
+      "n_framed": 0,
+      "n_projected": 2,
+      "has_projection": true,
+      "recommendation": "Projected content detected. To eliminate, add to your prompt: \"Do not use any numbers that are not in the provided source.\" This reduces projected content by 84-100% while preserving grounded analysis (EXP-095, 30 prohibition outputs, 3 models).",
+      "scope_assessment": {
+        "source_num_count": 2,
+        "derivation_regime": "diagnostic",
+        "primary_signal_diagnostic": true,
+        "cross_reference_layer_4_for_numbers": false,
+        "note_developer": "Primary unsourced_numbers signal is in its diagnostic regime. Layer 11 P-count is reliable for numerical fabrication detection.",
+        "note_user_facing": "This source has 2 numerical values. Projection detection is reliable for both external references and numerical fabrication."
+      }
+    }
+  },
+  "tolerance": {
+    "absolute": 0.001
+  }
+}

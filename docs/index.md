@@ -8,6 +8,7 @@ A Clarethium project. Standards and reference implementation for measuring AI ou
 
 - [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) - the canonical specification (CC-BY 4.0)
 - [Getting started](getting-started.md) - install and first measurement
+- [Methodology summary](methodology.md) - substrate hypothesis, falsification protocol, cross-corpus evidence, caveats (intended for readers evaluating Touchstone for adoption or methodological critique)
 - [Contributing](../CONTRIBUTING.md) - how to propose changes
 - [Suggestion process](../SUGGESTIONS/PROCESS.md) - how Standard and library evolve
 

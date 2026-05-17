@@ -1,0 +1,20 @@
+{
+  "id": "L7_001_presentation_basic",
+  "description": "Layer 7: descriptive features (TTR, formatting density, assertiveness) on a simple paragraph.",
+  "standard_section": "5.7",
+  "inputs": {
+    "text": "The market grew rapidly. Revenue must increase substantially. Costs definitely declined across all segments."
+  },
+  "expected": {
+    "presentation_features": {
+      "type_token_ratio": 1.0,
+      "fk_grade": 15.2,
+      "formatting_density": 0.0,
+      "assertiveness_ratio": 1.0,
+      "named_concept_count": 0
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

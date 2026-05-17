@@ -1,0 +1,22 @@
+{
+  "id": "L4_003_no_numbers",
+  "description": "Layer 4: text with no digit-formatted numbers; unsourced_rate=0.0, n_total=0, precision='low'.",
+  "standard_section": "5.4",
+  "inputs": {
+    "text": "The company reported strong growth across all segments. Management remains optimistic.",
+    "source": "The company reported strong growth across all segments."
+  },
+  "expected": {
+    "source_matching": {
+      "unsourced_rate": 0.0,
+      "n_in_source": 0,
+      "n_unsourced": 0,
+      "n_total": 0,
+      "precision": "low",
+      "unsourced_details": []
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

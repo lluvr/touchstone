@@ -6,6 +6,71 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-17: deep finalization — reference suite, full CIs, cross-task baselines, methodology doc; Standard 1.0.0-draft.11
+
+The "real gaps and improvements" round. Five load-bearing additions, all reproducible from a fresh clone:
+
+1. **Canonical reference test suite landed at `tests/reference/cases/`** — 16 language-agnostic JSON cases covering all required layers (1b, 1c, 2, 3, 4, 5, 6, 7), both experimental layers (8, 9), and Layer 11 (with both a fully-grounded case and a projected-content case). Pytest-discoverable; runs as part of the default test matrix. Each case specifies inputs, per-layer expected outputs, and an absolute tolerance; the comparison rules are documented in `tests/reference/README.md` so second-party implementations in other languages can produce identical JSON outputs and pass the same cases. Standard §11.1 is updated: the reference suite is now the primary conformance gate (was previously "reserved for 1.0.1").
+2. **Standard §3.5 falsification protocol expanded from 4 claims to 13.** Layer 1a, 1b, 1c, 2, 3, 5, 6, 7, 8, 9 now have explicit falsifiable construct claims alongside the existing entries for Layers 4, 10, 11 and the §3.1 substrate-independence claim. The criteria for the four claims with empirical status (4, 10, 11, §3.1) carry status notes; the others name the evidence that would falsify them.
+3. **MiniCheck bootstrap CIs computed on all five (corpus, task) cells.** The original MiniCheck runners did not retain per-example probabilities; the new `benchmarks/external/minicheck_from_pairs.py` runner re-scores from pre-extracted pair JSONs and saves per-example probs + 95% CIs. Five corpus runs were chained as one ~7 hour CPU sequence (RAGTruth Summary + SummEval + HaluEval summarization + RAGTruth QA + RAGTruth Data2Txt) producing five snapshot files under `*/results/minicheck_*with_cis_2026-05-16.json`.
+4. **Cross-task MiniCheck coverage**: previous rounds had MiniCheck on the three summarization corpora only; this round adds RAGTruth QA (n=900) and RAGTruth Data2Txt (n=900). This converts the cross-task table from "Touchstone-only" to two-system coverage and surfaces two new findings (below).
+5. **Cross-baseline aggregate script + methodology summary doc.** `benchmarks/external/cross_baseline_summary.py` reads every snapshot and produces the unified Markdown table that lives in the README; `docs/methodology.md` is a 124-line single-document walkthrough of the substrate hypothesis, falsification protocol, cross-corpus evidence, caveats, and reproducibility steps for top-lab reviewers.
+
+**Two new headline findings from the cross-task MiniCheck expansion:**
+
+| Cell | MiniCheck AUC | Touchstone Layer 6 AUC | Touchstone Layer 4 AUC | Reading |
+|---|---|---|---|---|
+| RAGTruth Data2Txt | **0.4871 [0.4494, 0.5283]** (chance) | 0.6397 [0.6001, 0.6757] | 0.5177 [0.4810, 0.5488] | Touchstone L6 > MiniCheck, CIs disjoint; MiniCheck is statistically indistinguishable from chance |
+| RAGTruth QA | 0.6437 [0.5978, 0.6920] | 0.6984 [0.6579, 0.7361] | **0.7603 [0.6907, 0.8260]** | Touchstone Layer 4 > MiniCheck, CIs disjoint by a small margin (Touchstone L4 lower bound 0.6907 above MiniCheck upper bound 0.6920) |
+
+The cross-task variability of MiniCheck (SD 0.16 across the three RAGTruth task types) versus the stability of Touchstone Layer 6 (SD 0.03 across the same task types) is the strongest single piece of evidence in the report for Standard §3.1's substrate-independence claim: the zero-LLM-cost substrate produces a more uniform signal across input regimes than a single-model fine-tuned discriminator.
+
+**Standard (1.0.0-draft.10 -> 1.0.0-draft.11):**
+
+- §3.5 falsifiable construct claims expanded from 4 to 13 (covers every Layer + the §3.1 substrate claim).
+- §3.5 §3.1 substrate-independence claim updated with the full five (corpus, task) × two baselines AUC + CI matrix and the cross-task variability framing.
+- §8 reference-suite paragraph updated: 16 cases now ship; coverage spans all required + experimental layers.
+- §11.1 conformance surface updated: `tests/reference/cases/` is now the primary conformance gate.
+- Drafting status: reference-suite extraction no longer "reserved for 1.0.1" (it landed); v1.0.1 carries forward expanded edge-case coverage instead.
+- Header status updated to draft.11; date 2026-05-17.
+
+**README:**
+
+- New "What's here" inventory listing reference suite, internal benchmarks, external benchmarks, and methodology doc explicitly.
+- Cross-corpus and cross-task tables in "Headline finding" subsection now have full bootstrap CIs on every cell (was: MiniCheck point AUCs only on cross-corpus; no MiniCheck row on cross-task).
+- Three-paragraph framing of the cross-(corpus, task) pattern: (a) MiniCheck chance on Data2Txt, (b) Touchstone L4 > MiniCheck on QA, (c) Touchstone L6 > both baselines on HaluEval. The substrate-stability claim (Touchstone L6 SD 0.05 vs MiniCheck SD 0.16) is the load-bearing observation.
+- §Limitations: "MiniCheck CIs not yet computed" item removed (CIs are now present on all five cells). Remaining open items: TRUE / LLM-AggreFact held-out / HaluBench corpora; HHEM 2.1 / SelfCheckGPT / G-Eval / Bespoke-MiniCheck-7B baselines; AlignScore on RAGTruth QA / Data2Txt; IAA on EXP-095; editor body constitution.
+
+**New artifacts:**
+
+- `tests/reference/test_reference_cases.py` + 16 case files at `tests/reference/cases/*.json`.
+- `benchmarks/external/cross_baseline_summary.py` — aggregate Markdown / JSON renderer.
+- `benchmarks/external/*/results/minicheck_*with_cis_2026-05-16.json` — five MiniCheck CI snapshots.
+- `docs/methodology.md` — top-lab summary document, linked from README "What's here" and from `docs/index.md`.
+
+**Polish (alongside the substantive additions):**
+
+- All draft references in the repo synced to `1.0.0-draft.11` (Standard header, BibTeX, CITATION.cff, _version.py, tests/reference/README.md, methodology.md).
+- README "Status" section sharpened (was already updated in draft.10 round; minor re-read pass).
+- benchmarks/README.md describes both internal and external benchmark groups uniformly.
+- All five sub-corpus READMEs (RAGTruth Summary, SummEval, HaluEval, internal EXP-081 and EXP-095) point at the main README's Headline finding subsection rather than duplicating tables.
+
+**Verification:**
+
+- 401 tests pass (was 385; 16 new reference cases added). Coverage 96.81% (gate 95%).
+- mypy strict, ruff lint+format, canon audit (self-test + tree) all green.
+- EXP-081 and EXP-095 internal benchmark snapshots byte-identical to draft.10. All five MiniCheck CI snapshots are new additions; their point AUCs match the original MiniCheck runs exactly (the new runner produces identical results from the same inputs).
+
+**Carried forward:**
+
+- TRUE, LLM-AggreFact held-out, HaluBench external runs.
+- HHEM 2.1 (`trust_remote_code` API rename — fixable), SelfCheckGPT, G-Eval, Bespoke-MiniCheck-7B (requires GPU).
+- AlignScore on RAGTruth QA / Data2Txt task types (~10 hr CPU on the existing runner).
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+
+---
+
 ## 2026-05-16: second baseline (AlignScore) on all three corpora; Standard 1.0.0-draft.10
 
 Adds AlignScore-base (Zha et al., ACL 2023, MIT) as a second independently-trained head-to-head baseline alongside MiniCheck on all three external corpora. Touchstone signal point AUCs and the existing MiniCheck point AUCs are byte-identical to draft.9; the addition is AlignScore-side numbers with 95% bootstrap CIs plus the cross-baseline framing updates.

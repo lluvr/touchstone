@@ -1,0 +1,20 @@
+{
+  "id": "L6_002_vocab_disjoint",
+  "description": "Layer 6: text with no shared content words with source has near-zero proximity.",
+  "standard_section": "5.6",
+  "inputs": {
+    "text": "Bilingual quantum chromodynamics overshadows pneumatic crustacean dialectics yesterday.",
+    "source": "Cricket bat trampoline kangaroo lemonade discotheque."
+  },
+  "expected": {
+    "vocabulary_proximity": {
+      "mean_proximity": 0.0,
+      "per_sentence_proximity": [
+        0.0
+      ]
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

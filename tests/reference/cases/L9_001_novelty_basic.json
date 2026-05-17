@@ -1,0 +1,20 @@
+{
+  "id": "L9_001_novelty_basic",
+  "description": "Layer 9 (experimental): novelty metrics on a paragraph with varied vocabulary.",
+  "standard_section": "5.9",
+  "inputs": {
+    "text": "Revenue grew across all segments. Costs declined significantly across the workforce. Operating margins expanded materially. Cash flow strengthened across all months. Headcount reductions drove savings."
+  },
+  "expected": {
+    "information_novelty": {
+      "mean_novelty": 0.867,
+      "repetition_rate": 0.0,
+      "decay": -0.1,
+      "q1_novelty": 1.0,
+      "q4_novelty": 0.8
+    }
+  },
+  "tolerance": {
+    "absolute": 0.001
+  }
+}

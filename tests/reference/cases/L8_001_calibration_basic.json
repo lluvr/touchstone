@@ -1,0 +1,21 @@
+{
+  "id": "L8_001_calibration_basic",
+  "description": "Layer 8 (experimental): calibration score on a text with multiple assertion-bearing sentences against a self-source.",
+  "standard_section": "5.8",
+  "inputs": {
+    "text": "Revenue grew 12% to $143M. Costs definitely declined 8%. Margins must improve next quarter. Performance is essential. The market is clearly stable. Growth will inevitably continue.",
+    "source": "Revenue grew 12% to $143M. Costs declined 8% across all units. Margins improved last quarter. Performance is essential. The market is stable."
+  },
+  "expected": {
+    "epistemic_calibration": {
+      "calibration_score": 1.0,
+      "overclaiming_rate": 0.0,
+      "n_assertions": 2,
+      "n_grounded": 2,
+      "precision": "low"
+    }
+  },
+  "tolerance": {
+    "absolute": 0.001
+  }
+}
