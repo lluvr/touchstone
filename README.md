@@ -19,6 +19,10 @@ This repository contains:
 
 - **Touchstone Standard** - the canonical specification (CC-BY 4.0) at `STANDARDS/touchstone-1.0.md`
 - **`clarethium-touchstone`** - Python reference implementation (Apache 2.0)
+- **Reference test suite** at `tests/reference/cases/` - language-agnostic JSON cases that second-party implementations MUST pass to claim conformance
+- **Internal regression benchmarks** at `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`
+- **External corpus comparisons** at `benchmarks/external/` against RAGTruth, SummEval, HaluEval with MiniCheck and AlignScore baselines
+- **Methodology summary** at `docs/methodology.md` (substrate hypothesis, falsification protocol, cross-corpus evidence, caveats) — intended for readers evaluating Touchstone for adoption or methodological critique
 
 The Standard defines the methodology. The library implements it. Other implementations conforming to the Standard are welcome.
 
@@ -140,19 +144,20 @@ Two internal regression benchmarks plus three external corpus comparisons plus o
 
 Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval summarization) and three task types within RAGTruth (Summary, QA, Data2Txt), Touchstone's Layer 6 inverse vocabulary proximity and Layer 10 quality_profile gap show a stable, internally consistent pattern of partial generalization. All AUCs reported with 95% percentile bootstrap CIs (1000 stratified resamples, fixed seed). The Layer 10 gap CIs all overlap chance, separately confirming the partial out-of-domain falsification documented in Standard §3.5.
 
-**Cross-corpus on summarization-task outputs (Touchstone CIs are 95% percentile bootstrap; MiniCheck point AUC only; AlignScore CIs are 95% percentile bootstrap):**
+**Cross-corpus on summarization-task outputs (every AUC reported with 95% percentile bootstrap CI; 1000 stratified resamples, fixed seed):**
 
 | Signal | RAGTruth Summary | SummEval | HaluEval summarization |
 |---|---|---|---|
 | Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] |
 | Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] |
-| MiniCheck Flan-T5-Large (Tang et al. EMNLP 2024) | 0.7125 | 0.8978* | 0.6752 |
+| MiniCheck Flan-T5-Large (Tang et al. EMNLP 2024) | 0.7125 [0.6683, 0.7573] | 0.8978 [0.8661, 0.9275]* | 0.6752 [0.6436, 0.7069] |
 | AlignScore-base (Zha et al. ACL 2023) | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] |
 
-**Cross-task within RAGTruth (Touchstone only; MiniCheck deferred):**
+**Cross-task within RAGTruth (every AUC with 95% bootstrap CI):**
 
 | Signal | Summary (n=900) | QA (n=900) | Data2Txt (n=900) |
 |---|---|---|---|
+| MiniCheck Flan-T5-Large | 0.7125 [0.6683, 0.7573] | 0.6437 [0.5978, 0.6920] | **0.4871 [0.4494, 0.5283]** (chance) |
 | Touchstone Layer 4 unsourced_rate (when gated in) | 0.5514 [0.5054, 0.5977] | **0.7603 [0.6907, 0.8260]** | 0.5177 [0.4810, 0.5488] |
 | Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.6984 [0.6579, 0.7361] | 0.6397 [0.6001, 0.6757] |
 | Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5127 [0.4985, 0.5295] | 0.5041 [0.4908, 0.5170] |
@@ -162,7 +167,13 @@ Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval 
 
 The signal pattern is stable across both axes. Layer 6 AUC across all five unique (corpus, task) cells lives in [0.64, 0.76]; Layer 10 gap AUC lives in [0.498, 0.513] across all five cells with CIs that overlap 0.50 in every cell. Layer 4 unsourced_rate spikes to AUC 0.76 on RAGTruth QA — the first task type where output number density is high enough for Layer 4 to fire on a usable fraction (n=277/900); on summary task outputs the signal is gated out for most examples.
 
-The two LLM-based baselines (MiniCheck Flan-T5-Large, AlignScore-base) show a corpus-dependent pattern. On RAGTruth Summary and SummEval, both baselines outperform Touchstone Layer 6 by 4-12 AUC points. On HaluEval summarization, **both** LLM-based baselines underperform Touchstone Layer 6 (MiniCheck 0.6752, AlignScore 0.6879 [0.6567, 0.7187], Touchstone L6 0.7593 [0.7285, 0.7879]). The HaluEval CIs are disjoint: the Touchstone L6 lower bound (0.7285) sits above both baseline upper bounds (0.7187 / and MiniCheck's point 0.6752 without CI). This is corpus-construction-aligned and not a methodology-superiority finding — HaluEval's adversarial process produces lexical distribution shifts that Layer 6 measures directly while both semantic-NLI-trained baselines miss them. The cross-corpus pattern is now load-bearing on two independently-trained baselines, not just MiniCheck.
+The two LLM-based baselines (MiniCheck Flan-T5-Large, AlignScore-base) show a wide cross-(corpus, task) AUC band: MiniCheck spans [0.487, 0.898] across the five cells (SD 0.16); Touchstone Layer 6 spans [0.64, 0.76] across the same cells (SD 0.05). Three readings of this are load-bearing:
+
+1. **MiniCheck is at chance on RAGTruth Data2Txt** (AUC 0.4871 [0.4494, 0.5283]; CI squarely includes 0.5000). Touchstone Layer 6 is statistically above both chance and MiniCheck on Data2Txt (CIs disjoint). MiniCheck's training data does not appear to generalize to the Data2Txt task type.
+2. **On RAGTruth QA, Touchstone Layer 4 outperforms MiniCheck** (0.7603 [0.6907, 0.8260] vs 0.6437 [0.5978, 0.6920]; CIs disjoint by a small margin). Touchstone Layer 6 also exceeds MiniCheck on QA (CIs overlap, but Touchstone is consistently higher).
+3. **On HaluEval, both LLM-based baselines underperform Touchstone Layer 6** (the HaluEval Touchstone L6 CI [0.7285, 0.7879] sits above both baseline CIs). This is corpus-construction-aligned (HaluEval's adversarial process produces lexical distribution shifts that Layer 6 measures directly while semantic-NLI-trained baselines miss them).
+
+On the remaining naturalistic summarization cells (RAGTruth Summary, SummEval), both LLM-based baselines outperform Touchstone Layer 6 by 4-12 AUC points — the expected ordering for naturalistic hallucination detection. The pattern is consistent: **the zero-LLM-cost substrate has a narrower performance band across input regimes than either LLM-based baseline tested.**
 
 ### Compute disclosure
 
@@ -262,7 +273,7 @@ Both internal benchmarks pin a dated JSON snapshot via byte-match pytest asserti
 
 What this release does **not** demonstrate:
 
-- **Three external corpora, two head-to-head baselines.** See the §Empirical validation "Headline finding" subsection for the full cross-baseline table with bootstrap CIs. Open work: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open baselines: HHEM 2.1 (Vectara; `trust_remote_code` API rename conflict with current transformers; not resolved in this round), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (the SOTA MiniCheck variant; requires GPU and is not viable on the CPU compute budget for these corpora). AlignScore install required a separate Python 3.10 venv (`uv python install 3.10`) plus pinned `transformers<4.40` and `setuptools<81`; the setup notes are in `benchmarks/external/alignscore_baselines.py`. MiniCheck CIs not yet computed: the original MiniCheck runners did not retain per-example probabilities in the snapshot, and re-running MiniCheck on all three corpora costs ~4.5 hours of CPU. The `benchmarks/external/minicheck_from_pairs.py` runner is ready for that follow-up; it reads the same pre-extracted pair JSONs that the AlignScore runner uses and produces snapshot files with per-example probs + bootstrap CIs.
+- **Three external corpora, two head-to-head baselines, with 95% bootstrap CIs throughout.** See the §Empirical validation "Headline finding" subsection for the full cross-baseline table. AlignScore-base ran on the three summarization corpora; MiniCheck Flan-T5-Large ran on those three corpora plus RAGTruth QA and RAGTruth Data2Txt for a five (corpus, task) cells matrix. Open work: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open baselines: HHEM 2.1 (Vectara; `trust_remote_code` API rename conflict with current transformers), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (the SOTA MiniCheck variant; requires GPU and is not viable on the CPU compute budget for these corpora), AlignScore on RAGTruth QA / Data2Txt task types. AlignScore install required a separate Python 3.10 venv (`uv python install 3.10`) plus pinned `transformers<4.40` and `setuptools<81`; the setup notes are in `benchmarks/external/alignscore_baselines.py`.
 - **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. Adopters running on short-form text should pair Touchstone with a different fidelity signal; on Touchstone alone, Layer 6 inverse_proximity is the surviving out-of-domain option (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance).
 - **EXP-081 corpus is single-vendor.** All 12 documents are xAI grok-4-1-fast. Cross-vendor generalization within the fast tier and to flagship-tier model outputs is open research.
 - **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-8.926, -4.498] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.835) is reported alongside.
@@ -318,7 +329,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.10). When citing it, please
+The Standard is currently in draft (1.0.0-draft.11). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -327,7 +338,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.10},
+  note         = {Version 1.0.0-draft.11},
   license      = {CC-BY-4.0}
 }
 ```

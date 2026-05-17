@@ -1,0 +1,19 @@
+{
+  "id": "L1_001_structural_basic",
+  "description": "Layer 1b/1c: mechanism and assertion ratios on a simple paragraph.",
+  "standard_section": "5.1",
+  "inputs": {
+    "text": "Revenue grew because demand surged. The market definitely expanded. Sales must increase further."
+  },
+  "expected": {
+    "structural_profile": {
+      "heading_defaultness": null,
+      "mechanism_ratio": 1.0,
+      "assertion_ratio": 1.0,
+      "assertion_precision": "low"
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

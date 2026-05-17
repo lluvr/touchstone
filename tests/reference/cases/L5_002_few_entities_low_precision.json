@@ -1,0 +1,20 @@
+{
+  "id": "L5_002_few_entities_low_precision",
+  "description": "Layer 5: text with fewer than 5 extracted entities should report n_entities<5 (gate stays inert for downstream composites).",
+  "standard_section": "5.5",
+  "inputs": {
+    "text": "Apple reported growth. Tim Cook commented briefly.",
+    "source": "Apple reported growth. Tim Cook commented briefly."
+  },
+  "expected": {
+    "entity_provenance": {
+      "entity_unsourced_rate": 0.0,
+      "n_entities": 1,
+      "n_unsourced": 0,
+      "unsourced_entities": []
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

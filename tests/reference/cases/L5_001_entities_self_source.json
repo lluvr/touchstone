@@ -1,0 +1,20 @@
+{
+  "id": "L5_001_entities_self_source",
+  "description": "Layer 5: when text == source, every extracted entity is found in source.",
+  "standard_section": "5.5",
+  "inputs": {
+    "text": "Apple Inc reported Q1 revenue of $143 billion. The CEO Tim Cook commented on growth.",
+    "source": "Apple Inc reported Q1 revenue of $143 billion. The CEO Tim Cook commented on growth."
+  },
+  "expected": {
+    "entity_provenance": {
+      "entity_unsourced_rate": 0.0,
+      "n_entities": 1,
+      "n_unsourced": 0,
+      "unsourced_entities": []
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

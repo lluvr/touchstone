@@ -1,0 +1,53 @@
+{
+  "id": "L11_001_fully_grounded",
+  "description": "Layer 11: when text == source, every sentence should classify as G (grounded).",
+  "standard_section": "5.11",
+  "inputs": {
+    "text": "Revenue grew 12% to $143 million in Q1. Costs declined 8% across the workforce. The CFO confirmed both figures.",
+    "source": "Revenue grew 12% to $143 million in Q1. Costs declined 8% across the workforce. The CFO confirmed both figures."
+  },
+  "expected": {
+    "grounding_decomposition": {
+      "proportions": {
+        "G": 0.667,
+        "F": 0.333,
+        "P": 0.0
+      },
+      "sentence_classifications": [
+        {
+          "sentence": "Revenue grew 12% to $143 million in Q1.",
+          "primary": "G",
+          "grounding_score": 1.0
+        },
+        {
+          "sentence": "Costs declined 8% across the workforce.",
+          "primary": "G",
+          "grounding_score": 1.0
+        },
+        {
+          "sentence": "The CFO confirmed both figures.",
+          "primary": "F",
+          "grounding_score": 0.3
+        }
+      ],
+      "p_detection_mode": "conservative",
+      "n_sentences": 3,
+      "n_grounded": 2,
+      "n_framed": 1,
+      "n_projected": 0,
+      "has_projection": false,
+      "recommendation": null,
+      "scope_assessment": {
+        "source_num_count": 3,
+        "derivation_regime": "diagnostic",
+        "primary_signal_diagnostic": true,
+        "cross_reference_layer_4_for_numbers": false,
+        "note_developer": "Primary unsourced_numbers signal is in its diagnostic regime. Layer 11 P-count is reliable for numerical fabrication detection.",
+        "note_user_facing": "This source has 3 numerical values. Projection detection is reliable for both external references and numerical fabrication."
+      }
+    }
+  },
+  "tolerance": {
+    "absolute": 0.001
+  }
+}

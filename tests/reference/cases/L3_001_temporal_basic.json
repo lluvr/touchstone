@@ -1,0 +1,22 @@
+{
+  "id": "L3_001_temporal_basic",
+  "description": "Layer 3: instability rate when one number diverges across two versions.",
+  "standard_section": "5.3",
+  "inputs": {
+    "text": "Revenue grew 12% to $143M with 25% margins reported.",
+    "comparisons": [
+      "Revenue grew 14% to $143M with 25% margins reported."
+    ]
+  },
+  "expected": {
+    "temporal_instability": {
+      "instability_rate": 0.5,
+      "n_unstable": 2,
+      "n_total": 4,
+      "versions_compared": 2
+    }
+  },
+  "tolerance": {
+    "absolute": 0.001
+  }
+}

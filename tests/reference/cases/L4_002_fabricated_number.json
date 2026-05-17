@@ -1,0 +1,28 @@
+{
+  "id": "L4_002_fabricated_number",
+  "description": "Layer 4: a number in text not in source is flagged unsourced.",
+  "standard_section": "5.4",
+  "inputs": {
+    "text": "Revenue grew 12% to $143M. Costs declined 8%.",
+    "source": "Revenue grew 12% to $143M."
+  },
+  "expected": {
+    "source_matching": {
+      "unsourced_rate": 0.333,
+      "n_in_source": 2,
+      "n_unsourced": 1,
+      "n_total": 3,
+      "precision": "low",
+      "unsourced_details": [
+        {
+          "value": "8",
+          "type": "percentage",
+          "context": "Revenue grew 12% to $143M. Costs declined 8%."
+        }
+      ]
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

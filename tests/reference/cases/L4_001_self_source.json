@@ -1,0 +1,22 @@
+{
+  "id": "L4_001_self_source",
+  "description": "Layer 4: when text == source, every digit-formatted number is matched (unsourced_rate = 0).",
+  "standard_section": "5.4",
+  "inputs": {
+    "text": "Revenue grew 12% to $143M with 25% margins.",
+    "source": "Revenue grew 12% to $143M with 25% margins."
+  },
+  "expected": {
+    "source_matching": {
+      "unsourced_rate": 0.0,
+      "n_in_source": 3,
+      "n_unsourced": 0,
+      "n_total": 3,
+      "precision": "low",
+      "unsourced_details": []
+    }
+  },
+  "tolerance": {
+    "absolute": 0.0001
+  }
+}

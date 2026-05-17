@@ -1,0 +1,20 @@
+{
+  "id": "L2_001_claim_density_basic",
+  "description": "Layer 2: digit-formatted claims counted across a paragraph.",
+  "standard_section": "5.2",
+  "inputs": {
+    "text": "Revenue grew 12% to $143M. Costs declined 8% across 5000 employees over 18 months."
+  },
+  "expected": {
+    "claim_density": {
+      "numerical_per_1kw": 10.0,
+      "causal_per_1kw": 0.0,
+      "n_numerical": 1,
+      "n_causal": 0,
+      "n_words": 14
+    }
+  },
+  "tolerance": {
+    "absolute": 0.001
+  }
+}

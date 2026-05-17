@@ -1,50 +1,119 @@
 # Reference test suite
 
-This directory is reserved for the canonical reference test cases shipped with the Touchstone Standard. A conforming implementation MUST pass all reference test cases at the Standard version it implements (Standard §11).
+The canonical conformance suite for the Touchstone Standard. A
+conforming implementation MUST pass every reference case at the
+Standard version it implements (Standard §11.1).
 
 ## Status
 
-The reference suite is not yet populated. Standard 1.0 is at `1.0.0-draft.10`; the reference cases extracted into this directory will land alongside ratification. Until then, the regression benchmarks under `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/` plus the unit tests under `tests/` are the practical conformance surface, as Standard §11 directs.
+Initial cases shipped in Standard `1.0.0-draft.11`. The suite covers
+all required layers (1b, 1c, 2, 3, 4, 5, 6, 7), both experimental
+layers (8, 9), and Layer 11; 16 cases total at this draft, including
+multi-currency extraction, gated precision-low behaviour, and a
+projected-content case for Layer 11. Additional edge cases (scaled
+integers, saturated derivation regime, multi-version temporal pairs)
+land in subsequent revisions per `SUGGESTIONS/PROCESS.md`. The
+existing internal regression benchmarks under
+`benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`
+plus the unit tests under `tests/` remain part of the conformance
+surface per Standard §11.1(1).
 
-## Planned structure
+## Layout
 
 ```
 tests/reference/
-├── README.md                      # this file
-├── source_matching/               # Layer 4 reference cases
-├── entity_provenance/             # Layer 5 reference cases
-├── temporal_instability/          # Layer 3 reference cases
-├── grounding_decomposition/       # Layer 11 G/F/P reference cases
-└── quality_profile/               # Layer 10 reference cases
+├── README.md
+├── test_reference_cases.py    # pytest-discoverable runner
+└── cases/
+    ├── L1_001_structural_basic.json
+    ├── L2_001_claim_density_basic.json
+    ├── L3_001_temporal_basic.json
+    ├── L4_001_self_source.json
+    ├── L4_002_fabricated_number.json
+    ├── L4_003_no_numbers.json
+    ├── L4_004_multicurrency.json
+    ├── L5_001_entities_self_source.json
+    ├── L5_002_few_entities_low_precision.json
+    ├── L6_001_vocab_full_overlap.json
+    ├── L6_002_vocab_disjoint.json
+    ├── L7_001_presentation_basic.json
+    ├── L8_001_calibration_basic.json
+    ├── L9_001_novelty_basic.json
+    ├── L11_001_fully_grounded.json
+    └── L11_002_projected_present.json
 ```
 
-Section 6 (Specification Compliance) is reserved for Standard 1.1; reference cases for that section will land when 1.1 ratifies.
+The runner is pytest-discoverable; cases run as part of the regular
+test matrix (`pytest -q`).
 
-## Case format (planned)
+## Case format
 
-Each case directory will contain:
+Each case is a single JSON document with this shape:
 
-- Input files (`source.md`, `output.md`, and `spec.md` where applicable)
-- `expected.json` with the canonical expected output, with documented numerical tolerance per case
+```json
+{
+  "id": "L4_001_self_source",
+  "description": "Layer 4: when text == source, every digit-formatted number is matched (unsourced_rate = 0).",
+  "standard_section": "5.4",
+  "inputs": {
+    "text": "Revenue grew 12% to $143M with 25% margins.",
+    "source": "Revenue grew 12% to $143M with 25% margins.",
+    "comparisons": ["..."],
+    "topic": "..."
+  },
+  "expected": {
+    "source_matching": {
+      "unsourced_rate": 0.0,
+      "n_total": 2,
+      "n_in_source": 2,
+      "n_unsourced": 0
+    }
+  },
+  "tolerance": {"absolute": 0.0001}
+}
+```
 
-Implementations run against the inputs and compare results against `expected.json`. Per-case tolerance is part of the case definition.
+- **`id`**: unique identifier; convention is `L<layer>_<NNN>_<short_slug>`.
+- **`description`**: one-line natural-language statement of what the case verifies.
+- **`standard_section`**: dotted section reference into the Standard.
+- **`inputs.text`**: required output text passed as the first positional argument to `measure()`.
+- **`inputs.source`**: optional source string for source-required layers (4, 5, 6, 8, 11).
+- **`inputs.comparisons`**: optional list of strings for Layer 3 temporal instability.
+- **`inputs.topic`**: optional topic for Layer 1a baseline generation; cases that exercise Layer 1a are not part of the v1.0 reference suite because Layer 1a requires a caller-supplied LLM client.
+- **`expected`**: dict of layer-output sub-dicts to verify. Only keys present in `expected` are checked; other layer outputs are allowed to vary.
+- **`tolerance.absolute`**: absolute tolerance for float comparisons. Defaults to `1e-4` if not specified.
 
-## Versioning
+## Comparison rules
 
-Reference cases version with the Standard. Reference suite 1.0 will correspond to Standard 1.0. Changes to reference cases require Standard version bumps.
+The runner recursively compares the actual `measure()` output against the case's `expected` block:
+
+- **`None` values**: must match exactly.
+- **Booleans**: must match exactly.
+- **Integers**: must match exactly.
+- **Floats**: must match within ±`tolerance.absolute`.
+- **Strings**: must match exactly.
+- **Lists**: must have the same length; elements compared element-wise.
+- **Dicts**: every key in `expected` must exist in the actual output; values compared recursively. Keys present in actual but not in `expected` are ignored.
+
+A failing case lists every divergence with its dotted path and the expected/actual values.
+
+## Reproducibility
+
+Cases are byte-pinned in this repository. The reference values were generated by running `measure()` against each case's inputs at the Standard version listed in the file path; any change to the reference implementation that breaks a case requires either:
+
+1. A bug fix in the reference implementation that restores the case's expected behaviour, or
+2. A Standard-track Suggestion (per `SUGGESTIONS/PROCESS.md`) that documents the intentional change in methodology, accompanied by a new case file with the updated expected values.
 
 ## Adding new cases
 
-New reference cases require a Standard Track Suggestion per `SUGGESTIONS/PROCESS.md`. Cases added without a corresponding Standard update are not part of the canonical conformance suite.
+New cases require a Standard-track Suggestion. The case file alone is not enough; the Suggestion must explain what the new case verifies, why the existing cases do not cover that behaviour, and which Standard section the case is anchored against.
 
-Implementations MAY include their own additional test cases under `tests/synthetic/` or similar; those are implementation-specific and not part of the conformance surface.
+Implementations MAY include additional internal test cases under `tests/` outside `tests/reference/`; those are implementation-specific and not part of the conformance surface.
 
 ## Running
 
-When the suite is populated:
-
 ```bash
-pytest tests/reference/
+pytest tests/reference/ -v
 ```
 
-This runs all reference cases against the local `clarethium-touchstone` implementation.
+Each case runs in well under a second on CPU. The full suite is included in the default `pytest -q` invocation and in CI.
