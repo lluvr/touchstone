@@ -132,7 +132,7 @@ Every reported number reproduces from a fresh clone:
 
 ## 8. Citation and licensing
 
-- Standard: CC-BY 4.0; cite as `Touchstone Standard 1.0.0-draft.11 (Clarethium, 2026)`.
+- Standard: CC-BY 4.0; cite as `Touchstone Standard 1.0.0-draft.12 (Clarethium, 2026)`.
 - Library: Apache-2.0; cite via `CITATION.cff` at the repository root.
 - External corpora retain their upstream licenses (RAGTruth MIT, SummEval MIT, HaluEval Apache-2.0); no corpus content is committed to this repository.
 - Baseline models retain their upstream licenses (MiniCheck Apache-2.0, AlignScore MIT); no model weights are committed.

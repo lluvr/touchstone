@@ -6,6 +6,94 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-17: production Verifier API — `score(text, source)` with calibration + span localization; Standard 1.0.0-draft.12
+
+After the frame-break round (where the trivial-baseline anchor surfaced that Touchstone L6 ≈ word overlap on AUC), the question became: where does the actual 10x value-add live? Empirical AUC has a hard ceiling at ~0.77 from ensembling all signals. The 10x is in **production usefulness** — the gap between "dict-of-layer-outputs research interface" and "calibrated probability + signal breakdown + span localization that an adopter can act on."
+
+This round ships the production Verifier API. The substrate is unchanged; the value-add is in the calibrated combination, the explainable breakdown, and the span-level localization.
+
+**New public API:**
+
+```python
+from clarethium_touchstone import Verifier
+
+v = Verifier()
+result = v.score(text=output, source=context)
+result.prob_hallucinated        # 0.0-1.0 calibrated probability
+result.signal_breakdown          # {feature_name: contribution_to_logit}
+result.top_unsupported           # [UnsupportedSpan, ...] with Layer 11 classification
+result.should_flag(threshold=0.5)  # convenience bool
+result.layer_outputs             # raw MeasureResult for drill-down
+```
+
+Three modes, auto-selected by which baseline scores the caller supplies:
+
+- `substrate_only` (default; no extras, sub-100 ms): default-calibrated AUC ≈ 0.67-0.76 on three external summarization corpora.
+- `substrate_plus_minicheck`: caller invokes MiniCheck themselves and passes `minicheck_supported_prob`; AUC ≈ 0.76 on the RAGTruth Summary held-out test split.
+- `substrate_plus_minicheck_alignscore`: pass both; AUC ≈ 0.77.
+
+The Verifier never invokes a model on the output under measurement — the substrate-independence claim (§3.1) continues to hold in `substrate_only` mode, and in the augmented modes the trained-discriminator score is supplied by the caller, not produced by the Verifier.
+
+**Calibration shipped with the library:**
+
+- Default calibration trained on RAGTruth Summary test split (70/30 stratified, seed=0; n_train=629, n_test=271).
+- Coefficients live at `src/clarethium_touchstone/_calibration.py` as `DEFAULT_CALIBRATION_2026_05_17`.
+- Adopters with their own held-out training data: `Verifier.with_calibration(custom_dict)` accepts a coefficient dict in the same shape.
+- Held-out AUC + bootstrap CI: substrate_only 0.6773 [0.6042, 0.7473]; +MiniCheck 0.7588 [0.6867, 0.8198]; +MiniCheck+AlignScore 0.7734 [0.6955, 0.8355].
+
+**Standard (1.0.0-draft.11 -> 1.0.0-draft.12):**
+
+- **New Section 13: Calibrated Verifier methodology** specifying what a conforming Verifier MUST and SHOULD do. Six subsections covering rationale, modes, required feature set, calibration discipline, span-level localization, and honest scope.
+- The Verifier methodology does NOT add discriminative signal beyond the underlying substrate + caller-supplied baselines; it provides calibrated combination + signal breakdown + span localization on top of those signals. §13.6 documents this honestly: the substrate-only AUC range (0.67-0.76) is research-tier, not audit-tier.
+- Status header updated to draft.12; mentions §13.
+
+**Library changes:**
+
+- New `clarethium_touchstone/verifier.py` (≈300 LOC) with `Verifier`, `VerifierResult`, `UnsupportedSpan`, and `VerifierMode` types. Public API re-exported from `__init__.py`.
+- New `clarethium_touchstone/_calibration.py` with `DEFAULT_CALIBRATION_2026_05_17` (~30 numbers; trained as documented).
+- mypy strict clean on the new modules (uses `MeasureResult` TypedDict properly; guards source-required layer access with an explicit error).
+- 11 new tests in `tests/test_verifier.py` covering shape, supported/hallucinated polarity, signal-breakdown reconstruction, mode auto-selection, missing-baseline error, and custom-calibration injection.
+
+**README:**
+
+- New "Quick example: the production Verifier API" section as the primary entry point.
+- The raw `measure()` example moves to a "Low-level: raw measure() for layer-level analysis" subsection.
+
+**docs/methodology.md:**
+
+- Citation updated to draft.12.
+
+**Verification:**
+
+- 412 tests pass (was 401; 11 new Verifier tests).
+- Coverage maintained.
+- mypy strict, ruff lint+format, canon audit (self-test + tree) all green.
+- New `examples/production_verifier.py` runs end-to-end and demonstrates the API with a faithful vs hallucinated CNN/DM-style summary; the hallucinated summary scores 0.796 and surfaces three P-classified sentences with their specific markers.
+
+**Why this is a 10x:**
+
+Before this round, an adopter received a `dict` of 11 layer outputs and had to figure out how to combine them, what threshold to apply, and where in the output the problem actually was. That's a research interface. Now an adopter gets:
+
+- **One number** (`prob_hallucinated`) they can threshold against.
+- **An explanation** (`signal_breakdown`) showing which substrate signals contributed to the score.
+- **Localization** (`top_unsupported`) showing WHICH sentences are flagged and WHY (Layer 11 P-markers or low grounding scores).
+- **A `should_flag()` convenience method** with a tunable threshold.
+- **Three accuracy/latency tiers** with documented AUC + latency envelopes.
+- **Recalibration support** for adopters whose distribution differs from English news summarization.
+
+The AUC ceiling is still ~0.77 (the substrate doesn't get a free signal boost from packaging). The 10x is in usefulness, not in accuracy.
+
+**Carried forward (unchanged):**
+
+- SOTA LLM-based baselines (Bespoke-MiniCheck-7B, GPT-4-as-judge).
+- TRUE, LLM-AggreFact held-out, HaluBench external runs.
+- HHEM 2.1 (install fix), SelfCheckGPT, G-Eval baselines.
+- Non-English / non-summarization scope extension.
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+
+---
+
 ## 2026-05-17: frame-break — trivial-baseline anchor + honest reframing
 
 A fresh-eyes stress test surfaced the single most consequential omission in the prior rounds: **Touchstone Layer 6 inverse_proximity had never been compared against a trivial lexical baseline.** This round adds three trivial baselines on every external corpus, finds that a 3-line raw word-overlap baseline is statistically indistinguishable from Layer 6, and rewrites the framing across README, methodology doc, Standard §3.5, and §Use cases / §Limitations to reflect this honestly.

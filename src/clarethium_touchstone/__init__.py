@@ -32,9 +32,19 @@ from clarethium_touchstone.measure import (
     assess_derivation_regime,
     measure,
 )
+from clarethium_touchstone.verifier import (
+    UnsupportedSpan,
+    Verifier,
+    VerifierMode,
+    VerifierResult,
+)
 
 __all__ = [
     "EXTERNAL_ENTITIES_DEFAULT",
+    "UnsupportedSpan",
+    "Verifier",
+    "VerifierMode",
+    "VerifierResult",
     "__version__",
     "assess_derivation_regime",
     "measure",

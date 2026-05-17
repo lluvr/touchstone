@@ -47,7 +47,35 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-## Quick example
+## Quick example: the production `Verifier` API
+
+The primary entry point for production adopters is the calibrated `Verifier`. It returns a single probability, an explainable signal breakdown, and span-level localization:
+
+```python
+from clarethium_touchstone import Verifier
+
+v = Verifier()  # substrate-only mode; no extra deps, sub-100 ms per pair
+result = v.score(
+    text="Apple reported Q1 revenue of $185 billion. McKinsey forecasts 47% growth.",
+    source="Apple reported Q1 revenue of $143 billion.",
+)
+print(f"prob_hallucinated = {result.prob_hallucinated:.3f}")  # → 0.796
+print(f"should flag (>0.5)? {result.should_flag()}")          # → True
+for span in result.top_unsupported:
+    print(f"  {span.layer11_primary}: {span.sentence!r}  {span.p_markers}")
+# → P: 'Apple reported Q1 revenue of $185 billion.'  ['unsourced_numbers']
+# → P: 'McKinsey forecasts 47% growth.'              ['unsourced_numbers']
+```
+
+Three operating modes (auto-selected from which baseline scores you pass):
+
+- **Substrate-only** (default; no extras, sub-100 ms): default-calibrated AUC ≈ 0.67-0.76 on three external summarization corpora. Research-tier signal. For drift detection, regression testing, or as a cheap first-pass filter ahead of an LLM-based judge.
+- **Substrate + MiniCheck** (caller invokes MiniCheck and passes `minicheck_supported_prob`): AUC ≈ 0.76. Adds the MiniCheck cost (~5 s/pair on CPU).
+- **Substrate + MiniCheck + AlignScore** (pass both): AUC ≈ 0.77. Adds the AlignScore cost.
+
+Honest accuracy/latency envelope and recalibration guidance: see `docs/methodology.md` and `examples/production_verifier.py` for the end-to-end demo.
+
+### Low-level: raw `measure()` for layer-level analysis
 
 ```python
 from clarethium_touchstone import measure
@@ -349,7 +377,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.11). When citing it, please
+The Standard is currently in draft (1.0.0-draft.12). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -358,7 +386,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.11},
+  note         = {Version 1.0.0-draft.12},
   license      = {CC-BY-4.0}
 }
 ```
