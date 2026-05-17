@@ -1,7 +1,7 @@
 # Touchstone Standard 1.0 (DRAFT)
 
-**Status:** Draft v0.11. All Section 4-12 content substantively complete, including Terminology (§2), Output structure (§4), Conformance declaration mechanism + invalidation criteria (§11), confirmed reference-test conformance bands (§8) disambiguated against the regression reference, structured Field positioning references (§12), falsifiable construct claims (§3.5) covering all 13 substantive construct claims with empirical status against external corpora for Layers 4, 10, 11 plus the §3.1 substrate-independence claim (95% percentile bootstrap CIs on every reported AUC across five (corpus, task) cells × two baselines), and Appendix C citing public-surface validation artifacts only. The canonical reference suite at `tests/reference/cases/` ships 16 cases covering all required layers (1b, 1c, 2, 3, 4, 5, 6, 7), both experimental layers (8, 9), and Layer 11. Section 6 (Specification Compliance) and Appendices A and B remain reserved for Standard 1.1. Independent editor review is pending.
-**Version:** 1.0.0-draft.11
+**Status:** Draft v0.12. All Section 4-13 content substantively complete, including Terminology (§2), Output structure (§4), Conformance declaration mechanism + invalidation criteria (§11), confirmed reference-test conformance bands (§8) disambiguated against the regression reference, structured Field positioning references (§12), falsifiable construct claims (§3.5) covering all 13 substantive construct claims with empirical status against external corpora and trivial-baseline anchor, and new Section 13 specifying the calibrated Verifier methodology shipped in `clarethium_touchstone.Verifier`. The canonical reference suite at `tests/reference/cases/` ships 16 cases covering all required layers, both experimental layers, and Layer 11. Section 6 (Specification Compliance) and Appendices A and B remain reserved for Standard 1.1. Independent editor review is pending.
+**Version:** 1.0.0-draft.12
 **Date:** 2026-05-17 (drafting in progress)
 **License:** CC-BY 4.0
 **Canonical URL:** https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md
@@ -447,6 +447,65 @@ Touchstone occupies a different construct space from existing AI-output evaluati
 ### 12.4 Validation work cited in the reference implementation
 
 Additional empirical work referenced in the reference implementation's docstrings and benchmark READMEs is documented at the point of use. Formal citations for any such work that publishes externally will land as Standard 1.0.1 editorial patches.
+
+---
+
+## 13. Calibrated Verifier methodology
+
+Sections 5-11 specify the substrate: deterministic measurement layers, threshold defaults, falsifiable construct claims, and conformance bands. Section 13 specifies how a conforming implementation MAY combine those layers with optional caller-supplied trained-discriminator scores into a single calibrated hallucination probability with span-level localization. The reference implementation ships this as `clarethium_touchstone.Verifier`; the methodology described here is what other implementations conforming to Standard 1.0 SHOULD follow if they expose a similar API.
+
+### 13.1 Rationale
+
+The substrate signals (Layers 1-11) produce a `MeasureResult` dict that is well-suited for methodology research and regression testing but is not directly actionable for production adopters. Production users (RAG developers, content-moderation platforms, audit teams) need a single calibrated probability, an explicit signal breakdown, and span-level localization. Section 13 specifies how to compose the substrate outputs into that production shape without invoking an LLM on the output under measurement (the §3.1 substrate-independence claim continues to hold in the substrate-only Verifier mode).
+
+### 13.2 Verifier modes
+
+A conforming Verifier SHOULD support at minimum three modes, listed in order of increasing accuracy and increasing per-call latency:
+
+1. **substrate_only.** Uses only the deterministic substrate (Layers 4, 5, 6, 11) and one normalized gating signal per layer. No external model dependency. Default-calibrated AUC range on the v1.0 external corpora: approximately 0.67-0.76 (research-tier).
+2. **substrate_plus_minicheck.** Adds a caller-supplied MiniCheck supported-probability as an additional feature. The Verifier does NOT invoke MiniCheck; the caller invokes the model and passes its score. Default-calibrated AUC: approximately 0.76 on the v1.0 RAGTruth Summary held-out test split.
+3. **substrate_plus_minicheck_alignscore.** Adds both MiniCheck and AlignScore supported-probabilities as features. Default-calibrated AUC: approximately 0.77.
+
+Conforming implementations MAY add additional modes (e.g., with HHEM, SelfCheckGPT, or G-Eval scores as features) provided the mode is explicitly named and the calibration coefficients are documented per §13.4.
+
+### 13.3 Required feature set (substrate-only mode)
+
+A conforming substrate-only Verifier MUST compute the following six features and apply a logistic regression with documented calibration coefficients:
+
+- `l6_inv`: `1 - vocabulary_proximity.mean_proximity` (or 0.0 if mean_proximity is None).
+- `l4_unsourced`: `source_matching.unsourced_rate` when `n_total > 0`, else 0.0.
+- `l4_n_total_norm`: `min(source_matching.n_total / 10.0, 1.0)` as a normalized gating indicator for Layer 4 precision.
+- `l11_p`: `grounding_decomposition.proportions.P`.
+- `l5_entity_unsourced`: `entity_provenance.entity_unsourced_rate` when `n_entities >= 5`, else 0.0.
+- `l5_n_entities_norm`: `min(entity_provenance.n_entities / 10.0, 1.0)`.
+
+The final probability is `sigmoid(intercept + sum(coef[i] * feature[i]))`. The signal breakdown returned to the caller MUST include each `coef[i] * feature[i]` term plus the intercept, so the caller can reconstruct the logit by summing the breakdown.
+
+### 13.4 Calibration discipline
+
+Calibration coefficients MUST be documented including:
+
+1. The training corpus and split (e.g., "RAGTruth Summary test split, 70/30 stratified, seed=0; n_train=629, n_test=271").
+2. The intercept and coefficient for each feature name in the mode.
+3. The held-out AUC + 95% bootstrap CI on the test split.
+
+The reference implementation's default calibration is at `src/clarethium_touchstone/_calibration.py` and is named `DEFAULT_CALIBRATION_2026_05_17`. Conforming Verifiers MAY ship different default calibrations; the Verifier MUST expose a `with_calibration()` (or equivalent) constructor that accepts a custom calibration dict in the same shape.
+
+### 13.5 Span-level localization
+
+A conforming Verifier MUST expose, alongside the calibrated probability, a list of unsupported spans sourced from Layer 11's `sentence_classifications`. Each span SHOULD include:
+
+- The sentence text.
+- Its zero-indexed position in the segmentation order.
+- Its Layer 11 primary classification (`"G"`, `"F"`, or `"P"`).
+- For P-classified sentences: the list of triggering markers (`"unsourced_numbers"`, `"external_entities"`, `"unsourced_years"`).
+- For F-classified sentences: the grounding score in [0, 1].
+
+The default ordering SHOULD be: P-classified sentences first (most likely unsupported), then F-classified sentences in ascending grounding-score order. G-classified sentences MAY be excluded by default; a conforming Verifier MAY expose them via an explicit option.
+
+### 13.6 Honest scope
+
+The Verifier methodology does NOT add discriminative signal beyond what the underlying substrate and caller-supplied baselines provide; it provides a calibrated combination, an explicit signal breakdown, and span-level localization on top of those signals. The §3.5 falsification status of each underlying layer continues to apply: Layer 10 gap is partially falsified out-of-domain, Layer 6 is statistically indistinguishable from trivial word-overlap baselines at this signal-strength tier, and the substrate-only AUC range (0.67-0.76 on the v1.0 external corpora) is research-tier, not audit-tier. Adopters SHOULD pair the Verifier with their own quality controls when deploying to production at scale.
 
 ---
 

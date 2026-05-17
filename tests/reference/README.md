@@ -6,7 +6,7 @@ Standard version it implements (Standard §11.1).
 
 ## Status
 
-Initial cases shipped in Standard `1.0.0-draft.11`. The suite covers
+Initial cases shipped in Standard `1.0.0-draft.12`. The suite covers
 all required layers (1b, 1c, 2, 3, 4, 5, 6, 7), both experimental
 layers (8, 9), and Layer 11; 16 cases total at this draft, including
 multi-currency extraction, gated precision-low behaviour, and a
