@@ -1,30 +1,45 @@
-"""Production-grade calibrated Verifier on top of the Touchstone substrate.
+"""Calibrated Verifier on top of the Touchstone substrate.
 
-The :class:`Verifier` provides the single ``score(text, source)`` API
-that production adopters actually need: a calibrated probability that
-the output is hallucinated, with span-level localization and an
-explicit signal breakdown. It is built on top of :func:`measure` and
-is intentionally thin — the heavy lifting is in the substrate layers
-that :func:`measure` already exposes.
+**Read ``docs/production_readiness.md`` before deploying this in
+production.** On a 16-category subtle-hallucination stress test
+(direction reversal, attribute swap, scoping shift, relation reversal,
+time-frame shift, imputed cause), the substrate-only Verifier separates
+hallucinated from faithful at the chance level (8/16 = 50%). The
+substrate is structurally blind to hallucinations that preserve
+vocabulary and only change semantic relationships. Touchstone-on-its-
+own is NOT a sufficient production hallucination detector in the
+general case.
+
+What this class IS useful for:
+
+* **Triage / review-queue prioritization** at the 2-4x lift-vs-random
+  level on English news summarization corpora.
+* **Cheap first-pass filter** ahead of an LLM-based judge in a two-
+  stage architecture.
+* **Drift detection** on stable production streams.
+* The **lexical-feature half** of a production hallucination detector
+  when combined with a trained semantic discriminator via the
+  ``minicheck_supported_prob`` and/or ``alignscore_supported_prob``
+  arguments to :meth:`Verifier.score`.
 
 Three operating modes, listed in order of increasing accuracy and
 increasing per-call latency:
 
-* **Substrate-only** (default; no extra dependencies, sub-100 ms on
+* **substrate_only** (default; no extra dependencies, sub-100 ms on
   5 KB documents). Default-calibrated AUC ≈ 0.67-0.76 on three external
-  summarization corpora — research-tier signal strength; suitable for
-  drift detection and regression testing alongside other tooling, not
-  for sole-source audit decisions.
-* **Substrate + caller-supplied baseline score** (e.g., MiniCheck or
-  AlignScore; the caller invokes the model and passes its supported-
-  probability). AUC ≈ 0.76-0.86 across the same corpora.
-* **Substrate + two baseline scores** (MiniCheck + AlignScore both
-  supplied by the caller). AUC ≈ 0.77-0.86.
+  summarization corpora — research-tier. F1-optimal threshold is
+  0.07-0.27 on those corpora, NOT 0.5; the default
+  ``should_flag(threshold=0.5)`` under-flags for any production
+  deployment. Tune the threshold on your own held-out data.
+* **substrate_plus_minicheck** — caller invokes MiniCheck and passes
+  ``minicheck_supported_prob``. AUC ≈ 0.76.
+* **substrate_plus_minicheck_alignscore** — both baseline probabilities
+  supplied. AUC ≈ 0.77.
 
-The honest empirical bound is documented in ``docs/methodology.md``
-and in the §Empirical validation section of the README. Adopters
-SHOULD recalibrate the coefficients on their own held-out data if
-their input distribution differs materially from English news
+The honest empirical bound, operational metrics, and subtle-case
+stress test are documented in ``docs/production_readiness.md``.
+Adopters SHOULD recalibrate the coefficients on their own held-out
+data if their input distribution differs materially from English news
 summarization; the :meth:`Verifier.with_calibration` constructor
 accepts a custom coefficient dict in the same shape as the embedded
 default.

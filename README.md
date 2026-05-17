@@ -47,9 +47,22 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-## Quick example: the production `Verifier` API
+## Read before deploying: `docs/production_readiness.md`
 
-The primary entry point for production adopters is the calibrated `Verifier`. It returns a single probability, an explainable signal breakdown, and span-level localization:
+Touchstone alone is NOT a standalone production hallucination detector. A 16-case stress test on subtle hallucinations (direction reversal, attribute swap, scoping shift, relation reversal, time-frame shift, imputed cause — the categories real LLMs actually produce) found Touchstone separates the hallucinated from the faithful case at **50% (random)** and flags zero of 16 at the default threshold. The substrate is structurally blind to hallucinations that preserve vocabulary and only change semantic relationships.
+
+What Touchstone IS useful for in production:
+
+- **Triage / review-queue prioritization**: 2-4× lift over random review on English news summarization corpora (lift of 4.22× on SummEval top-10% review).
+- **Cheap first-pass filter** in a two-stage pipeline ahead of an LLM-based judge.
+- **Drift detection** on stable production streams.
+- **Lexical-feature half of a production hallucination detector** — combine with a trained semantic discriminator via `Verifier(use_minicheck=True)`.
+
+Full operational analysis with precision/recall/F1/lift numbers, the 16-case stress test results, and the production architecture recommendation: see `docs/production_readiness.md` and `docs/methodology.md`. Read both before shipping anything that depends on Touchstone's output.
+
+## Quick example: the calibrated `Verifier` API
+
+The `Verifier` is the production-shaped API: one `score()` call, calibrated probability + explainable signal breakdown + span-level localization. Use it as the lexical half of a two-stage architecture, not as a standalone detector.
 
 ```python
 from clarethium_touchstone import Verifier
@@ -377,7 +390,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.12). When citing it, please
+The Standard is currently in draft (1.0.0-draft.13). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -386,7 +399,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.12},
+  note         = {Version 1.0.0-draft.13},
   license      = {CC-BY-4.0}
 }
 ```
