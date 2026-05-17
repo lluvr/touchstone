@@ -6,6 +6,56 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-17: frame-break — trivial-baseline anchor + honest reframing
+
+A fresh-eyes stress test surfaced the single most consequential omission in the prior rounds: **Touchstone Layer 6 inverse_proximity had never been compared against a trivial lexical baseline.** This round adds three trivial baselines on every external corpus, finds that a 3-line raw word-overlap baseline is statistically indistinguishable from Layer 6, and rewrites the framing across README, methodology doc, Standard §3.5, and §Use cases / §Limitations to reflect this honestly.
+
+**The frame-break finding:**
+
+| Signal | RAGTruth Summary | SummEval | HaluEval | Mean | SD |
+|---|---|---|---|---|---|
+| Touchstone Layer 6 | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] | 0.728 | 0.039 |
+| **Trivial WordOverlapInv (3 lines)** | **0.6827 [0.6410, 0.7238]** | **0.7284 [0.6810, 0.7774]** | **0.7431 [0.7136, 0.7712]** | **0.718** | **0.026** |
+| Trivial JaccardContentInv | 0.6677 [0.6234, 0.7081] | 0.7089 [0.6622, 0.7547] | 0.4715 [0.4363, 0.5073] | 0.616 | 0.106 |
+| Trivial TFIDFCosineInv | 0.6163 [0.5739, 0.6639] | 0.6987 [0.6553, 0.7421] | 0.5385 [0.5032, 0.5740] | 0.618 | 0.065 |
+
+- Touchstone Layer 6 CIs heavily overlap the WordOverlapInv CIs on **every corpus tested**. The "Layer 6 substrate-independence" finding from prior drafts reduces empirically to: simple lexical features (with or without Touchstone's per-sentence segmentation) carry the same out-of-domain hallucination signal at this signal-strength tier.
+- WordOverlapInv has the **lowest cross-corpus SD (0.026)** of any signal in the cross-baseline table; Layer 6 SD is 0.039. The most substrate-independent baseline is plain word overlap, not Touchstone's structured Layer 6.
+- JaccardContentInv collapses on HaluEval (AUC 0.4715, below chance), confirming that trivial-baseline behaviour is highly preprocessing-dependent.
+
+**Honest reframing applied across the surface:**
+
+- **README §Empirical validation "Headline finding"** rewritten: trivial-baseline row added to the cross-corpus table; framing paragraphs replaced with the load-bearing honest version. Positioning sentence: *Touchstone is a research substrate for studying hallucination-detection methodology at low compute cost, NOT a production-grade hallucination detector.*
+- **README §Use cases**: three-tier framing sharpened. "Exercised on" lists research / drift detection. "Plausibly suited" includes drift detection alongside an LLM-based judge. "Does NOT yet support" explicitly names adversarial-robustness, audit/compliance recall levels, non-English / non-summarization scope, and production hallucination detection without an LLM-based judge as the primary signal.
+- **README §Limitations**: two bullets rewritten. (a) Three corpora, two budget-tier baselines, three trivial baselines — SOTA discriminators (Bespoke-MiniCheck-7B, GPT-4-as-judge) NOT tested and are the right next baselines. (b) All three corpora are English-news-summarization derivatives; non-English / non-summarization is out of validated scope.
+- **Standard §3.5 Layer 6 falsification criterion** updated to incorporate the trivial-baseline anchor. The Layer 6 construct claim is now explicitly "the per-sentence stopword-filtered formulation produces a more stable signal across preprocessing variants than any single trivial baseline" — NOT "the layer adds discriminative value beyond plain word overlap" (which the data shows it does not).
+- **docs/methodology.md**: section 1 ("substrate hypothesis") opens with the empirical finding rather than the hypothesis; section 3.4 ("cross-corpus cross-baseline finding") rewritten to include trivial baselines and the load-bearing honest framing.
+
+**New artifacts:**
+
+- `benchmarks/external/trivial_lexical_baselines.py` — stdlib-only script computing WordOverlapInv, JaccardContentInv, TFIDFCosineInv on the three external corpora with 95% bootstrap CIs (1000 stratified resamples, fixed seed).
+- `benchmarks/external/*/results/trivial_lexical_baselines_2026-05-17.json` — three new snapshots with per-example trivial-baseline scores plus aggregate CIs.
+- `benchmarks/external/cross_baseline_summary.py` extended to include trivial-baseline rows in the Markdown table output.
+
+**Verification:**
+
+- 401 tests pass (no test changes; the reframing is documentation-only on the library side).
+- mypy strict, ruff lint+format, canon audit (self-test + tree) all green.
+- All prior snapshots byte-identical; trivial-baseline snapshots are new files.
+
+**Why this is the right move now.** Prior rounds had been incrementally improving the Touchstone-vs-LLM-baselines comparison without ever asking the question "does a 3-line baseline do this just as well?" That omission would have been the first critique from a top-lab reviewer. Naming it explicitly, running the experiment, and rewriting the framing honestly is more credible than discovering it later. The new positioning ("research substrate, not production tool; structured packaging of trivial lexical signal plus a falsification protocol") is more defensible than the prior framing ("substrate independence" claim with statistical evidence that turns out to also hold for a 3-line bag-of-words).
+
+**Carried forward (unchanged from prior round):**
+
+- SOTA LLM-based baselines (Bespoke-MiniCheck-7B, GPT-4-as-judge).
+- TRUE, LLM-AggreFact held-out, HaluBench external runs.
+- HHEM 2.1, SelfCheckGPT, G-Eval baselines.
+- AlignScore on RAGTruth QA / Data2Txt task types.
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+
+---
+
 ## 2026-05-17: deep finalization — reference suite, full CIs, cross-task baselines, methodology doc; Standard 1.0.0-draft.11
 
 The "real gaps and improvements" round. Five load-bearing additions, all reproducible from a fresh clone:

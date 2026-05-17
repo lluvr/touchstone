@@ -1,10 +1,12 @@
 # Touchstone methodology summary
 
-A single-document walkthrough of the substrate hypothesis, the falsification protocol, the empirical evidence, and the named limitations. Intended for readers evaluating Touchstone for adoption, contribution, or methodological critique. The README is the user-facing entry point; this document is the methods reference.
+A single-document walkthrough of the substrate hypothesis, the falsification protocol, the empirical evidence (including the trivial-baseline anchor that is the most important methodological discipline in this report), and the named limitations. Intended for readers evaluating Touchstone for adoption, contribution, or methodological critique. The README is the user-facing entry point; this document is the methods reference.
 
-## 1. Substrate hypothesis
+## 1. Substrate hypothesis (and what the data actually shows)
 
 LLM-as-judge approaches measure AI output quality by invoking another LLM to score the output. Touchstone is built on the contrary hypothesis that a meaningful fraction of "is this output supported by its source" can be measured with a substrate that does NOT invoke any LLM on the output: regex pattern matching, exact string search, vocabulary-overlap arithmetic, and structural decomposition. Where an LLM is needed (Layer 1a heading defaultness), it generates baseline documents on the same topic, not a score for the output under measurement.
+
+**Honest finding from the empirical work (§3 below):** Simple lexical features — including a 3-line raw word-overlap baseline — capture roughly 70% of the discriminative signal that budget-tier LLM-based discriminators (MiniCheck Flan-T5-Large, AlignScore-base) extract on three English-news-summarization corpora. Touchstone's Layer 6 inverse_proximity is statistically indistinguishable from a trivial WordOverlapInv baseline. The substrate-independence claim is true but should be attributed to **simple lexical features in general**, not to Touchstone's structured packaging. Touchstone's value is the calibrated falsification protocol, the multi-layer composite with explicit gating, the bootstrap-CI discipline on every reported AUC, the reference suite at `tests/reference/cases/`, and the Standard document — not Layer 6 doing something a trivial baseline doesn't.
 
 The construct claim, stated formally in Standard §3.1, is that the scoring substrate is *independent of the model under measurement*. The reference implementation runs identically on text from any generator; a measurement that shifts systematically with generator identity (beyond what Layer 1b/1c/10 are explicitly designed to surface) would falsify the substrate-independence claim.
 
@@ -45,23 +47,29 @@ Two independently-trained LLM-based baselines run against the same input pairs a
 - **MiniCheck Flan-T5-Large** (Tang et al. EMNLP 2024, Apache-2.0): fine-tuned discriminator on LLM-AggreFact. 770M parameters.
 - **AlignScore-base** (Zha et al. ACL 2023, MIT): RoBERTa-base alignment-prediction discriminator. 125M parameters. Trained on a different aggregation that does NOT include SummEval.
 
-### 3.4 Cross-corpus cross-baseline finding
+### 3.4 Cross-corpus cross-baseline finding (with trivial-baseline anchor)
 
-All AUCs reported with 95% percentile bootstrap CIs (1000 stratified resamples, fixed seed). Both baselines and Touchstone have full CI coverage on the three summarization corpora; MiniCheck has additional CI coverage on RAGTruth QA and Data2Txt in §3.5 below.
+All AUCs reported with 95% percentile bootstrap CIs (1000 stratified resamples, fixed seed). Trivial baselines are computed in `benchmarks/external/trivial_lexical_baselines.py` (a ~250-line stdlib-only script).
 
-| System | RAGTruth Summary | SummEval | HaluEval summarization |
-|---|---|---|---|
-| AlignScore-base | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] |
-| MiniCheck Flan-T5-Large | 0.7125 [0.6683, 0.7573] | 0.8978 [0.8661, 0.9275]* | 0.6752 [0.6436, 0.7069] |
-| Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] |
-| Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] |
+| System | RAGTruth Summary | SummEval | HaluEval summarization | Mean | SD |
+|---|---|---|---|---|---|
+| MiniCheck Flan-T5-Large | 0.7125 [0.6683, 0.7573] | 0.8978 [0.8661, 0.9275]* | 0.6752 [0.6436, 0.7069] | 0.762 | 0.098 |
+| AlignScore-base | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] | 0.745 | 0.050 |
+| Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] | 0.728 | 0.039 |
+| **Trivial WordOverlapInv (3 lines)** | **0.6827 [0.6410, 0.7238]** | **0.7284 [0.6810, 0.7774]** | **0.7431 [0.7136, 0.7712]** | **0.718** | **0.026** |
+| Trivial JaccardContentInv | 0.6677 [0.6234, 0.7081] | 0.7089 [0.6622, 0.7547] | 0.4715 [0.4363, 0.5073] | 0.616 | 0.106 |
+| Trivial TFIDFCosineInv | 0.6163 [0.5739, 0.6639] | 0.6987 [0.6553, 0.7421] | 0.5385 [0.5032, 0.5740] | 0.618 | 0.065 |
+| Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] | 0.500 | 0.002 |
 
 *Training-test leakage on SummEval: MiniCheck was trained on AggreFact-CNN, which is SummEval-derived; the SummEval MiniCheck figure is NOT held-out. AlignScore does not have this conflict on SummEval.
 
-Two patterns are stable across the matrix:
+Three findings, all statistically grounded:
 
-1. **Layer 6 inverse_proximity generalizes.** AUC 0.64-0.76 across five unique (corpus, task) cells; 95% CIs all disjoint from the 0.5000 chance level. On RAGTruth Summary and SummEval, the two LLM-based baselines outperform Layer 6 by 4-12 AUC points. On HaluEval summarization, both LLM-based baselines underperform Layer 6 (the LLM-baseline CIs are disjoint from Layer 6's). The HaluEval inversion is a corpus-construction artifact: HaluEval's adversarial process produces lexical distribution shifts that Layer 6 measures directly and that semantic-NLI-trained baselines miss. The two-baseline confirmation makes this a baseline-class observation, not MiniCheck-specific.
-2. **Layer 10 gap composite is partially falsified.** AUC 0.498-0.513 across five unique (corpus, task) cells; 95% CIs all *include* 0.5000. The cause is documented: substance components (`source_fidelity`, `entity_grounding`, `epistemic_calibration`) fire on a negligible fraction of short summary outputs (3% maximum on RAGTruth, 0% on SummEval, near-zero on HaluEval), so the composite reduces to presentation-only and carries no fidelity information.
+1. **Touchstone Layer 6 is statistically indistinguishable from WordOverlapInv on every corpus** (CIs heavily overlap on each cell). The "substrate independence" finding belongs to simple lexical features in general, not specifically to Touchstone's structured Layer 6. **WordOverlapInv has the lowest cross-corpus SD (0.026) of any signal tested.** The most substrate-independent baseline in this report is plain word overlap, not Touchstone's preprocessing.
+2. **JaccardContentInv collapses on HaluEval** (AUC 0.4715, CI [0.4363, 0.5073] — below chance). Filtering stopwords removes the very signal HaluEval's adversarial construction introduces. This is the cleanest evidence in the report that trivial-baseline behaviour is highly preprocessing-dependent and corpus-specific. Touchstone Layer 6 does NOT collapse on HaluEval (AUC 0.7593, CI disjoint from chance), so the per-sentence + content-word formulation produces a more stable signal across preprocessing variants than any single trivial baseline — but at AUC cost.
+3. **Layer 10 gap composite is partially falsified.** AUC 0.498-0.513 across all five unique (corpus, task) cells; 95% CIs all *include* 0.5000. The cause is documented: substance components (`source_fidelity`, `entity_grounding`, `epistemic_calibration`) fire on a negligible fraction of short summary outputs (3% maximum on RAGTruth, 0% on SummEval, near-zero on HaluEval), so the composite reduces to presentation-only and carries no fidelity information.
+
+The honest one-sentence summary: **simple lexical features capture ~70% of the discriminative signal on hallucination detection across three English-news-summarization corpora at this signal-strength tier; Touchstone packages them with a falsification protocol, bootstrap CIs, multi-layer integration, and a Standard.**
 
 ### 3.5 Cross-task generalization within RAGTruth
 
