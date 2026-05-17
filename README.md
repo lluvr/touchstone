@@ -140,18 +140,21 @@ Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `alig
 
 Two internal regression benchmarks plus three external corpus comparisons plus one cross-task generalization analysis ship in `benchmarks/`. The internal benchmarks (`exp_081_discrimination/`, `exp_095_grounding/`) reproduce the recorded numbers exactly from a clone. The external benchmarks (`external/ragtruth_summary/`, `external/summeval/`, `external/halueval_summarization/`) stream third-party permissively-licensed corpora from HuggingFace at runtime and compare Touchstone head-to-head against MiniCheck (Tang et al. 2024). The task-type generalization analysis (`external/ragtruth_task_type_generalization.py`) extends Touchstone to RAGTruth's QA and Data2Txt subsets, testing whether the cross-corpus pattern also holds across task types.
 
-### Headline finding (cross-corpus, cross-task)
+### Headline finding (cross-corpus, cross-task, anchored to trivial baselines)
 
-Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval summarization) and three task types within RAGTruth (Summary, QA, Data2Txt), Touchstone's Layer 6 inverse vocabulary proximity and Layer 10 quality_profile gap show a stable, internally consistent pattern of partial generalization. All AUCs reported with 95% percentile bootstrap CIs (1000 stratified resamples, fixed seed). The Layer 10 gap CIs all overlap chance, separately confirming the partial out-of-domain falsification documented in Standard §3.5.
+Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval summarization) and three task types within RAGTruth (Summary, QA, Data2Txt), Touchstone's measurement layers are compared against two LLM-based discriminators (MiniCheck Flan-T5-Large, AlignScore-base) AND against three **trivial lexical baselines** (raw word overlap, Jaccard of content words, TF-IDF cosine). The trivial-baseline anchor is the most important methodological discipline in this report: it tells the reader exactly how much of the discriminative signal is captured by a 5-line bag-of-words computation that any reader can reproduce from the snapshot JSONs in seconds. All AUCs are reported with 95% percentile bootstrap CIs (1000 stratified resamples, fixed seed).
 
-**Cross-corpus on summarization-task outputs (every AUC reported with 95% percentile bootstrap CI; 1000 stratified resamples, fixed seed):**
+**Cross-corpus on summarization-task outputs:**
 
-| Signal | RAGTruth Summary | SummEval | HaluEval summarization |
-|---|---|---|---|
-| Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] |
-| Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] |
-| MiniCheck Flan-T5-Large (Tang et al. EMNLP 2024) | 0.7125 [0.6683, 0.7573] | 0.8978 [0.8661, 0.9275]* | 0.6752 [0.6436, 0.7069] |
-| AlignScore-base (Zha et al. ACL 2023) | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] |
+| Signal | RAGTruth Summary | SummEval | HaluEval summarization | Mean | SD |
+|---|---|---|---|---|---|
+| MiniCheck Flan-T5-Large (Tang et al. EMNLP 2024) | 0.7125 [0.6683, 0.7573] | 0.8978 [0.8661, 0.9275]* | 0.6752 [0.6436, 0.7069] | 0.762 | 0.098 |
+| AlignScore-base (Zha et al. ACL 2023) | 0.7368 [0.7006, 0.7699] | 0.8091 [0.7714, 0.8455] | 0.6879 [0.6567, 0.7187] | 0.745 | 0.050 |
+| Touchstone Layer 6 inverse_proximity | 0.6723 [0.6296, 0.7116] | 0.7530 [0.7145, 0.7951] | 0.7593 [0.7285, 0.7879] | 0.728 | 0.039 |
+| **Trivial: WordOverlapInv (3 lines)** | **0.6827 [0.6410, 0.7238]** | **0.7284 [0.6810, 0.7774]** | **0.7431 [0.7136, 0.7712]** | **0.718** | **0.026** |
+| Trivial: JaccardContentInv | 0.6677 [0.6234, 0.7081] | 0.7089 [0.6622, 0.7547] | 0.4715 [0.4363, 0.5073] | 0.616 | 0.106 |
+| Trivial: TFIDFCosineInv | 0.6163 [0.5739, 0.6639] | 0.6987 [0.6553, 0.7421] | 0.5385 [0.5032, 0.5740] | 0.618 | 0.065 |
+| Touchstone Layer 10 gap (composite) | 0.4981 [0.4830, 0.5111] | 0.5000 [0.5000, 0.5000] | 0.5020 [0.4950, 0.5090] | 0.500 | 0.002 |
 
 **Cross-task within RAGTruth (every AUC with 95% bootstrap CI):**
 
@@ -165,15 +168,25 @@ Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval 
 
 *Training-test leakage on SummEval (MiniCheck was trained on AggreFact-CNN, which is SummEval-derived); see the benchmark README for the full caveat.
 
-The signal pattern is stable across both axes. Layer 6 AUC across all five unique (corpus, task) cells lives in [0.64, 0.76]; Layer 10 gap AUC lives in [0.498, 0.513] across all five cells with CIs that overlap 0.50 in every cell. Layer 4 unsourced_rate spikes to AUC 0.76 on RAGTruth QA — the first task type where output number density is high enough for Layer 4 to fire on a usable fraction (n=277/900); on summary task outputs the signal is gated out for most examples.
+**What this table actually shows (load-bearing honesty):**
 
-The two LLM-based baselines (MiniCheck Flan-T5-Large, AlignScore-base) show a wide cross-(corpus, task) AUC band: MiniCheck spans [0.487, 0.898] across the five cells (SD 0.16); Touchstone Layer 6 spans [0.64, 0.76] across the same cells (SD 0.05). Three readings of this are load-bearing:
+1. **A 3-line raw word-overlap baseline is statistically indistinguishable from Touchstone Layer 6 on every corpus tested.** WordOverlapInv vs Touchstone L6: CIs overlap heavily on RAGTruth Summary, on SummEval, and on HaluEval. The "Layer 6 substrate-independence" finding from prior drafts reduces empirically to: **simple lexical features (with or without Touchstone's per-sentence segmentation) carry the same out-of-domain hallucination signal in this signal-strength tier.**
+2. **WordOverlapInv has the lowest cross-corpus SD (0.026) of any signal in the table.** Touchstone Layer 6 SD is 0.039, AlignScore 0.050, MiniCheck 0.098. The "most substrate-independent" baseline in this report is plain word overlap, not Touchstone's structured Layer 6.
+3. **JaccardContentInv collapses on HaluEval** (AUC 0.4715, CI [0.4363, 0.5073] — below chance!). Stripping stopwords removes the very signal HaluEval's adversarial construction introduces. This is the cleanest evidence in the report that lexical-baseline behaviour is highly preprocessing-dependent; the "right" preprocessing is corpus-dependent.
+4. **Layer 10 gap CIs all overlap chance** (the only signal in the table whose CIs include 0.5000 on every corpus). The §3.5 partial out-of-domain falsification is real and statistically defensible.
 
-1. **MiniCheck is at chance on RAGTruth Data2Txt** (AUC 0.4871 [0.4494, 0.5283]; CI squarely includes 0.5000). Touchstone Layer 6 is statistically above both chance and MiniCheck on Data2Txt (CIs disjoint). MiniCheck's training data does not appear to generalize to the Data2Txt task type.
-2. **On RAGTruth QA, Touchstone Layer 4 outperforms MiniCheck** (0.7603 [0.6907, 0.8260] vs 0.6437 [0.5978, 0.6920]; CIs disjoint by a small margin). Touchstone Layer 6 also exceeds MiniCheck on QA (CIs overlap, but Touchstone is consistently higher).
-3. **On HaluEval, both LLM-based baselines underperform Touchstone Layer 6** (the HaluEval Touchstone L6 CI [0.7285, 0.7879] sits above both baseline CIs). This is corpus-construction-aligned (HaluEval's adversarial process produces lexical distribution shifts that Layer 6 measures directly while semantic-NLI-trained baselines miss them).
+**What this means for Touchstone's positioning:**
 
-On the remaining naturalistic summarization cells (RAGTruth Summary, SummEval), both LLM-based baselines outperform Touchstone Layer 6 by 4-12 AUC points — the expected ordering for naturalistic hallucination detection. The pattern is consistent: **the zero-LLM-cost substrate has a narrower performance band across input regimes than either LLM-based baseline tested.**
+This report does NOT show that Touchstone has a methodologically superior signal over trivial lexical baselines. It shows that **simple lexical features capture roughly 70% of the discriminative signal on hallucination detection at this signal-strength tier, with the rest captured by LLM-based discriminators at orders-of-magnitude higher compute cost**. Touchstone's value is not Layer 6's AUC; it is the **calibrated falsification protocol** (Standard §3.5 with five corpus×task cells × two baselines × three trivial baselines), the **bootstrap-CI discipline** on every reported AUC, the **falsification-of-Layer 10 finding** as a concrete instance of the protocol working as designed, and the **packaged library + Standard + reference suite** that makes the regime studyable and the methodology portable.
+
+**Cross-(corpus, task) cells, expanded with task-type evidence:**
+
+- Layer 6 AUC across all five (corpus, task) cells lives in [0.64, 0.76].
+- Layer 10 gap AUC across all five cells lives in [0.498, 0.513] with CIs that overlap 0.50 in every cell.
+- Layer 4 unsourced_rate spikes to AUC 0.7603 [0.6907, 0.8260] on RAGTruth QA — the first task type where output number density is high enough for Layer 4 to fire on a usable fraction (n=277/900). On summary task outputs the signal is gated out for most examples.
+- MiniCheck Flan-T5-Large is at chance on RAGTruth Data2Txt (AUC 0.4871 [0.4494, 0.5283]; CI squarely includes 0.5000). The fine-tuned discriminator does not generalize across task types.
+
+**Honest scope statement.** All three external corpora are English-news-summarization derivatives. Both LLM-based baselines tested are budget-tier (MiniCheck Flan-T5-Large at 770M, AlignScore-base at 125M); SOTA methods (Bespoke-MiniCheck-7B, GPT-4-as-judge) are not tested and would score higher AUC. **Touchstone is positioned as a research substrate for studying hallucination-detection methodology at low compute cost, NOT as a production-grade hallucination detector.** Auditors, compliance regimes, and platforms requiring high-recall production behaviour should use Touchstone alongside (not instead of) LLM-based methods.
 
 ### Compute disclosure
 
@@ -273,7 +286,8 @@ Both internal benchmarks pin a dated JSON snapshot via byte-match pytest asserti
 
 What this release does **not** demonstrate:
 
-- **Three external corpora, two head-to-head baselines, with 95% bootstrap CIs throughout.** See the §Empirical validation "Headline finding" subsection for the full cross-baseline table. AlignScore-base ran on the three summarization corpora; MiniCheck Flan-T5-Large ran on those three corpora plus RAGTruth QA and RAGTruth Data2Txt for a five (corpus, task) cells matrix. Open work: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open baselines: HHEM 2.1 (Vectara; `trust_remote_code` API rename conflict with current transformers), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (the SOTA MiniCheck variant; requires GPU and is not viable on the CPU compute budget for these corpora), AlignScore on RAGTruth QA / Data2Txt task types. AlignScore install required a separate Python 3.10 venv (`uv python install 3.10`) plus pinned `transformers<4.40` and `setuptools<81`; the setup notes are in `benchmarks/external/alignscore_baselines.py`.
+- **Three external corpora, two budget-tier LLM-based baselines, three trivial lexical baselines.** See the §Empirical validation "Headline finding" subsection for the full table. Layer 6 is statistically indistinguishable from a 3-line WordOverlapInv baseline on every corpus tested; the substrate-independence finding is shared by trivial lexical features. SOTA LLM-based discriminators (Bespoke-MiniCheck-7B, GPT-4-as-judge) are NOT tested — they would score higher AUC and are the right next-step baselines for a methodology paper. Open work on corpora: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open work on baselines: HHEM 2.1 (`trust_remote_code` API rename conflict with current transformers), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (requires GPU), AlignScore on RAGTruth QA / Data2Txt task types.
+- **All three external corpora are English-news-summarization derivatives.** RAGTruth Summary, SummEval, HaluEval summarization all anchor on CNN/DM or similar English news content. The substrate-independence finding is on this single domain. Generalization to non-English text, legal documents, medical documents, code, or any non-summarization output task is OUT OF VALIDATED SCOPE. The cross-task evidence within RAGTruth (Summary / QA / Data2Txt) is the only multi-task evidence in the report; further task and language coverage is open work.
 - **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. Adopters running on short-form text should pair Touchstone with a different fidelity signal; on Touchstone alone, Layer 6 inverse_proximity is the surviving out-of-domain option (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance).
 - **EXP-081 corpus is single-vendor.** All 12 documents are xAI grok-4-1-fast. Cross-vendor generalization within the fast tier and to flagship-tier model outputs is open research.
 - **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-8.926, -4.498] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.835) is reported alongside.
@@ -282,22 +296,28 @@ What this release does **not** demonstrate:
 
 ## Use cases
 
-What this release has actually been exercised on:
+Touchstone is positioned as **a research substrate for studying hallucination-detection methodology at low compute cost.** Read the §Empirical validation "Headline finding" subsection before choosing this library for any production purpose: simple lexical features capture roughly 70% of the discriminative signal at this signal-strength tier, and Touchstone's structured Layer 6 is statistically indistinguishable from a 3-line word-overlap baseline. The library's value is the calibrated falsification protocol, the bootstrap-CI discipline, the reference suite, and the integration of a multi-layer composite with explicit fire-rate gating — not Layer 6's AUC.
 
-- Regression testing of AI-output verification implementations (the use case the bundled benchmarks demonstrate).
-- Research-style profiling of analytical documents against their sources (the use case the layer functions enable).
+**Exercised on:**
 
-What this release is plausibly suited for, with cross-corpus generalization tested on three externally curated corpora and one head-to-head baseline (see §Empirical validation):
+- Regression testing of AI-output verification implementations (the use case the bundled benchmarks demonstrate, with byte-pinned snapshots).
+- Research-style profiling of analytical documents against their sources with multi-layer structured signals.
+- Methodology benchmarking under the §3.5 falsification protocol against three external corpora, two LLM-based discriminators, and three trivial lexical baselines.
 
-- AI integrity research and benchmarking, including additional head-to-head comparison against published faithfulness metrics on new corpora.
-- Educational use in AI methodology courses where the regex-and-arithmetic substrate is the pedagogical point.
+**Plausibly suited:**
 
-What this release does NOT yet support production claims for:
+- AI methodology research and benchmarking, especially where reproducibility and statistical rigour matter (snapshots are byte-pinned; every AUC carries a bootstrap CI).
+- Educational use in AI methodology courses where the regex-and-arithmetic substrate is the pedagogical point and the falsification protocol is the methodology lesson.
+- Drift detection on AI-output pipelines as a fast (sub-100ms per 5kB document) regression signal alongside an LLM-based judge.
 
-- Substrate enforcement on AI-coupled work platforms (no adversarial-robustness claim; the regex/arithmetic substrate is public and an adversary aware of the patterns can evade them).
-- Independent third-party verification of AI vendor claims at the level required by audit/compliance regimes (the construct claim has been tested against three external corpora and one head-to-head baseline, all summarization-task; broader baseline and corpus coverage remains open per §Limitations).
+**Does NOT yet support production claims for:**
 
-The §Limitations section names what each of these aspirational use cases requires before it becomes a real production claim. Batch verification at scale is not a production blocker: `measure()` is linear in document size (5 kB / 50 kB / 500 kB → 16 ms / 161 ms / 1.78 s on CPU), and the external runners demonstrate sustained throughput on 900-1600 example corpora.
+- Adversarial-robustness use cases (the regex/arithmetic substrate is public and an adversary aware of the patterns can evade them).
+- Independent third-party audit / compliance verification at the AUC/recall levels those regimes require. The empirical AUCs in this release (0.65-0.76) are research-tier, not audit-tier.
+- Generalization beyond English news summarization (all three external corpora are CNN/DM-derived in some layer of preprocessing; legal, medical, code, non-English are out of validated scope).
+- Production hallucination detection without an LLM-based judge as the primary signal. Touchstone Layer 6 ≈ raw word-overlap baseline; both are weaker than budget-tier LLM-based discriminators on naturalistic corpora.
+
+Batch verification at scale is not a compute blocker: `measure()` is linear in document size (5 kB / 50 kB / 500 kB → 16 ms / 161 ms / 1.78 s on CPU), and the external runners demonstrate sustained throughput on 900-1600 example corpora.
 
 ## Why model-independent
 

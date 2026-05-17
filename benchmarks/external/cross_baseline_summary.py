@@ -68,6 +68,9 @@ def aggregate() -> dict[str, Any]:
         minicheck_cis = _load_optional(
             BASE / corpus_dir / "results" / "minicheck_with_cis_2026-05-16.json"
         )
+        trivial = _load_optional(
+            BASE / corpus_dir / "results" / "trivial_lexical_baselines_2026-05-17.json"
+        )
 
         row: dict[str, str] = {}
 
@@ -105,6 +108,18 @@ def aggregate() -> dict[str, Any]:
             row["alignscore_base"] = _fmt(ci)
         else:
             row["alignscore_base"] = "—"
+
+        # Trivial baselines (only on summarization corpora).
+        if trivial and "trivial_baselines" in trivial:
+            for tb_key in ["word_overlap_inv", "jaccard_content_inv", "tfidf_cosine_inv"]:
+                tb = trivial["trivial_baselines"].get(tb_key)
+                if tb is not None:
+                    row[f"trivial_{tb_key}"] = _fmt(tb["bootstrap_95ci"])
+                else:
+                    row[f"trivial_{tb_key}"] = "—"
+        else:
+            for tb_key in ["word_overlap_inv", "jaccard_content_inv", "tfidf_cosine_inv"]:
+                row[f"trivial_{tb_key}"] = "—"
 
         summarization[label] = row
 
@@ -191,6 +206,9 @@ def main() -> None:
                     "alignscore_base",
                     "minicheck_flan_t5_large",
                     "touchstone_l6",
+                    "trivial_word_overlap_inv",
+                    "trivial_jaccard_content_inv",
+                    "trivial_tfidf_cosine_inv",
                     "touchstone_l10_gap",
                 ],
                 "Cross-corpus on summarization-task outputs (AUC, 95% bootstrap CI)",
