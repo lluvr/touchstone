@@ -6,6 +6,61 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-17: production-readiness reality check — operational metrics + subtle-case stress test; Standard 1.0.0-draft.13
+
+The user critique: "Are we testing internal code (mocks, self-source, project-authored hand-crafted adversarial straw-men) or testing whether this thing actually solves real problems?" The honest answer turned out to be: we'd been testing internal code. AUC numbers don't answer "would deployment actually help?" This round runs the missing operational analyses and writes the conclusion that emerges.
+
+**New analyses:**
+
+1. **Operational metrics on the three external corpora** (`benchmarks/external/operational_metrics.py`, results at `benchmarks/external/operational_metrics_2026-05-17.json`). For each (system, corpus) combination, computes precision/recall/F1 at threshold 0.5, F1-optimal threshold, precision at recall 0.9, recall at precision 0.9, and lift at top-K%.
+
+2. **16-case hand-crafted subtle-hallucination stress test** (`benchmarks/adversarial_subtle/run.py`, results at `benchmarks/adversarial_subtle/results_2026-05-17.json`). Covers the categories real LLMs actually produce: number swap within same scale, percentage shift within plausible range, quarter shift, role/title swap, direction reversal, imputed cause, magnitude shift, false precision, time-frame shift, attribute swap, fabricated affiliation, scoping shift, counterfactual extension, numerical conflation, subtle entity swap, relation reversal.
+
+**The findings, brutally:**
+
+- **At precision 0.9 (production-certainty), all systems catch 1-7% of real hallucinations on naturalistic corpora.** Not specifically a Touchstone problem; MiniCheck catches 3 of 204 hallucinations on RAGTruth Summary at precision 0.9. Audit-grade verification is not achievable with any tool tested.
+- **F1-optimal thresholds are 0.07-0.27, NOT 0.5.** The Verifier's default `should_flag(threshold=0.5)` under-flags by a wide margin. Production teams must tune the threshold on their own held-out data.
+- **Touchstone separates only 8 of 16 subtle-hallucination categories (50%, chance)**. At threshold 0.5, zero of 16 hallucinated cases are flagged. The substrate is **structurally blind** to hallucinations that preserve vocabulary and only change semantic relationships: direction reversal, attribute swap, scoping shift, relation reversal, time-frame shift, imputed cause. These are the hallucinations real LLMs produce most often.
+- **Touchstone catches the lexically-distinguishable subset**: number swaps, magnitude shifts, fabricated entities/numbers, vocabulary drift, false precision. About half of all real LLM hallucinations.
+- **The real production-deployable use case is triage/prioritization**: top-10% review by Touchstone score delivers 2-4× lift over random review on naturalistic English news summarization corpora (lift 4.22× on SummEval).
+
+**New artifact: `docs/production_readiness.md`** — the blunt operational report. Seven sections covering: why AUC misleads, operational metrics in detail, the triage use case, the subtle-case stress test results, the honest production architecture, the honest scope statement, and reproducibility. This is the document a top-lab reviewer should read first.
+
+**Standard (1.0.0-draft.12 -> 1.0.0-draft.13):**
+
+- §13.6 (Verifier honest scope) rewritten to incorporate the subtle-case stress test findings. The substrate is explicitly named as "structurally blind to hallucinations that preserve vocabulary and only change semantic relationships." Adopters MUST pair the Verifier with a semantic discriminator for general-purpose hallucination detection.
+- Status header updated to draft.13 with the two-stage production architecture explicit.
+
+**README:**
+
+- New "Read before deploying" section at the top with the headline findings and a pointer to `docs/production_readiness.md`. The README no longer leads with the Verifier as a production-grade detector; it leads with the honest scope (triage, drift detection, lexical filter) and routes readers to the operational analysis.
+- The Verifier quick-example reframed: the calibrated probability is positioned as "the lexical half of a two-stage architecture", not as a standalone signal.
+
+**Verifier docstring:**
+
+- Rewritten to lead with the production-readiness pointer and the structural-blindness finding. Explicit warning that the default `should_flag(threshold=0.5)` under-flags for any production deployment.
+
+**Verification:**
+
+- 412 tests pass (no test changes; this round is documentation + analysis).
+- mypy strict, ruff lint+format, canon audit (self-test + tree) all green.
+- All snapshots byte-identical to draft.12; new operational + subtle-case snapshots are additive.
+
+**Why this is the right move:**
+
+Polishing internal validation while the production-readiness question stays unanswered would have failed a real review. The operational metrics and subtle-case stress test were the missing piece. The findings are negative for the "Touchstone as production hallucination detector" framing AND positive for the "Touchstone as triage / lexical filter" framing. Both are documented. The recommended production architecture (substrate + semantic discriminator) is now explicit in the Standard, the README, the Verifier docstring, and the production-readiness doc.
+
+**Carried forward (unchanged):**
+
+- SOTA LLM-based baselines (Bespoke-MiniCheck-7B, GPT-4-as-judge).
+- TRUE, LLM-AggreFact held-out, HaluBench external runs.
+- HHEM 2.1, SelfCheckGPT, G-Eval baselines.
+- Non-English / non-summarization scope extension.
+- Inter-annotator agreement on EXP-095.
+- Editor body constitution.
+
+---
+
 ## 2026-05-17: production Verifier API — `score(text, source)` with calibration + span localization; Standard 1.0.0-draft.12
 
 After the frame-break round (where the trivial-baseline anchor surfaced that Touchstone L6 ≈ word overlap on AUC), the question became: where does the actual 10x value-add live? Empirical AUC has a hard ceiling at ~0.77 from ensembling all signals. The 10x is in **production usefulness** — the gap between "dict-of-layer-outputs research interface" and "calibrated probability + signal breakdown + span localization that an adopter can act on."
