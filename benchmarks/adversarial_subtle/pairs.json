@@ -1,0 +1,258 @@
+[
+  {
+    "context": "Apple reported Q1 fiscal 2026 revenue of $143 billion. Operating margins reached 32%.",
+    "output": "Apple reported Q1 fiscal 2026 revenue of $143 billion with operating margins of 32%.",
+    "label": 0,
+    "case_idx": 0,
+    "category": "number_swap_same_scale",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple reported Q1 fiscal 2026 revenue of $143 billion. Operating margins reached 32%.",
+    "output": "Apple reported Q1 fiscal 2026 revenue of $134 billion with operating margins of 32%.",
+    "label": 1,
+    "case_idx": 0,
+    "category": "number_swap_same_scale",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Revenue grew 12% year-over-year to $143 million in Q1.",
+    "output": "Revenue grew 12% year-over-year to $143 million in Q1.",
+    "label": 0,
+    "case_idx": 1,
+    "category": "percentage_shift_plausible_range",
+    "side": "faithful"
+  },
+  {
+    "context": "Revenue grew 12% year-over-year to $143 million in Q1.",
+    "output": "Revenue grew 21% year-over-year to $143 million in Q1.",
+    "label": 1,
+    "case_idx": 1,
+    "category": "percentage_shift_plausible_range",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple reported Q1 fiscal 2026 revenue of $143 billion.",
+    "output": "Apple reported Q1 fiscal 2026 revenue of $143 billion.",
+    "label": 0,
+    "case_idx": 2,
+    "category": "quarter_shift",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple reported Q1 fiscal 2026 revenue of $143 billion.",
+    "output": "Apple reported Q3 fiscal 2026 revenue of $143 billion.",
+    "label": 1,
+    "case_idx": 2,
+    "category": "quarter_shift",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple CEO Tim Cook commented on AI investments during the earnings call.",
+    "output": "Apple CEO Tim Cook commented on AI investments during the earnings call.",
+    "label": 0,
+    "case_idx": 3,
+    "category": "role_title_swap",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple CEO Tim Cook commented on AI investments during the earnings call.",
+    "output": "Apple CFO Tim Cook commented on AI investments during the earnings call.",
+    "label": 1,
+    "case_idx": 3,
+    "category": "role_title_swap",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Costs declined 8% in Q1 while headcount grew by 1200 employees.",
+    "output": "Costs declined 8% in Q1 while headcount grew by 1200 employees.",
+    "label": 0,
+    "case_idx": 4,
+    "category": "direction_reversal",
+    "side": "faithful"
+  },
+  {
+    "context": "Costs declined 8% in Q1 while headcount grew by 1200 employees.",
+    "output": "Costs grew 8% in Q1 while headcount declined by 1200 employees.",
+    "label": 1,
+    "case_idx": 4,
+    "category": "direction_reversal",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Revenue grew 12% in Q1. AI investments increased by $5 billion.",
+    "output": "Revenue grew 12% in Q1; separately, AI investments increased by $5 billion.",
+    "label": 0,
+    "case_idx": 5,
+    "category": "imputed_cause",
+    "side": "faithful"
+  },
+  {
+    "context": "Revenue grew 12% in Q1. AI investments increased by $5 billion.",
+    "output": "Revenue grew 12% in Q1 due to a $5 billion increase in AI investments.",
+    "label": 1,
+    "case_idx": 5,
+    "category": "imputed_cause",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Revenue grew to $143 million in Q1 fiscal 2026.",
+    "output": "Revenue grew to $143 million in Q1 fiscal 2026.",
+    "label": 0,
+    "case_idx": 6,
+    "category": "magnitude_shift",
+    "side": "faithful"
+  },
+  {
+    "context": "Revenue grew to $143 million in Q1 fiscal 2026.",
+    "output": "Revenue grew to $143 billion in Q1 fiscal 2026.",
+    "label": 1,
+    "case_idx": 6,
+    "category": "magnitude_shift",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Revenue grew significantly in Q1, with strong margins across all segments.",
+    "output": "Revenue grew significantly in Q1, with strong margins across all segments.",
+    "label": 0,
+    "case_idx": 7,
+    "category": "false_precision",
+    "side": "faithful"
+  },
+  {
+    "context": "Revenue grew significantly in Q1, with strong margins across all segments.",
+    "output": "Revenue grew 47% in Q1, with margins of 33% across all segments.",
+    "label": 1,
+    "case_idx": 7,
+    "category": "false_precision",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple's Q1 fiscal 2026 revenue was $143 billion, up from $120 billion in Q4 fiscal 2025.",
+    "output": "Apple's Q1 fiscal 2026 revenue was $143 billion, up from $120 billion in Q4 fiscal 2025.",
+    "label": 0,
+    "case_idx": 8,
+    "category": "time_frame_shift",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple's Q1 fiscal 2026 revenue was $143 billion, up from $120 billion in Q4 fiscal 2025.",
+    "output": "Apple's Q4 fiscal 2025 revenue was $143 billion, up from $120 billion in Q1 fiscal 2026.",
+    "label": 1,
+    "case_idx": 8,
+    "category": "time_frame_shift",
+    "side": "hallucinated"
+  },
+  {
+    "context": "The iPhone segment grew 8% while Mac segment declined 4%.",
+    "output": "iPhone grew 8% in the quarter; Mac declined 4%.",
+    "label": 0,
+    "case_idx": 9,
+    "category": "attribute_swap",
+    "side": "faithful"
+  },
+  {
+    "context": "The iPhone segment grew 8% while Mac segment declined 4%.",
+    "output": "The iPhone segment declined 8% while Mac segment grew 4%.",
+    "label": 1,
+    "case_idx": 9,
+    "category": "attribute_swap",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple held an investor day on November 15, 2025, with Tim Cook presenting.",
+    "output": "Apple's investor day was on November 15, 2025, hosted by Tim Cook.",
+    "label": 0,
+    "case_idx": 10,
+    "category": "fabricated_affiliation",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple held an investor day on November 15, 2025, with Tim Cook presenting.",
+    "output": "Apple's investor day was on November 15, 2025, co-hosted by Tim Cook and former CEO Steve Jobs.",
+    "label": 1,
+    "case_idx": 10,
+    "category": "fabricated_affiliation",
+    "side": "hallucinated"
+  },
+  {
+    "context": "iPhone revenue grew 8% to $65 billion. Total Apple revenue was $143 billion.",
+    "output": "iPhone revenue was $65 billion (up 8%); total Apple revenue was $143 billion.",
+    "label": 0,
+    "case_idx": 11,
+    "category": "scoping_shift",
+    "side": "faithful"
+  },
+  {
+    "context": "iPhone revenue grew 8% to $65 billion. Total Apple revenue was $143 billion.",
+    "output": "Total Apple revenue grew 8% to $65 billion.",
+    "label": 1,
+    "case_idx": 11,
+    "category": "scoping_shift",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple reported Q1 fiscal 2026 revenue of $143 billion.",
+    "output": "Apple reported Q1 fiscal 2026 revenue of $143 billion.",
+    "label": 0,
+    "case_idx": 12,
+    "category": "counterfactual_extension",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple reported Q1 fiscal 2026 revenue of $143 billion.",
+    "output": "Apple reported Q1 fiscal 2026 revenue of $143 billion and projects Q2 revenue of $155 billion.",
+    "label": 1,
+    "case_idx": 12,
+    "category": "counterfactual_extension",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Revenue grew 12% to $143 billion. iPhone segment was 8% of growth.",
+    "output": "Revenue grew 12% to $143 billion; iPhone contributed 8% of the growth.",
+    "label": 0,
+    "case_idx": 13,
+    "category": "numerical_conflation",
+    "side": "faithful"
+  },
+  {
+    "context": "Revenue grew 12% to $143 billion. iPhone segment was 8% of growth.",
+    "output": "Revenue grew 8% to $143 billion; iPhone contributed 12% of the growth.",
+    "label": 1,
+    "case_idx": 13,
+    "category": "numerical_conflation",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple's CFO Luca Maestri discussed Q1 results.",
+    "output": "Luca Maestri, Apple's CFO, discussed Q1 results.",
+    "label": 0,
+    "case_idx": 14,
+    "category": "subtle_entity_swap",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple's CFO Luca Maestri discussed Q1 results.",
+    "output": "Apple's CFO Luca Maestro discussed Q1 results.",
+    "label": 1,
+    "case_idx": 14,
+    "category": "subtle_entity_swap",
+    "side": "hallucinated"
+  },
+  {
+    "context": "Apple acquired AI startup Foundation Labs for $400 million.",
+    "output": "Apple acquired AI startup Foundation Labs for $400 million in Q1.",
+    "label": 0,
+    "case_idx": 15,
+    "category": "relation_reversal",
+    "side": "faithful"
+  },
+  {
+    "context": "Apple acquired AI startup Foundation Labs for $400 million.",
+    "output": "AI startup Foundation Labs acquired Apple for $400 million.",
+    "label": 1,
+    "case_idx": 15,
+    "category": "relation_reversal",
+    "side": "hallucinated"
+  }
+]

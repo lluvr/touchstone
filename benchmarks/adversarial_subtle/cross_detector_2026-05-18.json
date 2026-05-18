@@ -1,0 +1,611 @@
+{
+  "test": "Cross-detector comparison on hand-crafted 16-case subtle stress test",
+  "n_cases": 16,
+  "detectors": [
+    {
+      "detector": "Touchstone substrate (L1-L11)",
+      "n_correctly_separated": 8,
+      "n_cases": 16,
+      "separation_rate": 0.5
+    },
+    {
+      "detector": "MiniCheck Flan-T5-Large",
+      "n_correctly_separated": 15,
+      "n_cases": 16,
+      "separation_rate": 0.9375
+    },
+    {
+      "detector": "AlignScore-base",
+      "n_correctly_separated": 14,
+      "n_cases": 16,
+      "separation_rate": 0.875
+    },
+    {
+      "detector": "xAI Grok 4.20 non-reasoning",
+      "n_correctly_separated": 16,
+      "n_cases": 16,
+      "separation_rate": 1.0
+    }
+  ],
+  "per_category_caught": [
+    {
+      "category": "number_swap_same_scale",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "percentage_shift_plausible_range",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "quarter_shift",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "role_title_swap",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "direction_reversal",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "imputed_cause",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": false,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "magnitude_shift",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "false_precision",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "time_frame_shift",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "attribute_swap",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "fabricated_affiliation",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "scoping_shift",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "counterfactual_extension",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "numerical_conflation",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "subtle_entity_swap",
+      "Touchstone substrate (L1-L11)": true,
+      "MiniCheck Flan-T5-Large": false,
+      "AlignScore-base": true,
+      "xAI Grok 4.20 non-reasoning": true
+    },
+    {
+      "category": "relation_reversal",
+      "Touchstone substrate (L1-L11)": false,
+      "MiniCheck Flan-T5-Large": true,
+      "AlignScore-base": false,
+      "xAI Grok 4.20 non-reasoning": true
+    }
+  ],
+  "per_case": [
+    {
+      "category": "number_swap_same_scale",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.110193,
+          "hallucinated": 0.22503,
+          "delta": 0.114837,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.081475,
+          "hallucinated": 0.974627,
+          "delta": 0.893152,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.003314,
+          "hallucinated": 0.993527,
+          "delta": 0.990213,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "percentage_shift_plausible_range",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.110193,
+          "hallucinated": 0.22503,
+          "delta": 0.114837,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.087074,
+          "hallucinated": 0.983076,
+          "delta": 0.896002,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000667,
+          "hallucinated": 0.99939,
+          "delta": 0.998723,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "quarter_shift",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.10494,
+          "hallucinated": 0.10494,
+          "delta": 0.0,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.041536,
+          "hallucinated": 0.982544,
+          "delta": 0.941008,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000721,
+          "hallucinated": 0.997363,
+          "delta": 0.996642,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "role_title_swap",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.099909,
+          "hallucinated": 0.145139,
+          "delta": 0.04523,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.042211,
+          "hallucinated": 0.967393,
+          "delta": 0.925182,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000682,
+          "hallucinated": 0.998483,
+          "delta": 0.997801,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "direction_reversal",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.110193,
+          "hallucinated": 0.110193,
+          "delta": 0.0,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.17405,
+          "hallucinated": 0.989114,
+          "delta": 0.815064,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000668,
+          "hallucinated": 0.996008,
+          "delta": 0.99534,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 1.0,
+          "delta": 1.0,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "imputed_cause",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.179318,
+          "hallucinated": 0.179318,
+          "delta": 0.0,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.578734,
+          "hallucinated": 0.810939,
+          "delta": 0.232205,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.213903,
+          "hallucinated": 0.057238,
+          "delta": -0.156665,
+          "separated": false
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "magnitude_shift",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.10494,
+          "hallucinated": 0.215259,
+          "delta": 0.110319,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.070189,
+          "hallucinated": 0.972284,
+          "delta": 0.902095,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000735,
+          "hallucinated": 0.996199,
+          "delta": 0.995464,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 1.0,
+          "delta": 1.0,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "false_precision",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.099909,
+          "hallucinated": 0.211399,
+          "delta": 0.11149,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.055337,
+          "hallucinated": 0.986808,
+          "delta": 0.931471,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000686,
+          "hallucinated": 0.999365,
+          "delta": 0.998679,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "time_frame_shift",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.110193,
+          "hallucinated": 0.110193,
+          "delta": 0.0,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.051009,
+          "hallucinated": 0.97093,
+          "delta": 0.919921,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000681,
+          "hallucinated": 0.922848,
+          "delta": 0.922167,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 1.0,
+          "delta": 1.0,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "attribute_swap",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.196427,
+          "hallucinated": 0.110193,
+          "delta": -0.086234,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.807705,
+          "hallucinated": 0.984948,
+          "delta": 0.177243,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.460704,
+          "hallucinated": 0.991266,
+          "delta": 0.530562,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 1.0,
+          "delta": 1.0,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "fabricated_affiliation",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.166596,
+          "hallucinated": 0.366059,
+          "delta": 0.199463,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.044779,
+          "hallucinated": 0.978781,
+          "delta": 0.934002,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.005479,
+          "hallucinated": 0.992092,
+          "delta": 0.986613,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "scoping_shift",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.115676,
+          "hallucinated": 0.110193,
+          "delta": -0.005483,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.400786,
+          "hallucinated": 0.960199,
+          "delta": 0.559413,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.003317,
+          "hallucinated": 0.312618,
+          "delta": 0.309301,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 1.0,
+          "delta": 1.0,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "counterfactual_extension",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.10494,
+          "hallucinated": 0.30755,
+          "delta": 0.20261,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.041536,
+          "hallucinated": 0.989648,
+          "delta": 0.948112,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.000721,
+          "hallucinated": 0.998109,
+          "delta": 0.997388,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.9,
+          "delta": 0.9,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "numerical_conflation",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.187515,
+          "hallucinated": 0.187515,
+          "delta": 0.0,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.094151,
+          "hallucinated": 0.670585,
+          "delta": 0.576434,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.003245,
+          "hallucinated": 0.953805,
+          "delta": 0.95056,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 1.0,
+          "delta": 1.0,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "subtle_entity_swap",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.099909,
+          "hallucinated": 0.163769,
+          "delta": 0.06386,
+          "separated": true
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.042209,
+          "hallucinated": 0.041906,
+          "delta": -0.000303,
+          "separated": false
+        },
+        "AlignScore-base": {
+          "faithful": 0.00121,
+          "hallucinated": 0.023251,
+          "delta": 0.022041,
+          "separated": true
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.0,
+          "hallucinated": 0.8,
+          "delta": 0.8,
+          "separated": true
+        }
+      }
+    },
+    {
+      "category": "relation_reversal",
+      "scores": {
+        "Touchstone substrate (L1-L11)": {
+          "faithful": 0.109472,
+          "hallucinated": 0.109472,
+          "delta": 0.0,
+          "separated": false
+        },
+        "MiniCheck Flan-T5-Large": {
+          "faithful": 0.959448,
+          "hallucinated": 0.983428,
+          "delta": 0.02398,
+          "separated": true
+        },
+        "AlignScore-base": {
+          "faithful": 0.992389,
+          "hallucinated": 0.923533,
+          "delta": -0.068856,
+          "separated": false
+        },
+        "xAI Grok 4.20 non-reasoning": {
+          "faithful": 0.8,
+          "hallucinated": 1.0,
+          "delta": 0.2,
+          "separated": true
+        }
+      }
+    }
+  ],
+  "honest_caveat": "16 hand-authored cases, single author. A separation rate significantly above 50% (chance) is a positive signal; below 50% indicates the detector flips on subtle errors. This is a sanity check, not a benchmark."
+}
