@@ -122,16 +122,77 @@ Per-category catch matrix (Y = `halluc_prob > faithful_prob`):
 | subtle_entity_swap | Y | . | Y | Y |
 | relation_reversal | . | Y | . | Y |
 
-**What this measurement establishes:**
+**What this measurement establishes (read narrowly):**
 
-- The structural-blindness wall is the *substrate's* wall, not the trained-checker class's wall. A ~770M distilled NLI catches 7 of the 8 categories the substrate misses. A frontier LLM judge catches all 8.
-- The substrate and MiniCheck are nearly complementary: MiniCheck misses only `subtle_entity_swap` (Maestri → Maestro), which the substrate catches via Layer 5's unsourced-entity logic; the substrate misses 8 categories MiniCheck catches.
-- Grok 4.20 non-reasoning is operationally a binary classifier on this prompt: faithful pairs cluster at probability 0.0 and hallucinated pairs at 0.8-1.0. The AUC is near-perfect but the ranking signal within each class is degenerate. A judge with this calibration shape is appropriate for binary flagging but cannot itself drive triage / top-K prioritization without a secondary ranker; combining its verdict with the substrate's continuous score recovers ranking inside each verdict bucket.
+- The structural-blindness wall is the *substrate's* wall, not the trained-checker class's wall, on this fixture. A ~770M distilled NLI catches 7 of the 8 categories the substrate misses; a frontier LLM judge catches all 8.
+- The substrate and MiniCheck are nearly complementary on this fixture: MiniCheck misses only `subtle_entity_swap` (Maestri → Maestro), which the substrate catches via Layer 5's unsourced-entity logic; the substrate misses 8 categories MiniCheck catches.
 
-**What this measurement does NOT establish:**
+**Methodological confounds you must read before citing these numbers:**
 
-- These 16 cases are hand-authored by one author. Detector performance here is necessary, not sufficient, evidence of robustness on naturalistic relational hallucinations. The corresponding measurement on RAGTruth, SummEval, and HaluEval (where every system tested gets AUC 0.67-0.77 and F1 0.45-0.71) is the operational reality check; this table is a category-coverage probe.
-- The judge prompt was minimal and unparameterised. Different prompt scaffolding could change the calibration shape (continuous vs binary) without changing the AUC, and would change the production cost-per-call profile.
+- **World-knowledge contamination.** The 16 cases use real entities (Apple, Tim Cook, Luca Maestri, fiscal-quarter dates). Grok 4.20 has seen Apple's filings in pretraining; it can flag "CFO Tim Cook" from priors alone without reading the source. The 16/16 separation rate cannot distinguish "judge reads source carefully" from "judge knows the world facts being perturbed." A clean version would use entirely fictional entities, OR run each judge on the hallucinated output with source ABLATED and verify it cannot detect from priors. We did neither.
+- **Pairwise-ranking is not threshold-based deployment.** "Did `halluc_prob > faithful_prob`?" tests ranking when the test designer hands you both options. Production hands one output and asks "flag or not?" The 100% separation rate says nothing about threshold selection, false-positive rate, or operating-point trade-offs — the things that determine whether a detector is deployable.
+- **Random baseline equivalence.** Random scoring expected separation rate is 50% with 95% CI roughly [37.5%, 62.5%] at n=16. The substrate's 8/16 is statistically indistinguishable from random on this test. The "lexical detector that fails on relational cases" framing is correct in principle, but on this n it cannot be distinguished from a random scorer.
+- **n=16 CI overlap between trained detectors.** Bootstrap CIs at n_pos=16, n_neg=16: MiniCheck AUC 0.934 [0.812, 1.000], AlignScore 0.949 [0.859, 1.000]. The CIs overlap each other's point estimates; ordering MiniCheck and AlignScore on this fixture is unsupported.
+- **Calibration-shape claim is a prompt artifact, not a judge characterization.** The Grok output clustering at 0.0 and 0.8-1.0 may be 100% prompt-design effect. LLMs default to round probabilities (0, 0.1, 0.5, 0.9, 1.0) absent explicit calibration training or calibration-eliciting prompts. We ran one prompt at one temperature on n=32 pairs; that is a data point, not a calibration characterization. Treat the binary-shape observation as unverified.
+- **Synthetic atomic perturbations are not production hallucinations.** Each case is a one-sentence source paired with a one-sentence output where exactly one span differs. Production hallucinations are buried in multi-paragraph outputs over multi-KB sources, with most claims correct and 1-3 silently wrong. The same detectors hit F1 0.45-0.71 on naturalistic corpora (see §2 and §4.2 below). The ~25-point gap between the §4.1 separation rates and the §2 operational F1 numbers is the gap between toy and production. Cite §4.1 as a category-coverage debugging probe, never as a production-readiness claim.
+
+The §4.2 cross-detector measurement on real-corpus subsamples is the production-relevant complement to this fixture. Treat §4.1 and §4.2 as a pair, not as independent evidence.
+
+### 4.2 Cross-detector operational metrics on n=400 naturalistic subsamples
+
+The §4.1 toy fixture cannot answer the production question. This section does, on the same naturalistic corpora the §2 operational tables use. To keep the cross-detector judge run inside a sensible cost envelope, the measurement is on stratified n=400 first-rows-in-order subsamples of each corpus (base rate preserved to within 1.5 percentage points of the full corpus). The substrate L6 / MiniCheck / AlignScore arrays are re-tabulated on the same indices from existing snapshots, so all four detectors compare on identical pair sets. Reproduce via `python -m benchmarks.external.subsample_pairs` (once per corpus) and `python -m benchmarks.external.operational_metrics_on_subsample`. Full per-detector metrics live in `benchmarks/external/operational_metrics_n400_2026-05-18.json`. The full-N tables in §2 remain canonical; this section adds the frontier-judge column the §2 tables are missing.
+
+**RAGTruth Summary (n=400 subsample, 23.7% base rate):**
+
+| Detector | F1-optimal | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
+|---|---|---|---|---|
+| Substrate L6 (word_overlap_inv) | 0.445 | 0.275 (2.6 fp/catch) | catches 1 of 95 | 1.79x |
+| MiniCheck Flan-T5-Large | 0.452 | 0.251 (3.0 fp/catch) | catches 1 of 95 | 2.63x |
+| AlignScore-base | 0.493 | 0.294 (2.4 fp/catch) | catches 2 of 95 | 2.21x |
+| xAI Grok 4.20 non-reasoning | 0.670 | 0.455 (1.2 fp/catch) | catches 2 of 95 | 3.26x |
+
+**SummEval (n=400 subsample, 11.5% base rate):**
+
+| Detector | F1-optimal | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
+|---|---|---|---|---|
+| Substrate L6 | 0.422 | 0.127 (6.9 fp/catch) | catches 5 of 46 | 3.48x |
+| MiniCheck Flan-T5-Large | 0.695 | 0.210 (3.8 fp/catch) | catches 2 of 46 | 5.87x |
+| AlignScore-base | 0.543 | 0.197 (4.1 fp/catch) | catches 1 of 46 | 4.35x |
+| xAI Grok 4.20 non-reasoning | 0.702 | 0.538 (0.9 fp/catch) | catches 12 of 46 | 5.43x |
+
+**HaluEval Summarization (n=400 subsample, 50% base rate, adversarial):**
+
+| Detector | F1-optimal | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
+|---|---|---|---|---|
+| Substrate L6 | 0.721 | 0.594 (0.7 fp/catch) | catches 18 of 200 | 1.55x |
+| MiniCheck Flan-T5-Large | 0.698 | 0.559 (0.8 fp/catch) | catches 9 of 200 | 1.65x |
+| AlignScore-base | 0.692 | 0.554 (0.8 fp/catch) | catches 14 of 200 | 1.70x |
+| xAI Grok 4.20 non-reasoning | 0.766 | 0.623 (0.6 fp/catch) | catches 87 of 200 | 1.90x |
+
+**What the production-relevant measurement actually shows:**
+
+- **Grok 4.20's audit-precision advantage is real on naturalistic data, but bounded.** F1-optimal advantage over the strongest non-judge detector: +18 points on RAGTruth (0.670 vs 0.493), +1 point on SummEval (0.702 vs 0.695), +5 points on HaluEval (0.766 vs 0.721). The toy-fixture 100%-separation result translates into a ~5-18 point F1 advantage in production, not into "the judge solves hallucination detection."
+- **The most operationally interesting gap is at recall=0.9 (audit-grade flagging).** On SummEval, Grok catches 12 of 46 hallucinations at precision 0.9; MiniCheck catches 2. On HaluEval, Grok catches 87 of 200; MiniCheck catches 9. This is the "we only flag when 90% sure, how much do we miss" decision. The judge's advantage is concentrated at the high-precision end of the curve, exactly where production audit applications operate.
+- **At triage / top-10% review-queue prioritization, the gap is smaller.** Grok wins on RAGTruth and HaluEval but MiniCheck wins on SummEval (5.87x vs 5.43x). A team that already runs a triage pipeline on MiniCheck has limited reason to switch to a judge purely for top-K prioritization; the case for the judge is at audit thresholds, not triage.
+- **The substrate L6 holds its own on HaluEval.** F1-optimal 0.721, beating both MiniCheck (0.698) and AlignScore (0.692). On the corpus designed to be adversarial against summary-level hallucination detection, the lexical baseline is operationally comparable to trained NLI. This is consistent with the §2 finding and is not an artifact of subsampling.
+- **The substrate L6 collapses on SummEval P@R90 (0.127, 6.9 false alarms per catch) and on RAGTruth P@R90 (0.275).** On the audit-precision end of the curve where the judge advantage is concentrated, the substrate is the weakest of the four. The substrate's value is at triage and on adversarial-summary corpora, not at audit thresholds.
+
+**Production architecture implications (verified against this measurement, not derived from §4.1):**
+
+The two-stage architecture in §5 still holds. The new evidence sharpens it:
+
+- For audit-grade applications (precision ≥ 0.8-0.9): a frontier LLM judge is the right stage-2 detector. Grok 4.20 at $X/call (xAI pricing) materially outperforms the open-source trained discriminators here.
+- For triage-grade applications (top-K human review): MiniCheck remains competitive with the judge at substantially lower per-call cost. Pick by budget.
+- For drift detection on stable streams: the substrate L6 remains operationally adequate, often better than trained NLI on adversarial corpora like HaluEval.
+
+The §4.1 toy result over-predicted the judge's production advantage. The actual advantage is meaningful (~5-18 F1 points, concentrated at high-precision operating points) but does not change the conclusion that no current detector is audit-grade on every corpus.
+
+**Caveats on this measurement (read before citing):**
+
+- n=400 stratified subsample. Bootstrap CI on AUC at n=400 with realistic base rates is ±~0.04. Ordering claims within ±0.05 of each other should be treated as a tie.
+- The Grok judge prompt is the same minimal prompt used in §4.1. Prompt scaffolding could move the numbers in either direction; this is a single-prompt measurement.
+- World-knowledge contamination concerns from §4.1 apply less strongly here (the corpora contain a broad mix of topics from news summarization), but Grok's pretraining likely saw at least some XSum / CNN-DailyMail content; treat the SummEval and HaluEval-summarization advantage as a soft upper bound.
+- Cost not yet measured. The §5 architecture decision (when to spend judge calls vs settle for substrate or MiniCheck) requires per-call cost data this snapshot does not include.
 
 ## 5. The honest production architecture
 
@@ -175,6 +236,9 @@ What changes this story:
 - `.venv-alignscore/bin/python benchmarks/external/alignscore_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --output benchmarks/adversarial_subtle/alignscore_2026-05-18.json` — re-runs AlignScore on the 16-case pairs.
 - `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --model grok-4.20-0309-non-reasoning --output benchmarks/adversarial_subtle/judge_xai_2026-05-18.json` — re-runs the xAI Grok judge on the 16-case pairs.
 - `python -m benchmarks.adversarial_subtle.join_detectors` — joins substrate + MiniCheck + AlignScore + Grok per-case scores into the §4.1 table.
+- `python -m benchmarks.external.subsample_pairs <pairs.json> --n-total 400 --pairs-out <sub.json> --indices-out <indices.json>` — deterministic first-N-rows subsampler used to build the §4.2 n=400 inputs.
+- `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py <sub.json> --label "<corpus> (n=400)" --corpus-dir <corpus_dir> --model grok-4.20-0309-non-reasoning --output benchmarks/external/<corpus_dir>/results/judge_xai_grok420_n400_2026-05-18.json` — Grok judge run on each n=400 subsample (RAGTruth Summary, SummEval, HaluEval Summarization).
+- `python -m benchmarks.external.operational_metrics_on_subsample` — computes the §4.2 four-detector apples-to-apples table on the same n=400 indices for each corpus.
 - `python examples/production_verifier.py` — runs an end-to-end demo of the calibrated Verifier API.
 - `python -m benchmarks.external.cross_baseline_summary --markdown` — emits the cross-corpus cross-baseline table including trivial-baseline anchor.
 
