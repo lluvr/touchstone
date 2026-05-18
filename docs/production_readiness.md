@@ -90,6 +90,49 @@ Headline: **Touchstone substrate-only Verifier correctly separates the hallucina
 
 The 8 categories Touchstone catches are exactly the ones where the hallucination introduces NEW LEXICAL CONTENT (a number not in source, an entity not in source, a year/quarter not in source). The 8 it misses are the ones where the hallucination REARRANGES EXISTING LEXICAL CONTENT.
 
+### 4.1 How the strongest available detectors handle the same 16 cases
+
+The §4 wall claim above states that the substrate's blind spots require "an NLI model, an LLM judge, or a structured semantic representation" to detect. That claim was theoretical when first written. It has now been measured: MiniCheck-Flan-T5-Large, AlignScore-base, and the xAI Grok 4.20 non-reasoning judge were run against the same 16 (source, faithful, hallucinated) triples on 2026-05-18. Reproduce via `python -m benchmarks.adversarial_subtle.join_detectors` after running each detector against `benchmarks/adversarial_subtle/pairs.json`. Full per-case scores live in `benchmarks/adversarial_subtle/cross_detector_2026-05-18.json`.
+
+| Detector | Class | Separated | AUC on the 32 pair rows (95% CI) |
+|---|---|---|---|
+| Touchstone substrate (L1-L11, default Verifier) | Lexical / arithmetic | 8 of 16 (50%) | n/a (single composite score) |
+| MiniCheck Flan-T5-Large | Distilled NLI (~770M) | 15 of 16 (94%) | 0.934 [0.812, 1.000] |
+| AlignScore-base | NLI+QA+regression (~125M) | 14 of 16 (88%) | 0.949 [0.859, 1.000] |
+| xAI Grok 4.20 non-reasoning | Frontier LLM judge | 16 of 16 (100%) | 0.998 [0.988, 1.000] |
+
+Per-category catch matrix (Y = `halluc_prob > faithful_prob`):
+
+| Category | Touchstone | MiniCheck | AlignScore | Grok 4.20 |
+|---|---|---|---|---|
+| number_swap_same_scale | Y | Y | Y | Y |
+| percentage_shift_plausible_range | Y | Y | Y | Y |
+| quarter_shift | . | Y | Y | Y |
+| role_title_swap | Y | Y | Y | Y |
+| direction_reversal | . | Y | Y | Y |
+| imputed_cause | . | Y | . | Y |
+| magnitude_shift | Y | Y | Y | Y |
+| false_precision | Y | Y | Y | Y |
+| time_frame_shift | . | Y | Y | Y |
+| attribute_swap | . | Y | Y | Y |
+| fabricated_affiliation | Y | Y | Y | Y |
+| scoping_shift | . | Y | Y | Y |
+| counterfactual_extension | Y | Y | Y | Y |
+| numerical_conflation | . | Y | Y | Y |
+| subtle_entity_swap | Y | . | Y | Y |
+| relation_reversal | . | Y | . | Y |
+
+**What this measurement establishes:**
+
+- The structural-blindness wall is the *substrate's* wall, not the trained-checker class's wall. A ~770M distilled NLI catches 7 of the 8 categories the substrate misses. A frontier LLM judge catches all 8.
+- The substrate and MiniCheck are nearly complementary: MiniCheck misses only `subtle_entity_swap` (Maestri → Maestro), which the substrate catches via Layer 5's unsourced-entity logic; the substrate misses 8 categories MiniCheck catches.
+- Grok 4.20 non-reasoning is operationally a binary classifier on this prompt: faithful pairs cluster at probability 0.0 and hallucinated pairs at 0.8-1.0. The AUC is near-perfect but the ranking signal within each class is degenerate. A judge with this calibration shape is appropriate for binary flagging but cannot itself drive triage / top-K prioritization without a secondary ranker; combining its verdict with the substrate's continuous score recovers ranking inside each verdict bucket.
+
+**What this measurement does NOT establish:**
+
+- These 16 cases are hand-authored by one author. Detector performance here is necessary, not sufficient, evidence of robustness on naturalistic relational hallucinations. The corresponding measurement on RAGTruth, SummEval, and HaluEval (where every system tested gets AUC 0.67-0.77 and F1 0.45-0.71) is the operational reality check; this table is a category-coverage probe.
+- The judge prompt was minimal and unparameterised. Different prompt scaffolding could change the calibration shape (continuous vs binary) without changing the AUC, and would change the production cost-per-call profile.
+
 ## 5. The honest production architecture
 
 Touchstone alone is NOT a sufficient hallucination detector for production deployment in the general case. For real-world AI output verification, the production architecture is:
@@ -120,13 +163,18 @@ What Touchstone IS NOT:
 
 What changes this story:
 
-- Adding a trained semantic discriminator to the Stage-2 architecture moves the production-grade conversation forward. The Verifier ALREADY supports this via `substrate_plus_minicheck` and `substrate_plus_minicheck_alignscore` modes.
+- Adding a trained semantic discriminator to the Stage-2 architecture moves the production-grade conversation forward. The Verifier ALREADY supports this via `substrate_plus_minicheck` and `substrate_plus_minicheck_alignscore` modes. The 16-case cross-detector measurement in §4.1 is the empirical backing for "the substrate's blind spots are solved by an existing trained checker."
 - Building Touchstone-on-its-own up the operational metrics curve is bounded by the substrate's structural limitations (§4). Further investment in pure-substrate AUC has diminishing returns.
 
 ## 7. Reproducing every number in this document
 
 - `python -m benchmarks.external.operational_metrics` — recomputes precision/recall/F1/lift on all three corpora from the existing snapshots. Reads only.
 - `python -m benchmarks.adversarial_subtle.run` — runs the 16-case subtle-hallucination stress test against the substrate-only Verifier.
+- `python -m benchmarks.adversarial_subtle.build_pairs` — emits the 32-row pairs JSON consumed by the cross-detector scorers.
+- `.venv-external/bin/python benchmarks/external/minicheck_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --output benchmarks/adversarial_subtle/minicheck_2026-05-18.json` — re-runs MiniCheck on the 16-case pairs.
+- `.venv-alignscore/bin/python benchmarks/external/alignscore_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --output benchmarks/adversarial_subtle/alignscore_2026-05-18.json` — re-runs AlignScore on the 16-case pairs.
+- `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --model grok-4.20-0309-non-reasoning --output benchmarks/adversarial_subtle/judge_xai_2026-05-18.json` — re-runs the xAI Grok judge on the 16-case pairs.
+- `python -m benchmarks.adversarial_subtle.join_detectors` — joins substrate + MiniCheck + AlignScore + Grok per-case scores into the §4.1 table.
 - `python examples/production_verifier.py` — runs an end-to-end demo of the calibrated Verifier API.
 - `python -m benchmarks.external.cross_baseline_summary --markdown` — emits the cross-corpus cross-baseline table including trivial-baseline anchor.
 
