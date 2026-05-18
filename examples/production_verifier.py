@@ -66,8 +66,15 @@ def main() -> None:
         print(f"  {summary}")
         print()
         result = verifier.score(summary, source=SOURCE)
-        verdict = "FLAG" if result.should_flag(threshold=0.5) else "PASS"
-        print(f"  prob_hallucinated = {result.prob_hallucinated:.3f}  ({verdict} at threshold 0.5)")
+        # Two thresholds shown for honesty: 0.5 is the library default but
+        # operationally under-flags on the v1.0 corpora (the F1-optimal
+        # threshold is 0.07-0.27 there). Adopters MUST tune on their own
+        # held-out data; see docs/production_readiness.md §2.
+        verdict_default = "FLAG" if result.should_flag(threshold=0.5) else "PASS"
+        verdict_tuned = "FLAG" if result.should_flag(threshold=0.2) else "PASS"
+        print(f"  prob_hallucinated = {result.prob_hallucinated:.3f}")
+        print(f"    at threshold 0.5 (library default):       {verdict_default}")
+        print(f"    at threshold 0.2 (F1-optimal-ish on v1.0): {verdict_tuned}")
         print(f"  mode = {result.mode}")
         print()
         print("  Signal breakdown (each row contributes to the logit):")
@@ -92,20 +99,30 @@ def main() -> None:
 
     print("-" * 70)
     print()
-    print("Production deployment guidance:")
+    print("Production deployment guidance (READ docs/production_readiness.md):")
     print()
-    print("  • Substrate-only mode (this demo) is research-tier signal strength.")
-    print("    Default-calibrated AUC ≈ 0.67-0.76 on three external English-news-")
-    print("    summarization corpora. Use for: drift detection, regression testing,")
-    print("    cheap first-pass filter ahead of an LLM-based judge.")
-    print("  • For production hallucination detection: combine with a trained")
-    print("    discriminator (MiniCheck, AlignScore, or similar) by invoking the")
-    print("    discriminator yourself and passing its supported-probability to")
-    print("    score(). Substrate + MiniCheck adds ~0.08 AUC; +AlignScore another")
-    print("    ~0.01-0.02. Latency budget: substrate ~50ms, MiniCheck ~5s, both")
-    print("    ~10s per pair on CPU.")
-    print("  • Recalibrate on your own held-out data if your input distribution")
-    print("    differs from English news summarization. Use Verifier.with_calibration().")
+    print("  • Touchstone substrate-only is STRUCTURALLY BLIND to hallucinations")
+    print("    that preserve vocabulary and only change semantic relationships")
+    print("    (direction reversal, attribute swap, scoping shift, relation reversal,")
+    print("    time-frame shift, imputed cause). On a 16-case stress test, the")
+    print("    substrate-only Verifier separated hallucinated from faithful at 50%")
+    print("    (chance). It is NOT a standalone production hallucination detector.")
+    print()
+    print("  • What it IS useful for in production:")
+    print("    - Triage / review-queue prioritization (2-4x lift over random review")
+    print("      on English news summarization).")
+    print("    - Cheap first-pass filter ahead of an LLM-based judge.")
+    print("    - Drift detection on stable production streams.")
+    print("    - The lexical half of a two-stage architecture; combine with a")
+    print("      trained semantic discriminator via minicheck_supported_prob and/or")
+    print("      alignscore_supported_prob arguments to score().")
+    print()
+    print("  • The default should_flag(threshold=0.5) UNDER-FLAGS for any")
+    print("    production deployment. F1-optimal thresholds on v1.0 corpora are")
+    print("    0.07-0.27. Tune on your own held-out data.")
+    print()
+    print("  • Recalibrate via Verifier.with_calibration() if your input")
+    print("    distribution differs from English news summarization.")
     print()
 
 
