@@ -74,6 +74,48 @@
         "recall_at_precision_0.9_std": 0.0449,
         "top_10_percent_lift_mean": 3.3511,
         "top_10_percent_lift_std": 0.0881
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7528,
+        "f1_optimal_std": 0.0057,
+        "f1_optimal_threshold_mean": 0.62,
+        "f1_optimal_threshold_std": 0.0546,
+        "precision_at_recall_0.9_mean": 0.4582,
+        "precision_at_recall_0.9_std": 0.0232,
+        "recall_at_precision_0.9_mean": 0.3129,
+        "recall_at_precision_0.9_std": 0.0699,
+        "top_10_percent_lift_mean": 3.6454,
+        "top_10_percent_lift_std": 0.1445
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7336,
+        "f1_optimal_std": 0.0076,
+        "f1_optimal_threshold_mean": 0.574,
+        "f1_optimal_threshold_std": 0.0452,
+        "precision_at_recall_0.9_mean": 0.4849,
+        "precision_at_recall_0.9_std": 0.0187,
+        "recall_at_precision_0.9_mean": 0.2562,
+        "recall_at_precision_0.9_std": 0.059,
+        "top_10_percent_lift_mean": 3.5762,
+        "top_10_percent_lift_std": 0.1221
+      },
+      "OpenAI GPT-4o cued": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7271,
+        "f1_optimal_std": 0.0077,
+        "f1_optimal_threshold_mean": 0.231,
+        "f1_optimal_threshold_std": 0.0465,
+        "precision_at_recall_0.9_mean": 0.3553,
+        "precision_at_recall_0.9_std": 0.0411,
+        "recall_at_precision_0.9_mean": 0.07,
+        "recall_at_precision_0.9_std": 0.0604,
+        "top_10_percent_lift_mean": 3.39,
+        "top_10_percent_lift_std": 0.0402
       }
     }
   },
@@ -152,6 +194,48 @@
         "recall_at_precision_0.9_std": 0.0938,
         "top_10_percent_lift_mean": 6.2903,
         "top_10_percent_lift_std": 0.2875
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.6759,
+        "f1_optimal_std": 0.0053,
+        "f1_optimal_threshold_mean": 0.3515,
+        "f1_optimal_threshold_std": 0.1442,
+        "precision_at_recall_0.9_mean": 0.4539,
+        "precision_at_recall_0.9_std": 0.0054,
+        "recall_at_precision_0.9_mean": 0.1022,
+        "recall_at_precision_0.9_std": 0.025,
+        "top_10_percent_lift_mean": 5.5114,
+        "top_10_percent_lift_std": 0.1068
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.6758,
+        "f1_optimal_std": 0.0115,
+        "f1_optimal_threshold_mean": 0.15,
+        "f1_optimal_threshold_std": 0.0,
+        "precision_at_recall_0.9_mean": 0.2433,
+        "precision_at_recall_0.9_std": 0.0514,
+        "recall_at_precision_0.9_mean": 0.087,
+        "recall_at_precision_0.9_std": 0.0377,
+        "top_10_percent_lift_mean": 5.3271,
+        "top_10_percent_lift_std": 0.1055
+      },
+      "OpenAI GPT-4o cued": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7415,
+        "f1_optimal_std": 0.0058,
+        "f1_optimal_threshold_mean": 0.642,
+        "f1_optimal_threshold_std": 0.1296,
+        "precision_at_recall_0.9_mean": 0.4031,
+        "precision_at_recall_0.9_std": 0.0305,
+        "recall_at_precision_0.9_mean": 0.0755,
+        "recall_at_precision_0.9_std": 0.0671,
+        "top_10_percent_lift_mean": 6.1328,
+        "top_10_percent_lift_std": 0.1869
       }
     }
   },
@@ -230,6 +314,34 @@
         "recall_at_precision_0.9_std": 0.0076,
         "top_10_percent_lift_mean": 1.8565,
         "top_10_percent_lift_std": 0.0424
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7733,
+        "f1_optimal_std": 0.0022,
+        "f1_optimal_threshold_mean": 0.224,
+        "f1_optimal_threshold_std": 0.0747,
+        "precision_at_recall_0.9_mean": 0.6542,
+        "precision_at_recall_0.9_std": 0.0139,
+        "recall_at_precision_0.9_mean": 0.3957,
+        "recall_at_precision_0.9_std": 0.0227,
+        "top_10_percent_lift_mean": 1.9655,
+        "top_10_percent_lift_std": 0.0232
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7662,
+        "f1_optimal_std": 0.0047,
+        "f1_optimal_threshold_mean": 0.1645,
+        "f1_optimal_threshold_std": 0.0404,
+        "precision_at_recall_0.9_mean": 0.6473,
+        "precision_at_recall_0.9_std": 0.0073,
+        "recall_at_precision_0.9_mean": 0.2886,
+        "recall_at_precision_0.9_std": 0.0277,
+        "top_10_percent_lift_mean": 1.9215,
+        "top_10_percent_lift_std": 0.0304
       }
     }
   }

@@ -565,6 +565,86 @@
             "fp": 44
           }
         }
+      },
+      "OpenAI GPT-4o cued": {
+        "n_total": 400,
+        "n_positive": 95,
+        "n_negative": 305,
+        "base_rate": 0.2375,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 57,
+          "tp": 45,
+          "fp": 12,
+          "fn": 50,
+          "precision": 0.7895,
+          "recall": 0.4737,
+          "f1": 0.5921,
+          "false_positive_rate": 0.0393
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1,
+          "precision": 0.3822,
+          "recall": 0.9053,
+          "n_flagged": 225,
+          "tp": 86,
+          "fp": 139,
+          "false_positive_rate": 0.4557,
+          "false_alarms_per_caught": 1.62
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 1.0,
+          "precision": 1.0,
+          "recall": 0.0211,
+          "n_flagged": 2,
+          "tp": 2,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.3,
+          "precision": 0.7416,
+          "recall": 0.6947,
+          "f1": 0.7174,
+          "n_flagged": 89
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.9,
+            "precision": 0.8,
+            "recall": 0.1684,
+            "lift_vs_random": 3.37,
+            "tp": 16,
+            "fp": 4
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.7,
+            "precision": 0.8,
+            "recall": 0.3368,
+            "lift_vs_random": 3.37,
+            "tp": 32,
+            "fp": 8
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.3,
+            "precision": 0.75,
+            "recall": 0.6316,
+            "lift_vs_random": 3.16,
+            "tp": 60,
+            "fp": 20
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.2,
+            "precision": 0.625,
+            "recall": 0.7895,
+            "lift_vs_random": 2.63,
+            "tp": 75,
+            "fp": 45
+          }
+        }
       }
     }
   },
@@ -1134,6 +1214,86 @@
             "fp": 81
           }
         }
+      },
+      "OpenAI GPT-4o cued": {
+        "n_total": 400,
+        "n_positive": 46,
+        "n_negative": 354,
+        "base_rate": 0.115,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 65,
+          "tp": 40,
+          "fp": 25,
+          "fn": 6,
+          "precision": 0.6154,
+          "recall": 0.8696,
+          "f1": 0.7207,
+          "false_positive_rate": 0.0706
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.2,
+          "precision": 0.3784,
+          "recall": 0.913,
+          "n_flagged": 111,
+          "tp": 42,
+          "fp": 69,
+          "false_positive_rate": 0.1949,
+          "false_alarms_per_caught": 1.64
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 1.0,
+          "precision": 1.0,
+          "recall": 0.0652,
+          "n_flagged": 3,
+          "tp": 3,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.5,
+          "precision": 0.6557,
+          "recall": 0.8696,
+          "f1": 0.7477,
+          "n_flagged": 61
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 1.0,
+            "precision": 0.7,
+            "recall": 0.3043,
+            "lift_vs_random": 6.09,
+            "tp": 14,
+            "fp": 6
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.9,
+            "precision": 0.7,
+            "recall": 0.6087,
+            "lift_vs_random": 6.09,
+            "tp": 28,
+            "fp": 12
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.3,
+            "precision": 0.5,
+            "recall": 0.8696,
+            "lift_vs_random": 4.35,
+            "tp": 40,
+            "fp": 40
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.1,
+            "precision": 0.35,
+            "recall": 0.913,
+            "lift_vs_random": 3.04,
+            "tp": 42,
+            "fp": 78
+          }
+        }
       }
     }
   },
@@ -1701,6 +1861,86 @@
             "lift_vs_random": 1.7,
             "tp": 102,
             "fp": 18
+          }
+        }
+      },
+      "OpenAI GPT-4o cued": {
+        "n_total": 400,
+        "n_positive": 200,
+        "n_negative": 200,
+        "base_rate": 0.5,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 164,
+          "tp": 128,
+          "fp": 36,
+          "fn": 72,
+          "precision": 0.7805,
+          "recall": 0.64,
+          "f1": 0.7033,
+          "false_positive_rate": 0.18
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1,
+          "precision": 0.598,
+          "recall": 0.9,
+          "n_flagged": 301,
+          "tp": 180,
+          "fp": 121,
+          "false_positive_rate": 0.605,
+          "false_alarms_per_caught": 0.67
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9,
+          "precision": 0.9018,
+          "recall": 0.505,
+          "n_flagged": 112,
+          "tp": 101,
+          "fp": 11
+        },
+        "f1_optimal": {
+          "threshold": 0.2,
+          "precision": 0.759,
+          "recall": 0.74,
+          "f1": 0.7494,
+          "n_flagged": 195
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 1.0,
+            "precision": 0.95,
+            "recall": 0.095,
+            "lift_vs_random": 1.9,
+            "tp": 19,
+            "fp": 1
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 1.0,
+            "precision": 0.975,
+            "recall": 0.195,
+            "lift_vs_random": 1.95,
+            "tp": 39,
+            "fp": 1
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.9,
+            "precision": 0.925,
+            "recall": 0.37,
+            "lift_vs_random": 1.85,
+            "tp": 74,
+            "fp": 6
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.8,
+            "precision": 0.875,
+            "recall": 0.525,
+            "lift_vs_random": 1.75,
+            "tp": 105,
+            "fp": 15
           }
         }
       }
