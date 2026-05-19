@@ -321,6 +321,30 @@ ECE = expected calibration error (10 equal-width bins on [0,1]; lower is better)
 - **Substrate F1 on SummEval is 0.479 ± 0.046 across offsets, but the §4.2.1 held-out F1 was 0.188.** Holdout and across-offset are different uncertainty sources: holdout penalizes threshold-tuning-on-test (a within-prefix bias) while across-offset penalizes prefix choice. The substrate's SummEval F1 has both bias sources working against it; the §4.2 snapshot's 0.422 was favorably tuned AND favorably prefixed. Cite ~0.188 as the production lower bound on this corpus.
 - **Grok column gap acknowledged.** The judge column is the single point estimate at offset=0; its across-sample variance is unmeasured. The §4.3 cued-vs-blind ablation showed within-prefix prompt sensitivity; an additional K=9 cued-judge runs at non-zero offsets would close this gap. Cost: ~$50; budget-gated per §7.
 
+### 4.2.5 Per-call latency and cost framework
+
+§5's architecture decision ("for audit-grade use Grok; for triage MiniCheck remains competitive at substantially lower per-call cost") was qualitative until now. This sub-table makes it quantitative for latency and gives the cost framework for the API-priced detector. Per-call latency below is mean wall-clock per example from the pinned snapshots (n_total per row varies by which snapshot was used).
+
+| Detector | Inference mode | RAGTruth (s/call) | SummEval (s/call) | HaluEval (s/call) | Cost framework |
+|---|---|---|---|---|---|
+| Substrate L6 (word_overlap_inv) | Pure-Python stdlib, single-threaded | < 0.01 (not snapshotted; ~2 ms reported elsewhere in this doc) | < 0.01 | < 0.01 | Compute-only at adopter's infra cost; effectively free at any production scale. |
+| MiniCheck Flan-T5-Large | Local CPU (no GPU) | 4.93 | 2.73 | 9.38 | Compute-only at adopter's infra cost; GPU would reduce by ~10x. Model: HuggingFace `lytang/MiniCheck-Flan-T5-Large` (~770M, Apache-2.0). |
+| AlignScore-base | Local CPU (no GPU) | 8.70 | 2.58 | 6.24 | Compute-only at adopter's infra cost; GPU would reduce similarly. Model: `yzha/AlignScore` (~125M, MIT). |
+| xAI Grok 4.20 non-reasoning (cued) | API (api.x.ai, OpenAI-compatible) | 1.15 | 1.07 | 1.19 | API-priced per million tokens. Input ≈ source + output + system prompt (~500-2000 tokens depending on corpus); output is one short JSON ≈ 30 tokens. Per-call cost ≈ (input_tokens × in_rate + output_tokens × out_rate) ÷ 1_000_000. Adopter must look up current `grok-4.20-0309-non-reasoning` pricing at api.x.ai; the snapshot here is wall-clock latency only. |
+| xAI Grok 4.20 non-reasoning (blind) | Same API | 1.50 | 1.61 | 1.66 | Same framework. Blind prompt is ~35% longer wall-clock per call than cued, consistent with judge spending more time on the unsteered task. Both fit comfortably inside a 2 s/call envelope. |
+
+**Reading guidance:**
+
+- **The latency numbers are NOT comparable apples-to-apples without normalizing hardware.** The trained discriminators are CPU-bound on the snapshotted runs; the judge is API-bound (network + xAI inference time). A production team running MiniCheck on a single GPU sees 0.2–0.9 s/call (a ~10x speedup on the CPU numbers above). A team batching MiniCheck across many examples sees sub-100ms amortized cost. A team calling xAI through a higher-tier endpoint or with provisioned throughput sees different latency.
+- **The substrate is the only detector with sub-100ms per-call cost without infrastructure provisioning.** It is the right Stage-1 in the §5 architecture for any volume where Stage-2 has non-trivial per-call cost.
+- **Cost-to-deploy framework, qualitatively (numbers depend on adopter pricing as of look-up date):**
+  - Substrate: ~0 marginal cost above whatever Python interpreter the application already runs.
+  - MiniCheck / AlignScore: GPU-hour amortized over batched inference; rough order ~$0.0001-0.001 per call on commodity cloud GPU at moderate utilization. No external API dependency.
+  - Grok: API token charges. For a 500-token-input, 30-token-output call (typical RAGTruth pair), per-call cost is dominated by input tokens. Current `grok-4.20-0309-non-reasoning` published rates are at api.x.ai; the snapshot in this repo does not pin a $ figure because the rate changes faster than the snapshot does. A production team should compute their own per-call cost from current rates × measured token count.
+- **For the §5 architecture decision the relevant comparison is per-call $ cost × call volume.** The latency table above lets a team size their inference fleet; the cost framework lets them compute fleet-vs-API trade-off. Without both numbers the architecture decision in §5 is qualitative; this sub-section makes it computable.
+
+Open question deferred to a future round: ship a `cost_per_call.py` script that takes a pricing rates file (kept out-of-repo by the adopter) and produces a per-corpus per-detector $ table by multiplying rates × measured token counts. The token-counting infrastructure is straightforward (`tiktoken` for OpenAI-compatible APIs; HuggingFace tokenizer for the trained discriminators); the gating concern is that pinning specific pricing into the public repo would go stale within weeks.
+
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
 Touchstone's pitch is substrate + judge, not substrate or judge. §4.2 measured each detector independently; this section measures whether the substrate adds operational value to a frontier judge or is redundant. The analysis was first run against the cued judge (the prompt that enumerates the six §4 wall-claim categories) and then re-run with the blind judge to factor out the cueing confound flagged in §4.1. Three combination strategies, all on the same n=400 indices, all pure-python (no sklearn): zero-fit max-ensemble, zero-fit mean-ensemble, and a 5-fold cross-validated linear blend `alpha * substrate + (1 - alpha) * judge` where alpha is selected on each train fold by AUC. Reproduce via `python -m benchmarks.external.substrate_plus_judge_analysis`. Full per-corpus breakdown lives in `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`.
