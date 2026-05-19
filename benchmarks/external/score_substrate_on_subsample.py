@@ -53,7 +53,9 @@ def main() -> None:
         "n_total_pairs": len(pairs),
         "per_example_prob_hallucinated": [round(p, 6) for p in probs],
         "per_example_label_hallucinated": labels,
-        "runtime_seconds": round(elapsed, 1),
+        # Wall-clock runtime is reported on stdout but intentionally omitted
+        # from the snapshot so reproducibility-audit hashes are stable
+        # across runs.
     }
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     Path(args.output).write_text(json.dumps(out, indent=2))

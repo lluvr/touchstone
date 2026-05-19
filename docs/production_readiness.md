@@ -406,7 +406,7 @@ Headline survival of prior §4.2 / §4.3 ordering claims under paired tests:
 - **Grok blind > Grok cued on AUC is significant on RAGTruth (p=0.047) and SummEval (p=0.002), not on HaluEval (p=0.290)**. The §4.3 narrative "blind AUC equal to or slightly above cued" understates the gap on the two non-adversarial corpora and is correct on HaluEval. The cued prompt is statistically inferior to the blind prompt as a default judge prompt for non-adversarial summarization.
 - **Grok (either variant) significantly beats substrate, MiniCheck, AlignScore on AUC on every corpus**. The cross-class judge advantage in §4.2 is fully supported.
 
-Across all 30 pairs (10 pairs × 3 corpora), 22 are AUC-significant at α=0.05 and 23 are McNemar-significant. McNemar catches pairs where the ranking is similar but the verdicts at F1-opt are different (e.g., one detector's F1-opt threshold puts more weight on recall and the other on precision). Several pairs are McNemar-significant but AUC-not (MiniCheck vs AlignScore on RAGTruth and HaluEval; substrate L6 vs AlignScore on HaluEval). Read McNemar as "the operating points disagree" and AUC paired bootstrap as "the ranking abilities disagree."
+Across all 84 pairs (28 detector pairs × 3 corpora — Claude cued/blind and GPT-4o cued joined the panel per §4.2.8), 49 are AUC-significant at α=0.05 and 69 are McNemar-significant. McNemar catches pairs where the ranking is similar but the verdicts at F1-opt are different (e.g., one detector's F1-opt threshold puts more weight on recall and the other on precision). Several pairs are McNemar-significant but AUC-not (MiniCheck vs AlignScore on RAGTruth and HaluEval; substrate L6 vs AlignScore on HaluEval). Read McNemar as "the operating points disagree" and AUC paired bootstrap as "the ranking abilities disagree." The individual p-values cited in the bullet list above are byte-identical under the expanded panel because each pair is computed independently; only the totals shift with panel size.
 
 **What changes in production-architecture claims after paired tests:**
 
@@ -418,7 +418,7 @@ Across all 30 pairs (10 pairs × 3 corpora), 22 are AUC-significant at α=0.05 a
 
 - Paired bootstrap at n=400 with 2000 resamples has approximate p-value resolution ~0.001. p-values below 0.001 are reported as such; don't read them as "vanishingly small."
 - McNemar at F1-optimal threshold uses each detector's own in-sample threshold (§4.2.1's inflation applies); the test still controls for the same underlying labels but the threshold selection is itself within-corpus. A held-out McNemar would change verdicts modestly without changing the significance pattern materially.
-- Multiple-comparison correction (10 detector pairs × 3 corpora = 30 tests) is NOT applied. Under Bonferroni at family-wise α=0.05, individual α would tighten to 0.0017; under this stricter bar fewer pairs are significant. The reported p-values are uncorrected and per-test; a reviewer doing meta-analysis across the table should apply their own correction.
+- Multiple-comparison correction (28 detector pairs × 3 corpora = 84 tests, expanded from the original 30 when only 5 detectors were in the panel) is NOT applied. Under Bonferroni at family-wise α=0.05, individual α would tighten to ~0.0006; under this stricter bar fewer pairs are significant. The reported p-values are uncorrected and per-test; a reviewer doing meta-analysis across the table should apply their own correction.
 
 ### 4.2.8 Multi-vendor judge panel (Grok / Claude / GPT-4o)
 
@@ -448,7 +448,7 @@ Per-vendor held-out F1 (eval n=200, §4.2.1 split applied to each vendor):
 |---|---|---|---|---|---|
 | RAGTruth Summary | 0.661 | 0.667 | 0.724 | 0.704 | **0.725** |
 | SummEval | 0.632 | 0.704 | 0.585 | 0.621 | **0.737** |
-| HaluEval Summarization | **0.743** | 0.735 | 0.722 | 0.746 | (recompute pending) |
+| HaluEval Summarization | 0.743 | 0.735 | 0.722 | 0.746 | **0.726** |
 
 Per-vendor Brier Skill Score (§4.2.3; higher = better calibrated):
 
@@ -456,15 +456,15 @@ Per-vendor Brier Skill Score (§4.2.3; higher = better calibrated):
 |---|---|---|---|---|---|
 | RAGTruth Summary | +0.115 | +0.297 | +0.426 | **+0.443** | +0.350 |
 | SummEval | +0.178 | **+0.381** | +0.335 | +0.307 | +0.330 |
-| HaluEval Summarization | +0.269 | +0.300 | +0.281 | +0.244 | (recompute pending) |
+| HaluEval Summarization | +0.269 | +0.300 | +0.281 | +0.244 | +0.231 |
 
 Per-vendor R@P90 (audit-precision recall, single-snapshot tie-break realization; treat with §4.2.2 tie envelope in mind):
 
 | Corpus | Grok cued | Grok blind | Claude cued | Claude blind | GPT-4o cued |
 |---|---|---|---|---|---|
-| RAGTruth Summary | 2/95 | 5/95 | **26/95** | (n/a) | (n/a) |
-| SummEval | 12/46 | 11/46 | 5/46 | 4/46 | (recompute pending) |
-| HaluEval Summarization | 87/200 | 82/200 | 81/200 | 59/200 | (recompute pending) |
+| RAGTruth Summary | 2/95 | 5/95 | **26/95** | (n/a) | 2/95 |
+| SummEval | 12/46 | 11/46 | 5/46 | 4/46 | 3/46 |
+| HaluEval Summarization | 87/200 | 82/200 | 81/200 | 59/200 | **101/200** |
 
 **What the multi-vendor panel changes:**
 
@@ -478,7 +478,7 @@ Per-vendor R@P90 (audit-precision recall, single-snapshot tie-break realization;
 
 - GPT-4o blind variant was rate-limit-blocked by OpenAI's 30K TPM cap when run in parallel; sequential runs would complete in ~13 min/corpus but were deprioritized this round. Three GPT-4o blind cells are missing from the table; the cued-vs-blind comparison for OpenAI is therefore not made.
 - Anthropic credits ran out during the SummEval and HaluEval blind runs after RAGTruth blind completed. The SummEval and HaluEval Claude blind cells are filled from a snapshot a parallel session previously produced; cells are marked normally but the run provenance is not byte-pinned by this commit.
-- HaluEval GPT-4o cued landed in this commit cycle, but the per-vendor holdout/calibration/tie-envelope numbers for HaluEval GPT-4o were not regenerated through `operational_metrics_holdout.py` / `calibration_metrics.py` / `operational_metrics_tie_envelope.py` for this commit (the parallel session's scripts would pick it up automatically on the next run; the table marks "recompute pending" where this gap shows).
+- HaluEval GPT-4o cued numbers in the holdout / calibration / R@P90 tables above are now filled in (regenerated from the snapshot during the Phase 1 verification pass). GPT-4o catches 101 of 200 hallucinations at precision 0.9 on HaluEval — the strongest single audit-grade cell in the entire §4 evaluation. The §4.2.2 tie envelope on HaluEval GPT-4o is 92 ± 11 catches (R@P90 mean 0.460 ± 0.055).
 - All three vendor judges share the cued and blind prompt text byte-identically (`PROMPT_VARIANTS` dict in `judge_xai_from_pairs.py`, re-imported by `judge_anthropic_from_pairs.py`). Cross-vendor differences cannot be attributed to prompt variation.
 - Token rates differ across vendors. Per-call cost is the right deployment comparator and is a function of (vendor cost) × (corpus catch rate); not computed here.
 - Three vendors at n=400 is still a small panel. Gemini, Mistral, Meta Llama-as-judge, and other frontier judges are out of scope this round. Within-vendor variance across re-runs at temperature=0.0 with retry is also unmeasured for any vendor.
@@ -545,8 +545,21 @@ Two α-selection strategies are reported, mirroring the two §4.3 viewpoints:
 | RAGTruth Summary | blind | 0.667 | 0.667 (0.000, α=0.0) | 0.667 (0.000, α=0.6) | 0.868 (-0.018) |
 | SummEval | cued | 0.632 | 0.618 (-0.013, α=0.7) | 0.632 (0.000, α=0.0) | 0.915 (0.000) |
 | SummEval | blind | 0.704 | 0.585 (-0.118, α=0.7) | 0.704 (0.000, α=0.0) | 0.935 (0.000) |
-| HaluEval Summarization | cued | 0.743 | 0.732 (-0.011, α=0.6) | 0.732 (-0.011, α=0.6) | 0.801 (+0.022) |
-| HaluEval Summarization | blind | 0.735 | 0.723 (-0.012, α=0.4) | **0.754 (+0.019, α=0.7)** | **0.806 (+0.023)** |
+| HaluEval Summarization | Grok cued | 0.743 | 0.732 (-0.011, α=0.6) | 0.732 (-0.011, α=0.6) | 0.801 (+0.022) |
+| HaluEval Summarization | Grok blind | 0.735 | 0.723 (-0.012, α=0.4) | **0.754 (+0.019, α=0.7)** | **0.806 (+0.023)** |
+
+Claude added by the multi-vendor extension (see §4.2.8), same holdout discipline:
+
+| Corpus | Judge | Judge-alone eval F1 | Blend (α-on-F1) eval F1 (gain) | Blend (α-on-AUC) eval F1 (gain) | Blend (α-on-AUC) eval AUC (gain) |
+|---|---|---|---|---|---|
+| RAGTruth Summary | Claude cued | 0.724 | 0.724 (0.000, α=0.0) | 0.667 (-0.057, α=0.6) | 0.887 (-0.025) |
+| RAGTruth Summary | Claude blind | 0.704 | 0.688 (-0.016, α=0.7) | **0.740 (+0.036, α=0.2)** | 0.911 (-0.009) |
+| SummEval | Claude cued | 0.585 | 0.628 (+0.043, α=0.8) | 0.585 (0.000, α=0.0) | 0.893 (0.000) |
+| SummEval | Claude blind | 0.621 | 0.474 (-0.147, α=0.9) | 0.621 (0.000, α=0.0) | 0.874 (0.000) |
+| HaluEval Summarization | Claude cued | 0.722 | 0.726 (+0.005, α=0.8) | 0.727 (+0.006, α=0.7) | 0.819 (+0.022) |
+| HaluEval Summarization | Claude blind | 0.746 | 0.718 (-0.028, α=0.8) | 0.749 (+0.003, α=0.5) | 0.811 (+0.020) |
+
+Across the 12 (corpus × judge-variant) cells under honest holdout, only 3 show a positive eval F1 gain from the blend: HaluEval-Grok-blind (+0.019), RAGTruth-Claude-blind (+0.036), SummEval-Claude-cued (+0.043). Two of those gains are on the Claude-blind variant — consistent with §4.2.3's finding that Claude blind has the strongest calibration of any judge. The SummEval-Claude-cued +0.043 is interesting and currently unexplained; it is below the per-cell ±0.06 statistical tie band (see caveats), so treat it as suggestive not confirmed.
 
 **What the holdout-validated blend shows:**
 

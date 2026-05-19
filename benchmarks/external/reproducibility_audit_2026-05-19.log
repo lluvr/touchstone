@@ -1,0 +1,24 @@
+=== Audit start: 2026-05-19T13:22:25+00:00 ===
+=== 1. Source pair file hash verification ===
+OK    source_pair_files.ragtruth_summary  sha256 matches  n=900
+OK    source_pair_files.ragtruth_qa  sha256 matches  n=900
+OK    source_pair_files.ragtruth_data2txt  sha256 matches  n=900
+OK    source_pair_files.summeval  sha256 matches  n=1600
+OK    source_pair_files.halueval_summarization  sha256 matches  n=1000
+OK    subsample_pair_files.ragtruth_summary  sha256 matches  n=400
+OK    subsample_pair_files.summeval  sha256 matches  n=400
+OK    subsample_pair_files.halueval_summarization  sha256 matches  n=400
+=== 2. Substrate-only Verifier on n=400 subsamples ===
+  OK    benchmarks/external/ragtruth_summary/results/substrate_only_n400_2026-05-18.json  sha256 matches
+  OK    benchmarks/external/summeval/results/substrate_only_n400_2026-05-18.json  sha256 matches
+  OK    benchmarks/external/halueval_summarization/results/substrate_only_n400_2026-05-18.json  sha256 matches
+=== 3. Substrate features on n=400 subsamples ===
+  OK    benchmarks/external/ragtruth_summary/results/substrate_features_n400_2026-05-19.json  sha256 matches
+  OK    benchmarks/external/summeval/results/substrate_features_n400_2026-05-19.json  sha256 matches
+  OK    benchmarks/external/halueval_summarization/results/substrate_features_n400_2026-05-19.json  sha256 matches
+=== 4. Pure-python analysis modules ===
+  OK    benchmarks/external/operational_metrics_n400_2026-05-18.json  sha256 matches
+  OK    benchmarks/external/operational_metrics_n400_holdout_2026-05-18.json  sha256 matches
+  OK    benchmarks/external/operational_metrics_n400_tie_envelope_2026-05-18.json  sha256 matches
+  OK    benchmarks/external/substrate_plus_judge_n400_2026-05-18.json  sha256 matches
+  OK    benchmarks/external/substrate_plus_judge_holdout_n400_2026-05-19.json  sha256 matches

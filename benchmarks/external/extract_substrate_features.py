@@ -61,7 +61,7 @@ def main() -> None:
         out["feature_names"] = _FEATURE_NAMES
         out["per_example_features"] = features_per_pair
         out["per_example_label_hallucinated"] = labels
-        out["runtime_seconds"] = round(elapsed, 2)
+        # Runtime intentionally omitted from snapshot for hash stability.
 
         out_path = Path(
             f"benchmarks/external/{corpus_dir}/results/substrate_features_n400_2026-05-19.json"
