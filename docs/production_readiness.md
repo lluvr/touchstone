@@ -143,9 +143,11 @@ The §4.2 cross-detector measurement on real-corpus subsamples is the production
 
 The §4.1 toy fixture cannot answer the production question. This section does, on the same naturalistic corpora the §2 operational tables use. To keep the cross-detector judge run inside a sensible cost envelope, the measurement is on deterministic first-N prefix subsamples (n=400) of each corpus. First-N is deliberate: the operational metrics in this section (F1-optimal threshold, precision-at-recall, recall-at-precision, lift-at-top-K) are base-rate dependent, so balanced stratification would distort them. Base rate is preserved to within ~1.5 percentage points of the full corpus on the three external corpora because the source pair files are not label-ordered (RAGTruth and SummEval flips-vs-IID ratios ≈ 1.0; HaluEval is perfectly alternating at 50%). The sampling-strategy claim is recorded in each `subsample_n400_indices_2026-05-18.json` snapshot as `sampling_strategy: "first_n_in_original_order"`. The substrate L6 / MiniCheck / AlignScore arrays are re-tabulated on the same indices from existing snapshots, so all four detectors compare on identical pair sets. Reproduce via `python -m benchmarks.external.subsample_pairs` (once per corpus) and `python -m benchmarks.external.operational_metrics_on_subsample`. Full per-detector metrics live in `benchmarks/external/operational_metrics_n400_2026-05-18.json`. The full-N tables in §2 remain canonical; this section adds the frontier-judge column the §2 tables are missing.
 
+The three tables below are **in-sample (F1-optimal chosen on the same 400 rows it is reported on)** and use a **single tie-break realization** (Python stable sort by input order). Held-out F1 numbers are in §4.2.1 (-0.000 to -0.234 inflation under tune/eval); tie-envelope means and stds are in §4.2.2 (Grok R@P90 shifts the most: SummEval "12 of 46" → 7 ± 3, HaluEval "87 of 200" → 67 ± 16). Treat the headline tables as a discovery aid; the §4.2.1 and §4.2.2 numbers are the production-honest point estimates.
+
 **RAGTruth Summary (n=400 subsample, 23.7% base rate):**
 
-| Detector | F1-optimal | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
+| Detector | F1-optimal (in-sample) | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
 |---|---|---|---|---|
 | Substrate L6 (word_overlap_inv) | 0.445 | 0.275 (2.6 fp/catch) | catches 1 of 95 | 1.79x |
 | MiniCheck Flan-T5-Large | 0.452 | 0.251 (3.0 fp/catch) | catches 1 of 95 | 2.63x |
@@ -154,7 +156,7 @@ The §4.1 toy fixture cannot answer the production question. This section does, 
 
 **SummEval (n=400 subsample, 11.5% base rate):**
 
-| Detector | F1-optimal | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
+| Detector | F1-optimal (in-sample) | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
 |---|---|---|---|---|
 | Substrate L6 | 0.422 | 0.127 (6.9 fp/catch) | catches 5 of 46 | 3.48x |
 | MiniCheck Flan-T5-Large | 0.695 | 0.210 (3.8 fp/catch) | catches 2 of 46 | 5.87x |
@@ -163,17 +165,17 @@ The §4.1 toy fixture cannot answer the production question. This section does, 
 
 **HaluEval Summarization (n=400 subsample, 50% base rate, adversarial):**
 
-| Detector | F1-optimal | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
+| Detector | F1-optimal (in-sample) | Precision at recall 0.9 | Recall at precision 0.9 | Triage top-10% lift |
 |---|---|---|---|---|
 | Substrate L6 | 0.721 | 0.594 (0.7 fp/catch) | catches 18 of 200 | 1.55x |
 | MiniCheck Flan-T5-Large | 0.698 | 0.559 (0.8 fp/catch) | catches 9 of 200 | 1.65x |
 | AlignScore-base | 0.692 | 0.554 (0.8 fp/catch) | catches 14 of 200 | 1.70x |
 | xAI Grok 4.20 non-reasoning | 0.766 | 0.623 (0.6 fp/catch) | catches 87 of 200 | 1.90x |
 
-**What the production-relevant measurement actually shows:**
+**What the production-relevant measurement actually shows** (numbers below are the in-sample headlines; deltas are robust to holdout per §4.2.1 — in-sample +5-18 F1 vs held-out +4-18 F1 — but R@P90 is tie-sensitive per §4.2.2):
 
-- **Grok 4.20's audit-precision advantage is real on naturalistic data, but bounded.** F1-optimal advantage over the strongest non-judge detector: +18 points on RAGTruth (0.670 vs 0.493), +1 point on SummEval (0.702 vs 0.695), +5 points on HaluEval (0.766 vs 0.721). The toy-fixture 100%-separation result translates into a ~5-18 point F1 advantage in production, not into "the judge solves hallucination detection."
-- **The most operationally interesting gap is at recall=0.9 (audit-grade flagging).** On SummEval, Grok catches 12 of 46 hallucinations at precision 0.9; MiniCheck catches 2. On HaluEval, Grok catches 87 of 200; MiniCheck catches 9. This is the "we only flag when 90% sure, how much do we miss" decision. The judge's advantage is concentrated at the high-precision end of the curve, exactly where production audit applications operate.
+- **Grok 4.20's audit-precision advantage is real on naturalistic data, but bounded.** F1-optimal advantage over the strongest non-judge detector: +18 points on RAGTruth (0.670 vs 0.493 in-sample; 0.661 vs 0.479 held-out), +1 point on SummEval (0.702 vs 0.695 in-sample; 0.632 vs 0.621 held-out; under tie envelope this is 0.696 ± 0.009 vs 0.695 ± 0.000, statistically a tie), +5 points on HaluEval (0.766 vs 0.721 in-sample; 0.743 vs 0.693 held-out). The toy-fixture 100%-separation result translates into a ~5-18 point F1 advantage in production, not into "the judge solves hallucination detection."
+- **The most operationally interesting gap is at recall=0.9 (audit-grade flagging).** On SummEval, Grok catches 12 of 46 hallucinations at precision 0.9 in the table above; MiniCheck catches 2. On HaluEval, Grok 87 of 200; MiniCheck 9. Caveat from §4.2.2: the Grok R@P90 is the most tie-sensitive headline in §4.2 — under random tie-breaking SummEval is 7 ± 3 and HaluEval is 67 ± 16, so cite the cued-judge advantage at audit thresholds as the tie envelope mean rather than the single-snapshot point estimate. The mean still beats MiniCheck materially (~3.5x more catches at audit precision on both corpora), so the qualitative "judge advantage concentrates at the audit-precision end of the curve" claim survives.
 - **At triage / top-10% review-queue prioritization, the gap is smaller.** Grok wins on RAGTruth and HaluEval but MiniCheck wins on SummEval (5.87x vs 5.43x). A team that already runs a triage pipeline on MiniCheck has limited reason to switch to a judge purely for top-K prioritization; the case for the judge is at audit thresholds, not triage.
 - **The substrate L6 holds its own on HaluEval.** F1-optimal 0.721, beating both MiniCheck (0.698) and AlignScore (0.692). On the corpus designed to be adversarial against summary-level hallucination detection, the lexical baseline is operationally comparable to trained NLI. This is consistent with the §2 finding and is not an artifact of subsampling.
 - **The substrate L6 collapses on SummEval P@R90 (0.127, 6.9 false alarms per catch) and on RAGTruth P@R90 (0.275).** On the audit-precision end of the curve where the judge advantage is concentrated, the substrate is the weakest of the four. The substrate's value is at triage and on adversarial-summary corpora, not at audit thresholds.
@@ -182,7 +184,7 @@ The §4.1 toy fixture cannot answer the production question. This section does, 
 
 The two-stage architecture in §5 still holds. The new evidence sharpens it:
 
-- For audit-grade applications (precision ≥ 0.8-0.9): a frontier LLM judge is the right stage-2 detector. Grok 4.20 at $X/call (xAI pricing) materially outperforms the open-source trained discriminators here.
+- For audit-grade applications (precision ≥ 0.8-0.9): a frontier LLM judge is the right stage-2 detector. Grok 4.20 materially outperforms the open-source trained discriminators here on F1-optimal (per §4.2/§4.2.1); R@P90 advantage is real but tie-sensitive (per §4.2.2). Per-call cost is currently unmeasured (see §7 carried-forward list).
 - For triage-grade applications (top-K human review): MiniCheck remains competitive with the judge at substantially lower per-call cost. Pick by budget.
 - For drift detection on stable streams: the substrate L6 remains operationally adequate, often better than trained NLI on adversarial corpora like HaluEval.
 
@@ -200,24 +202,32 @@ The §4.1 toy result over-predicted the judge's production advantage. The actual
 
 Reproduce via `python -m benchmarks.external.operational_metrics_holdout`. Each n=400 subsample is split 200/200 by a deterministic stratified interleave (positives alternate tune→eval→tune→eval in encounter order; negatives likewise), so both halves preserve the subsample's base rate to within 1 example. The F1-optimal threshold is found on the tune half and then applied to the eval half; the eval-half F1 is the production-honest estimate. The in-sample-vs-holdout inflation is the per-row difference between the eval half's own F1-optimum and the F1 it scores under the tune-chosen threshold.
 
+Both cued and blind judge variants are included on identical indices (c02bafe added the blind n=400 snapshots; the holdout loader picks them up automatically).
+
 | Corpus | Detector | In-sample F1 (n=400) | Held-out F1 (eval, n=200) | Inflation |
 |---|---|---|---|---|
 | RAGTruth Summary | Substrate L6 | 0.445 | 0.358 | -0.087 |
 | RAGTruth Summary | MiniCheck Flan-T5-Large | 0.452 | 0.344 | -0.108 |
 | RAGTruth Summary | AlignScore-base | 0.493 | 0.479 | -0.014 |
-| RAGTruth Summary | xAI Grok 4.20 non-reasoning | 0.670 | 0.661 | -0.009 |
+| RAGTruth Summary | xAI Grok 4.20 (cued) | 0.670 | 0.661 | -0.009 |
+| RAGTruth Summary | xAI Grok 4.20 (blind) | 0.698 | 0.667 | -0.031 |
 | SummEval | Substrate L6 | 0.422 | 0.188 | -0.234 |
 | SummEval | MiniCheck Flan-T5-Large | 0.695 | 0.621 | -0.074 |
 | SummEval | AlignScore-base | 0.543 | 0.409 | -0.134 |
-| SummEval | xAI Grok 4.20 non-reasoning | 0.702 | 0.632 | -0.070 |
+| SummEval | xAI Grok 4.20 (cued) | 0.702 | 0.632 | -0.070 |
+| SummEval | xAI Grok 4.20 (blind) | 0.763 | 0.704 | -0.059 |
 | HaluEval Summarization | Substrate L6 | 0.721 | 0.693 | -0.028 |
 | HaluEval Summarization | MiniCheck Flan-T5-Large | 0.698 | 0.672 | -0.026 |
 | HaluEval Summarization | AlignScore-base | 0.692 | 0.630 | -0.062 |
-| HaluEval Summarization | xAI Grok 4.20 non-reasoning | 0.766 | 0.743 | -0.023 |
+| HaluEval Summarization | xAI Grok 4.20 (cued) | 0.766 | 0.743 | -0.023 |
+| HaluEval Summarization | xAI Grok 4.20 (blind) | 0.761 | 0.735 | -0.026 |
+
+(In-sample F1 column is the cued/blind row read from `operational_metrics_n400_2026-05-18.json`; held-out F1 column is from the new `operational_metrics_n400_holdout_2026-05-18.json`. Inflation is in-sample minus held-out at full n=400 vs eval n=200.)
 
 **What the holdout view changes:**
 
-- **The Grok edge is the most robust under holdout** (inflation 0.000-0.070 across the three corpora). Two competing readings: (a) the cued judge is genuinely robust; (b) the judge prompt induces highly-clustered probabilities (see §4.1's `calibration-shape` caveat), so the threshold is less sensitive to which subset chose it. Calibration metrics (ECE, Brier, reliability diagram) per detector per corpus are a pending follow-up.
+- **The Grok edge is the most robust under holdout** for both variants (cued inflation 0.000-0.070; blind inflation 0.016-0.043). Two competing readings: (a) the frontier judge is genuinely robust to threshold-set choice; (b) the judge's clustered-probability output (see §4.1's `calibration-shape` caveat) makes the threshold less sensitive to which subset chose it. The blind variant's slightly larger inflation is consistent with reading (b) being part of the story for cued (the cued prompt induces stronger clustering per §4.3).
+- **Blind judge beats cued judge under holdout on SummEval** by 7.2 F1 points (0.704 vs 0.632) and matches it on RAGTruth (0.667 vs 0.661) and HaluEval (0.735 vs 0.743). The §4.3 narrative says blind AUC is "equal to or slightly above cued"; the held-out F1 view sharpens that to "blind is materially better on SummEval at the F1 operating point." If a production team picks Grok as their stage-2 judge, the blind prompt is the better default; the cued prompt's only legitimate use is debugging-the-fixture exploration.
 - **Substrate L6 SummEval inflation is the largest single delta** (0.422 → 0.188, -0.234). The §2 conclusion "substrate L6 is operationally comparable to AlignScore-base on these corpora" needs re-reading at the held-out F1 (substrate 0.188, AlignScore 0.409 on SummEval eval); the substrate is materially weaker than the in-sample comparison suggested on the sparsest-positives corpus, while the HaluEval substrate-comparable claim survives (0.693 holdout vs MiniCheck 0.672 holdout).
 - **Detector orderings are preserved on every corpus**, but absolute magnitudes shift. Cite the held-out numbers when claiming "detector X catches Y% in production"; the in-sample numbers are the discovery aid, not the deployment guarantee.
 
@@ -230,22 +240,25 @@ Reproduce via `python -m benchmarks.external.operational_metrics_holdout`. Each 
 | RAGTruth Summary | Substrate L6 | 0.445 ± 0.000 | 0.275 ± 0.000 | 0.011 ± 0.000 |
 | RAGTruth Summary | MiniCheck | 0.452 ± 0.000 | 0.251 ± 0.000 | 0.011 ± 0.000 |
 | RAGTruth Summary | AlignScore | 0.493 ± 0.000 | 0.294 ± 0.000 | 0.021 ± 0.000 |
-| RAGTruth Summary | xAI Grok 4.20 | **0.656 ± 0.007** | **0.439 ± 0.035** | **0.058 ± 0.057** |
+| RAGTruth Summary | xAI Grok 4.20 (cued) | **0.657 ± 0.007** | **0.442 ± 0.037** | **0.064 ± 0.054** |
+| RAGTruth Summary | xAI Grok 4.20 (blind) | **0.699 ± 0.006** | **0.468 ± 0.026** | **0.070 ± 0.045** |
 | SummEval | Substrate L6 | 0.422 ± 0.000 | 0.118 ± 0.005 | 0.109 ± 0.000 |
 | SummEval | MiniCheck | 0.695 ± 0.000 | 0.210 ± 0.000 | 0.043 ± 0.000 |
 | SummEval | AlignScore | 0.543 ± 0.000 | 0.197 ± 0.000 | 0.022 ± 0.000 |
-| SummEval | xAI Grok 4.20 | **0.696 ± 0.009** | **0.553 ± 0.014** | **0.151 ± 0.073** |
+| SummEval | xAI Grok 4.20 (cued) | **0.692 ± 0.008** | **0.550 ± 0.011** | **0.170 ± 0.077** |
+| SummEval | xAI Grok 4.20 (blind) | **0.741 ± 0.010** | **0.549 ± 0.040** | **0.213 ± 0.094** |
 | HaluEval Summarization | Substrate L6 | 0.721 ± 0.001 | 0.595 ± 0.002 | 0.090 ± 0.000 |
 | HaluEval Summarization | MiniCheck | 0.698 ± 0.000 | 0.559 ± 0.000 | 0.045 ± 0.000 |
 | HaluEval Summarization | AlignScore | 0.692 ± 0.000 | 0.554 ± 0.000 | 0.070 ± 0.000 |
-| HaluEval Summarization | xAI Grok 4.20 | **0.768 ± 0.003** | **0.612 ± 0.008** | **0.334 ± 0.080** |
+| HaluEval Summarization | xAI Grok 4.20 (cued) | **0.768 ± 0.002** | **0.611 ± 0.007** | **0.329 ± 0.078** |
+| HaluEval Summarization | xAI Grok 4.20 (blind) | **0.764 ± 0.003** | **0.615 ± 0.005** | **0.401 ± 0.008** |
 
 **What the tie envelope changes:**
 
-- **Grok R@P90 is the least tie-stable headline in §4.2.** The original snapshot's "catches 12 of 46 on SummEval at precision 0.9" is 7 ± 3 under random tie-breaking; "catches 87 of 200 on HaluEval at precision 0.9" is 67 ± 16. The original point estimate sits at or near the favorable-tie-break end of the distribution on every corpus. Read the §4.2 R@P90 numbers as point estimates from a single tie-break realization; the production-honest range is mean ± std.
-- **Grok F1-optimal shifts modestly under random tie-breaking** (~0.006–0.014 mean drop). The 1-point Grok-vs-MiniCheck advantage on SummEval (0.702 vs 0.695 in-sample) becomes effectively zero under the tie envelope (0.696 ± 0.009 vs 0.695 ± 0.000); the two are statistically indistinguishable on this corpus.
+- **Grok R@P90 is the most tie-sensitive headline in §4.2 for the cued variant.** The §4.2 snapshot's "catches 12 of 46 on SummEval at precision 0.9 (cued)" is 8 ± 4 under random tie-breaking (0.170 ± 0.077 × 46 positives); "catches 87 of 200 on HaluEval (cued)" is 66 ± 16. The cued point estimate sits at or near the favorable-tie-break end on every corpus. The blind variant is much more tie-stable on HaluEval (R@P90 0.401 ± 0.008 — std drops 10×), consistent with the §4.3 mechanism observation that the cued prompt induces score clustering and the blind prompt does not.
+- **Blind judge beats cued judge on F1-optimal tie envelope on every corpus except HaluEval where they tie.** RAGTruth blind 0.699 ± 0.006 vs cued 0.657 ± 0.007 (Δ +0.042, ~6σ); SummEval blind 0.741 ± 0.010 vs cued 0.692 ± 0.008 (Δ +0.049, ~5σ); HaluEval blind 0.764 ± 0.003 vs cued 0.768 ± 0.002 (Δ -0.004, statistical tie). The cueing actively hurt the judge on the two non-adversarial corpora. The §4.3 narrative claim "blind judge AUCs are equal to or slightly above cued" understates the gap at the F1 operating point.
 - **The substrate / MiniCheck / AlignScore numbers are tie-stable** (std ≈ 0.000) because their score distributions are continuous. The cross-detector orderings between the three are unaffected by ties.
-- **Grok F1-optimal threshold has wide tie envelope on RAGTruth** (0.518 ± 0.126). A team picking a threshold by `score(query) > optimal_threshold` should treat the snapshot's "thr 0.65" as one realization within a roughly 0.39–0.64 range; the threshold itself is partially a tie-break artifact.
+- **Grok cued F1-optimal threshold has wide tie envelope on RAGTruth** (0.532 ± 0.126); blind is similar (0.559 ± 0.122). A team picking a threshold by `score(query) > optimal_threshold` should treat the snapshot's "thr 0.65" as one realization within a roughly 0.40–0.65 range for cued / 0.44–0.68 for blind; the threshold itself is partially a tie-break artifact.
 
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
