@@ -134,17 +134,25 @@ def _pick_best_alpha_on_tune_auc(
     return best_alpha, thr, best_auc
 
 
+JUDGE_SNAPSHOTS = {
+    "grok_cued": "judge_xai_grok420_n400_2026-05-18.json",
+    "grok_blind": "judge_xai_grok420_blind_n400_2026-05-18.json",
+    "claude_cued": "judge_anthropic_sonnet_46_cued_n400_2026-05-19.json",
+    "claude_blind": "judge_anthropic_sonnet_46_blind_n400_2026-05-19.json",
+}
+
+
 def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
     base = Path("benchmarks/external") / corpus_dir / "results"
     sub_doc = json.loads((base / "substrate_only_n400_2026-05-18.json").read_text())
     substrate = sub_doc["per_example_prob_hallucinated"]
     labels = sub_doc["per_example_label_hallucinated"]
-    judge_cued = json.loads((base / "judge_xai_grok420_n400_2026-05-18.json").read_text())[
-        "per_example_prob_hallucinated"
-    ]
-    judge_blind = json.loads((base / "judge_xai_grok420_blind_n400_2026-05-18.json").read_text())[
-        "per_example_prob_hallucinated"
-    ]
+    judges: dict[str, list[float]] = {}
+    for tag, rel in JUDGE_SNAPSHOTS.items():
+        p = base / rel
+        if not p.exists():
+            continue
+        judges[tag] = json.loads(p.read_text())["per_example_prob_hallucinated"]
 
     # Baseline: judge-only holdout (apply §4.2.1 to the judge by itself
     # so we can compare blend gain on the eval half).
@@ -156,7 +164,7 @@ def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
     out["eval_n"] = len(labels) // 2
     out["variants"] = OrderedDict()
 
-    for judge_label, judge in (("cued", judge_cued), ("blind", judge_blind)):
+    for judge_label, judge in judges.items():
         (tune_s, tune_j, tune_l), (eval_s, eval_j, eval_l) = _stratified_split_aligned(
             substrate, judge, labels
         )

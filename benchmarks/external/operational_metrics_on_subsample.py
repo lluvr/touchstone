@@ -87,23 +87,34 @@ def _load_detector_scores_on_subsample(
     alignscore = _select(alignscore_full, indices)
 
     # Judge variants (raw is P(hallucinated), no inversion).
-    judge_cued_path = base / "judge_xai_grok420_n400_2026-05-18.json"
-    judge_blind_path = base / "judge_xai_grok420_blind_n400_2026-05-18.json"
-    judge_cued = json.loads(judge_cued_path.read_text())["per_example_prob_hallucinated"]
-    judge_blind = json.loads(judge_blind_path.read_text())["per_example_prob_hallucinated"]
-    for name, arr in (("cued", judge_cued), ("blind", judge_blind)):
+    judge_paths = {
+        "xAI Grok 4.20 cued": "judge_xai_grok420_n400_2026-05-18.json",
+        "xAI Grok 4.20 blind": "judge_xai_grok420_blind_n400_2026-05-18.json",
+        "Anthropic Claude Sonnet 4.6 cued": "judge_anthropic_sonnet_46_cued_n400_2026-05-19.json",
+        "Anthropic Claude Sonnet 4.6 blind": "judge_anthropic_sonnet_46_blind_n400_2026-05-19.json",
+    }
+    judges: dict[str, list[float]] = {}
+    for name, rel in judge_paths.items():
+        path = base / rel
+        if not path.exists():
+            # Skip judges whose snapshot hasn't been produced yet (e.g.
+            # OpenAI judge pending the vault token fix); the rest still
+            # form a valid cross-detector comparison.
+            continue
+        arr = json.loads(path.read_text())["per_example_prob_hallucinated"]
         if len(arr) != len(indices):
             raise SystemExit(
-                f"{corpus_dir}: judge {name} snapshot has {len(arr)} scores, "
+                f"{corpus_dir}: {name} snapshot has {len(arr)} scores, "
                 f"expected {len(indices)} (judge was run on the subsample)."
             )
+        judges[name] = arr
 
     detectors: OrderedDict[str, list[float]] = OrderedDict()
     detectors["Touchstone substrate L6 (word_overlap_inv)"] = substrate
     detectors["MiniCheck Flan-T5-Large"] = minicheck
     detectors["AlignScore-base"] = alignscore
-    detectors["xAI Grok 4.20 cued"] = judge_cued
-    detectors["xAI Grok 4.20 blind"] = judge_blind
+    for name, arr in judges.items():
+        detectors[name] = arr
     return labels, detectors
 
 

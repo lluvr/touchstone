@@ -405,6 +405,166 @@
             "fp": 45
           }
         }
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_total": 400,
+        "n_positive": 95,
+        "n_negative": 305,
+        "base_rate": 0.2375,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 118,
+          "tp": 77,
+          "fp": 41,
+          "fn": 18,
+          "precision": 0.6525,
+          "recall": 0.8105,
+          "f1": 0.723,
+          "false_positive_rate": 0.1344
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.15,
+          "precision": 0.4859,
+          "recall": 0.9053,
+          "n_flagged": 177,
+          "tp": 86,
+          "fp": 91,
+          "false_positive_rate": 0.2984,
+          "false_alarms_per_caught": 1.06
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.85,
+          "precision": 0.9286,
+          "recall": 0.2737,
+          "n_flagged": 28,
+          "tp": 26,
+          "fp": 2
+        },
+        "f1_optimal": {
+          "threshold": 0.55,
+          "precision": 0.7212,
+          "recall": 0.7895,
+          "f1": 0.7538,
+          "n_flagged": 104
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.92,
+            "precision": 0.9,
+            "recall": 0.1895,
+            "lift_vs_random": 3.79,
+            "tp": 18,
+            "fp": 2
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.85,
+            "precision": 0.825,
+            "recall": 0.3474,
+            "lift_vs_random": 3.47,
+            "tp": 33,
+            "fp": 7
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.7,
+            "precision": 0.8125,
+            "recall": 0.6842,
+            "lift_vs_random": 3.42,
+            "tp": 65,
+            "fp": 15
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.4,
+            "precision": 0.6417,
+            "recall": 0.8105,
+            "lift_vs_random": 2.7,
+            "tp": 77,
+            "fp": 43
+          }
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_total": 400,
+        "n_positive": 95,
+        "n_negative": 305,
+        "base_rate": 0.2375,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 108,
+          "tp": 73,
+          "fp": 35,
+          "fn": 22,
+          "precision": 0.6759,
+          "recall": 0.7684,
+          "f1": 0.7192,
+          "false_positive_rate": 0.1148
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.15,
+          "precision": 0.5212,
+          "recall": 0.9053,
+          "n_flagged": 165,
+          "tp": 86,
+          "fp": 79,
+          "false_positive_rate": 0.259,
+          "false_alarms_per_caught": 0.92
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.85,
+          "precision": 0.913,
+          "recall": 0.2211,
+          "n_flagged": 23,
+          "tp": 21,
+          "fp": 2
+        },
+        "f1_optimal": {
+          "threshold": 0.55,
+          "precision": 0.7129,
+          "recall": 0.7579,
+          "f1": 0.7347,
+          "n_flagged": 101
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.92,
+            "precision": 0.9,
+            "recall": 0.1895,
+            "lift_vs_random": 3.79,
+            "tp": 18,
+            "fp": 2
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.85,
+            "precision": 0.825,
+            "recall": 0.3474,
+            "lift_vs_random": 3.47,
+            "tp": 33,
+            "fp": 7
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.6,
+            "precision": 0.775,
+            "recall": 0.6526,
+            "lift_vs_random": 3.26,
+            "tp": 62,
+            "fp": 18
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.35,
+            "precision": 0.6333,
+            "recall": 0.8,
+            "lift_vs_random": 2.67,
+            "tp": 76,
+            "fp": 44
+          }
+        }
       }
     }
   },
@@ -814,6 +974,166 @@
             "fp": 76
           }
         }
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_total": 400,
+        "n_positive": 46,
+        "n_negative": 354,
+        "base_rate": 0.115,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 54,
+          "tp": 33,
+          "fp": 21,
+          "fn": 13,
+          "precision": 0.6111,
+          "recall": 0.7174,
+          "f1": 0.66,
+          "false_positive_rate": 0.0593
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1,
+          "precision": 0.4516,
+          "recall": 0.913,
+          "n_flagged": 93,
+          "tp": 42,
+          "fp": 51,
+          "false_positive_rate": 0.1441,
+          "false_alarms_per_caught": 1.21
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.97,
+          "precision": 1.0,
+          "recall": 0.1087,
+          "n_flagged": 5,
+          "tp": 5,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.15,
+          "precision": 0.5846,
+          "recall": 0.8261,
+          "f1": 0.6847,
+          "n_flagged": 65
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.9,
+            "precision": 0.65,
+            "recall": 0.2826,
+            "lift_vs_random": 5.65,
+            "tp": 13,
+            "fp": 7
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.85,
+            "precision": 0.65,
+            "recall": 0.5652,
+            "lift_vs_random": 5.65,
+            "tp": 26,
+            "fp": 14
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.15,
+            "precision": 0.5,
+            "recall": 0.8696,
+            "lift_vs_random": 4.35,
+            "tp": 40,
+            "fp": 40
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.05,
+            "precision": 0.35,
+            "recall": 0.913,
+            "lift_vs_random": 3.04,
+            "tp": 42,
+            "fp": 78
+          }
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_total": 400,
+        "n_positive": 46,
+        "n_negative": 354,
+        "base_rate": 0.115,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 45,
+          "tp": 27,
+          "fp": 18,
+          "fn": 19,
+          "precision": 0.6,
+          "recall": 0.587,
+          "f1": 0.5934,
+          "false_positive_rate": 0.0508
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.05,
+          "precision": 0.2258,
+          "recall": 0.913,
+          "n_flagged": 186,
+          "tp": 42,
+          "fp": 144,
+          "false_positive_rate": 0.4068,
+          "false_alarms_per_caught": 3.43
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.97,
+          "precision": 1.0,
+          "recall": 0.087,
+          "n_flagged": 4,
+          "tp": 4,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.15,
+          "precision": 0.5968,
+          "recall": 0.8043,
+          "f1": 0.6852,
+          "n_flagged": 62
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.85,
+            "precision": 0.7,
+            "recall": 0.3043,
+            "lift_vs_random": 6.09,
+            "tp": 14,
+            "fp": 6
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.6,
+            "precision": 0.625,
+            "recall": 0.5435,
+            "lift_vs_random": 5.43,
+            "tp": 25,
+            "fp": 15
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.05,
+            "precision": 0.4875,
+            "recall": 0.8478,
+            "lift_vs_random": 4.24,
+            "tp": 39,
+            "fp": 41
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.05,
+            "precision": 0.325,
+            "recall": 0.8478,
+            "lift_vs_random": 2.83,
+            "tp": 39,
+            "fp": 81
+          }
+        }
       }
     }
   },
@@ -1221,6 +1541,166 @@
             "lift_vs_random": 1.65,
             "tp": 99,
             "fp": 21
+          }
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_total": 400,
+        "n_positive": 200,
+        "n_negative": 200,
+        "base_rate": 0.5,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 202,
+          "tp": 152,
+          "fp": 50,
+          "fn": 48,
+          "precision": 0.7525,
+          "recall": 0.76,
+          "f1": 0.7562,
+          "false_positive_rate": 0.25
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.15,
+          "precision": 0.6429,
+          "recall": 0.9,
+          "n_flagged": 280,
+          "tp": 180,
+          "fp": 100,
+          "false_positive_rate": 0.5,
+          "false_alarms_per_caught": 0.56
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9,
+          "precision": 0.9,
+          "recall": 0.405,
+          "n_flagged": 90,
+          "tp": 81,
+          "fp": 9
+        },
+        "f1_optimal": {
+          "threshold": 0.15,
+          "precision": 0.6957,
+          "recall": 0.88,
+          "f1": 0.777,
+          "n_flagged": 253
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.98,
+            "precision": 1.0,
+            "recall": 0.1,
+            "lift_vs_random": 2.0,
+            "tp": 20,
+            "fp": 0
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.97,
+            "precision": 0.975,
+            "recall": 0.195,
+            "lift_vs_random": 1.95,
+            "tp": 39,
+            "fp": 1
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.92,
+            "precision": 0.8875,
+            "recall": 0.355,
+            "lift_vs_random": 1.77,
+            "tp": 71,
+            "fp": 9
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.85,
+            "precision": 0.8417,
+            "recall": 0.505,
+            "lift_vs_random": 1.68,
+            "tp": 101,
+            "fp": 19
+          }
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_total": 400,
+        "n_positive": 200,
+        "n_negative": 200,
+        "base_rate": 0.5,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 190,
+          "tp": 143,
+          "fp": 47,
+          "fn": 57,
+          "precision": 0.7526,
+          "recall": 0.715,
+          "f1": 0.7333,
+          "false_positive_rate": 0.235
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1,
+          "precision": 0.6569,
+          "recall": 0.9,
+          "n_flagged": 274,
+          "tp": 180,
+          "fp": 94,
+          "false_positive_rate": 0.47,
+          "false_alarms_per_caught": 0.52
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.95,
+          "precision": 0.9077,
+          "recall": 0.295,
+          "n_flagged": 65,
+          "tp": 59,
+          "fp": 6
+        },
+        "f1_optimal": {
+          "threshold": 0.15,
+          "precision": 0.7162,
+          "recall": 0.82,
+          "f1": 0.7646,
+          "n_flagged": 229
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 20,
+            "threshold": 0.98,
+            "precision": 1.0,
+            "recall": 0.1,
+            "lift_vs_random": 2.0,
+            "tp": 20,
+            "fp": 0
+          },
+          "top_10_percent": {
+            "k": 40,
+            "threshold": 0.97,
+            "precision": 0.95,
+            "recall": 0.19,
+            "lift_vs_random": 1.9,
+            "tp": 38,
+            "fp": 2
+          },
+          "top_20_percent": {
+            "k": 80,
+            "threshold": 0.92,
+            "precision": 0.875,
+            "recall": 0.35,
+            "lift_vs_random": 1.75,
+            "tp": 70,
+            "fp": 10
+          },
+          "top_30_percent": {
+            "k": 120,
+            "threshold": 0.85,
+            "precision": 0.85,
+            "recall": 0.51,
+            "lift_vs_random": 1.7,
+            "tp": 102,
+            "fp": 18
           }
         }
       }
