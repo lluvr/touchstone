@@ -86,21 +86,24 @@ def _load_detector_scores_on_subsample(
     alignscore_full = [1.0 - p for p in as_doc["per_example_raw_score_supported"]]
     alignscore = _select(alignscore_full, indices)
 
-    # Judge (raw is P(hallucinated), no inversion).
-    judge_path = base / Path(judge_snapshot_rel).name
-    judge_doc = json.loads(judge_path.read_text())
-    judge = judge_doc["per_example_prob_hallucinated"]
-    if len(judge) != len(indices):
-        raise SystemExit(
-            f"{corpus_dir}: judge snapshot has {len(judge)} scores, expected {len(indices)} "
-            "(judge was run on the subsample, so its array length must equal the subsample size)"
-        )
+    # Judge variants (raw is P(hallucinated), no inversion).
+    judge_cued_path = base / "judge_xai_grok420_n400_2026-05-18.json"
+    judge_blind_path = base / "judge_xai_grok420_blind_n400_2026-05-18.json"
+    judge_cued = json.loads(judge_cued_path.read_text())["per_example_prob_hallucinated"]
+    judge_blind = json.loads(judge_blind_path.read_text())["per_example_prob_hallucinated"]
+    for name, arr in (("cued", judge_cued), ("blind", judge_blind)):
+        if len(arr) != len(indices):
+            raise SystemExit(
+                f"{corpus_dir}: judge {name} snapshot has {len(arr)} scores, "
+                f"expected {len(indices)} (judge was run on the subsample)."
+            )
 
     detectors: OrderedDict[str, list[float]] = OrderedDict()
     detectors["Touchstone substrate L6 (word_overlap_inv)"] = substrate
     detectors["MiniCheck Flan-T5-Large"] = minicheck
     detectors["AlignScore-base"] = alignscore
-    detectors["xAI Grok 4.20 non-reasoning"] = judge
+    detectors["xAI Grok 4.20 cued"] = judge_cued
+    detectors["xAI Grok 4.20 blind"] = judge_blind
     return labels, detectors
 
 
