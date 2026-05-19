@@ -106,6 +106,66 @@
         },
         "eval_in_sample_f1_optimal": 0.7097,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.043
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.55,
+        "tune_f1_optimal": 0.76,
+        "eval_at_tune_threshold": {
+          "threshold": 0.55,
+          "n_flagged": 58,
+          "tp": 38,
+          "fp": 20,
+          "fn": 9,
+          "precision": 0.6552,
+          "recall": 0.8085,
+          "f1": 0.7238,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.7579,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0341
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.35,
+        "tune_f1_optimal": 0.7156,
+        "eval_at_tune_threshold": {
+          "threshold": 0.35,
+          "n_flagged": 61,
+          "tp": 38,
+          "fp": 23,
+          "fn": 9,
+          "precision": 0.623,
+          "recall": 0.8085,
+          "f1": 0.7037,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.7629,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0592
+      },
+      "OpenAI GPT-4o cued": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.3,
+        "tune_f1_optimal": 0.7097,
+        "eval_at_tune_threshold": {
+          "threshold": 0.3,
+          "n_flagged": 44,
+          "tp": 33,
+          "fp": 11,
+          "fn": 14,
+          "precision": 0.75,
+          "recall": 0.7021,
+          "f1": 0.7253,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.7407,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0154
       }
     }
   },
@@ -216,6 +276,66 @@
         },
         "eval_in_sample_f1_optimal": 0.7451,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0414
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.15,
+        "tune_f1_optimal": 0.75,
+        "eval_at_tune_threshold": {
+          "threshold": 0.15,
+          "n_flagged": 42,
+          "tp": 19,
+          "fp": 23,
+          "fn": 4,
+          "precision": 0.4524,
+          "recall": 0.8261,
+          "f1": 0.5846,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.6441,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0595
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.15,
+        "tune_f1_optimal": 0.7451,
+        "eval_at_tune_threshold": {
+          "threshold": 0.15,
+          "n_flagged": 35,
+          "tp": 18,
+          "fp": 17,
+          "fn": 5,
+          "precision": 0.5143,
+          "recall": 0.7826,
+          "f1": 0.6207,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.6545,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0338
+      },
+      "OpenAI GPT-4o cued": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.5,
+        "tune_f1_optimal": 0.76,
+        "eval_at_tune_threshold": {
+          "threshold": 0.5,
+          "n_flagged": 34,
+          "tp": 21,
+          "fp": 13,
+          "fn": 2,
+          "precision": 0.6176,
+          "recall": 0.913,
+          "f1": 0.7368,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.75,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0132
       }
     }
   },
@@ -326,6 +446,46 @@
         },
         "eval_in_sample_f1_optimal": 0.751,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0159
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.55,
+        "tune_f1_optimal": 0.79,
+        "eval_at_tune_threshold": {
+          "threshold": 0.55,
+          "n_flagged": 94,
+          "tp": 70,
+          "fp": 24,
+          "fn": 30,
+          "precision": 0.7447,
+          "recall": 0.7,
+          "f1": 0.7216,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.7699,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0483
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.15,
+        "tune_f1_optimal": 0.7873,
+        "eval_at_tune_threshold": {
+          "threshold": 0.15,
+          "n_flagged": 136,
+          "tp": 88,
+          "fp": 48,
+          "fn": 12,
+          "precision": 0.6471,
+          "recall": 0.88,
+          "f1": 0.7458,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.7531,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0073
       }
     }
   }

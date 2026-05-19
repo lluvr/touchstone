@@ -92,6 +92,8 @@ def _load_detector_scores_on_subsample(
         "xAI Grok 4.20 blind": "judge_xai_grok420_blind_n400_2026-05-18.json",
         "Anthropic Claude Sonnet 4.6 cued": "judge_anthropic_sonnet_46_cued_n400_2026-05-19.json",
         "Anthropic Claude Sonnet 4.6 blind": "judge_anthropic_sonnet_46_blind_n400_2026-05-19.json",
+        "OpenAI GPT-4o cued": "judge_openai_gpt4o_cued_n400_2026-05-19.json",
+        "OpenAI GPT-4o blind": "judge_openai_gpt4o_blind_n400_2026-05-19.json",
     }
     judges: dict[str, list[float]] = {}
     for name, rel in judge_paths.items():

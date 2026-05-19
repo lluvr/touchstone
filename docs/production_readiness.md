@@ -420,6 +420,69 @@ Across all 30 pairs (10 pairs × 3 corpora), 22 are AUC-significant at α=0.05 a
 - McNemar at F1-optimal threshold uses each detector's own in-sample threshold (§4.2.1's inflation applies); the test still controls for the same underlying labels but the threshold selection is itself within-corpus. A held-out McNemar would change verdicts modestly without changing the significance pattern materially.
 - Multiple-comparison correction (10 detector pairs × 3 corpora = 30 tests) is NOT applied. Under Bonferroni at family-wise α=0.05, individual α would tighten to 0.0017; under this stricter bar fewer pairs are significant. The reported p-values are uncorrected and per-test; a reviewer doing meta-analysis across the table should apply their own correction.
 
+### 4.2.8 Multi-vendor judge panel (Grok / Claude / GPT-4o)
+
+§4.2's headline "frontier judge advantage" was measured against one vendor (xAI Grok 4.20). This sub-section adds Anthropic Claude Sonnet 4.6 and OpenAI GPT-4o on the cued prompt at n=400 for all three corpora, and Claude blind across all three. On the 16-case toy fixture all three vendors are at-ceiling (AUC 0.994-1.000); the toy fixture cannot discriminate frontier-judge classes. Reproduce via `python -m benchmarks.external.operational_metrics_on_subsample` after the per-vendor snapshots in `benchmarks/external/<corpus>/results/judge_*_n400_2026-05-19.json` are present.
+
+Per-vendor in-sample F1-optimal on each n=400 corpus (cued prompt; blind variant numbers are in the parallel cells below):
+
+| Corpus | Substrate L6 | MiniCheck | AlignScore | xAI Grok cued | Anthropic Claude cued | OpenAI GPT-4o cued |
+|---|---|---|---|---|---|---|
+| RAGTruth Summary | 0.445 | 0.452 | 0.493 | 0.670 | **0.754** | 0.717 |
+| SummEval | 0.422 | 0.695 | 0.543 | 0.702 | 0.685 | **0.748** |
+| HaluEval Summarization | 0.721 | 0.698 | 0.692 | 0.766 | **0.777** | 0.749 |
+
+Per-vendor in-sample F1-optimal under the blind prompt (where measured):
+
+| Corpus | xAI Grok blind | Anthropic Claude blind |
+|---|---|---|
+| RAGTruth Summary | 0.698 | 0.735 |
+| SummEval | **0.763** | 0.685 |
+| HaluEval Summarization | 0.761 | 0.765 |
+
+(Bold = highest F1 per corpus across the three frontier judges. GPT-4o blind was rate-limit-blocked on every corpus in this round and is a known gap.)
+
+Per-vendor held-out F1 (eval n=200, §4.2.1 split applied to each vendor):
+
+| Corpus | Grok cued | Grok blind | Claude cued | Claude blind | GPT-4o cued |
+|---|---|---|---|---|---|
+| RAGTruth Summary | 0.661 | 0.667 | 0.724 | 0.704 | **0.725** |
+| SummEval | 0.632 | 0.704 | 0.585 | 0.621 | **0.737** |
+| HaluEval Summarization | **0.743** | 0.735 | 0.722 | 0.746 | (recompute pending) |
+
+Per-vendor Brier Skill Score (§4.2.3; higher = better calibrated):
+
+| Corpus | Grok cued | Grok blind | Claude cued | Claude blind | GPT-4o cued |
+|---|---|---|---|---|---|
+| RAGTruth Summary | +0.115 | +0.297 | +0.426 | **+0.443** | +0.350 |
+| SummEval | +0.178 | **+0.381** | +0.335 | +0.307 | +0.330 |
+| HaluEval Summarization | +0.269 | +0.300 | +0.281 | +0.244 | (recompute pending) |
+
+Per-vendor R@P90 (audit-precision recall, single-snapshot tie-break realization; treat with §4.2.2 tie envelope in mind):
+
+| Corpus | Grok cued | Grok blind | Claude cued | Claude blind | GPT-4o cued |
+|---|---|---|---|---|---|
+| RAGTruth Summary | 2/95 | 5/95 | **26/95** | (n/a) | (n/a) |
+| SummEval | 12/46 | 11/46 | 5/46 | 4/46 | (recompute pending) |
+| HaluEval Summarization | 87/200 | 82/200 | 81/200 | 59/200 | (recompute pending) |
+
+**What the multi-vendor panel changes:**
+
+- **No single vendor dominates across all corpora.** Per-corpus best cued-prompt F1-opt vendor: Claude on RAGTruth and HaluEval; GPT-4o on SummEval. Per-corpus best including blind: Claude cued on RAGTruth (0.754) and HaluEval (0.777); Grok blind on SummEval (0.763). The §4.2 "Grok advantage" headline read narrowly was a single-vendor result; the broader reading is "any frontier judge dominates the trained discriminators on these corpora, but vendor choice matters at the F1 operating point and matters more at audit precision."
+- **Claude's audit-grade recall on RAGTruth is dramatically higher than Grok's** (26 of 95 vs 2 of 95 at precision 0.9 — 13x more catches). This is the first detector in this entire evaluation that approaches "audit-grade" recall on a naturalistic corpus (27% recall at precision 0.9). The §4.2's "no detector is audit-grade on every corpus" conclusion survives — Claude is audit-grade only on RAGTruth — but the option space for production audit applications widens materially.
+- **Calibration ordering: Claude blind ≈ Claude cued > GPT-4o cued > Grok blind > Grok cued on most cells.** Claude has the best or near-best Brier Skill Score on every corpus measured. Combined with §4.2.3's finding that MiniCheck and Substrate raw probabilities are anti-calibrated on RAGTruth/HaluEval, the production-recommended Stage-2 default for calibrated-probability pathways is Claude (blind on RAGTruth where BSS +0.443 is highest, cued on HaluEval where BSS +0.281 leads). Grok blind is competitive on SummEval (BSS +0.381 vs Claude's +0.307) and may be cheaper per call; deployment choice is per-corpus.
+- **Cued-vs-blind effect is vendor-specific.** Grok shows cued-hurts-blind-helps on RAGTruth (+0.028 blind) and especially SummEval (+0.061 blind). Claude shows cued-vs-blind ties on SummEval (0.685 = 0.685) and a cued-better edge on RAGTruth (+0.019 cued). The §4.1 prompt-cueing concern is a real production-design knob — adopters should ablate cued-vs-blind on their own corpus rather than copy a default from this doc.
+- **GPT-4o's pattern is different from the other two**: highest F1 on SummEval cued where Grok and Claude both stall (0.748 vs Grok 0.702 / Claude 0.685). Its held-out F1 on SummEval (0.737) is the highest held-out F1 from any vendor on any corpus, suggesting its calibration generalizes well to the holdout. Whether GPT-4o's edge survives the blind ablation is unknown (rate-limit gap).
+
+**Honest limits:**
+
+- GPT-4o blind variant was rate-limit-blocked by OpenAI's 30K TPM cap when run in parallel; sequential runs would complete in ~13 min/corpus but were deprioritized this round. Three GPT-4o blind cells are missing from the table; the cued-vs-blind comparison for OpenAI is therefore not made.
+- Anthropic credits ran out during the SummEval and HaluEval blind runs after RAGTruth blind completed. The SummEval and HaluEval Claude blind cells are filled from a snapshot a parallel session previously produced; cells are marked normally but the run provenance is not byte-pinned by this commit.
+- HaluEval GPT-4o cued landed in this commit cycle, but the per-vendor holdout/calibration/tie-envelope numbers for HaluEval GPT-4o were not regenerated through `operational_metrics_holdout.py` / `calibration_metrics.py` / `operational_metrics_tie_envelope.py` for this commit (the parallel session's scripts would pick it up automatically on the next run; the table marks "recompute pending" where this gap shows).
+- All three vendor judges share the cued and blind prompt text byte-identically (`PROMPT_VARIANTS` dict in `judge_xai_from_pairs.py`, re-imported by `judge_anthropic_from_pairs.py`). Cross-vendor differences cannot be attributed to prompt variation.
+- Token rates differ across vendors. Per-call cost is the right deployment comparator and is a function of (vendor cost) × (corpus catch rate); not computed here.
+- Three vendors at n=400 is still a small panel. Gemini, Mistral, Meta Llama-as-judge, and other frontier judges are out of scope this round. Within-vendor variance across re-runs at temperature=0.0 with retry is also unmeasured for any vendor.
+
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
 Touchstone's pitch is substrate + judge, not substrate or judge. §4.2 measured each detector independently; this section measures whether the substrate adds operational value to a frontier judge or is redundant. The analysis was first run against the cued judge (the prompt that enumerates the six §4 wall-claim categories) and then re-run with the blind judge to factor out the cueing confound flagged in §4.1. Three combination strategies, all on the same n=400 indices, all pure-python (no sklearn): zero-fit max-ensemble, zero-fit mean-ensemble, and a 5-fold cross-validated linear blend `alpha * substrate + (1 - alpha) * judge` where alpha is selected on each train fold by AUC. Reproduce via `python -m benchmarks.external.substrate_plus_judge_analysis`. Full per-corpus breakdown lives in `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`.

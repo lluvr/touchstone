@@ -460,6 +460,294 @@
             "calibration_gap": -0.05
           }
         ]
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.076,
+        "mce_10bin": 0.3,
+        "brier_score": 0.1039,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.4263,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 132,
+            "frac_of_total": 0.33,
+            "mean_prob_in_bin": 0.05,
+            "frac_positive_in_bin": 0.0303,
+            "calibration_gap": 0.0197
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 106,
+            "frac_of_total": 0.265,
+            "mean_prob_in_bin": 0.1302,
+            "frac_positive_in_bin": 0.0755,
+            "calibration_gap": 0.0547
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 9,
+            "frac_of_total": 0.0225,
+            "mean_prob_in_bin": 0.25,
+            "frac_positive_in_bin": 0.1111,
+            "calibration_gap": 0.1389
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.3453,
+            "frac_positive_in_bin": 0.125,
+            "calibration_gap": 0.2203
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.3333,
+            "calibration_gap": 0.0667
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 16,
+            "frac_of_total": 0.04,
+            "mean_prob_in_bin": 0.55,
+            "frac_positive_in_bin": 0.25,
+            "calibration_gap": 0.3
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 14,
+            "frac_of_total": 0.035,
+            "mean_prob_in_bin": 0.6,
+            "frac_positive_in_bin": 0.3571,
+            "calibration_gap": 0.2429
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 27,
+            "frac_of_total": 0.0675,
+            "mean_prob_in_bin": 0.7126,
+            "frac_positive_in_bin": 0.6296,
+            "calibration_gap": 0.083
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 37,
+            "frac_of_total": 0.0925,
+            "mean_prob_in_bin": 0.8468,
+            "frac_positive_in_bin": 0.7838,
+            "calibration_gap": 0.063
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 24,
+            "frac_of_total": 0.06,
+            "mean_prob_in_bin": 0.9471,
+            "frac_positive_in_bin": 0.9167,
+            "calibration_gap": 0.0304
+          }
+        ]
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.0488,
+        "mce_10bin": 0.25,
+        "brier_score": 0.1009,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.443,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 175,
+            "frac_of_total": 0.4375,
+            "mean_prob_in_bin": 0.05,
+            "frac_positive_in_bin": 0.0229,
+            "calibration_gap": 0.0271
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 89,
+            "frac_of_total": 0.2225,
+            "mean_prob_in_bin": 0.1298,
+            "frac_positive_in_bin": 0.1348,
+            "calibration_gap": -0.0051
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.25,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.25
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 24,
+            "frac_of_total": 0.06,
+            "mean_prob_in_bin": 0.3375,
+            "frac_positive_in_bin": 0.2083,
+            "calibration_gap": 0.1292
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.3333,
+            "calibration_gap": 0.0667
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 9,
+            "frac_of_total": 0.0225,
+            "mean_prob_in_bin": 0.55,
+            "frac_positive_in_bin": 0.3333,
+            "calibration_gap": 0.2167
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 25,
+            "frac_of_total": 0.0625,
+            "mean_prob_in_bin": 0.6,
+            "frac_positive_in_bin": 0.4,
+            "calibration_gap": 0.2
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 20,
+            "frac_of_total": 0.05,
+            "mean_prob_in_bin": 0.71,
+            "frac_positive_in_bin": 0.75,
+            "calibration_gap": -0.04
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 33,
+            "frac_of_total": 0.0825,
+            "mean_prob_in_bin": 0.8491,
+            "frac_positive_in_bin": 0.7879,
+            "calibration_gap": 0.0612
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 21,
+            "frac_of_total": 0.0525,
+            "mean_prob_in_bin": 0.9529,
+            "frac_positive_in_bin": 0.9048,
+            "calibration_gap": 0.0481
+          }
+        ]
+      },
+      "OpenAI GPT-4o cued": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.0833,
+        "mce_10bin": 0.3563,
+        "brier_score": 0.1178,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.3496,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 28,
+            "frac_of_total": 0.07,
+            "mean_prob_in_bin": 0.0,
+            "frac_positive_in_bin": 0.0357,
+            "calibration_gap": -0.0357
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 242,
+            "frac_of_total": 0.605,
+            "mean_prob_in_bin": 0.1,
+            "frac_positive_in_bin": 0.0661,
+            "calibration_gap": 0.0339
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 41,
+            "frac_of_total": 0.1025,
+            "mean_prob_in_bin": 0.2,
+            "frac_positive_in_bin": 0.2927,
+            "calibration_gap": -0.0927
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.3,
+            "frac_positive_in_bin": 0.6562,
+            "calibration_gap": -0.3563
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 15,
+            "frac_of_total": 0.0375,
+            "mean_prob_in_bin": 0.5,
+            "frac_positive_in_bin": 0.7333,
+            "calibration_gap": -0.2333
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 10,
+            "frac_of_total": 0.025,
+            "mean_prob_in_bin": 0.7,
+            "frac_positive_in_bin": 0.9,
+            "calibration_gap": -0.2
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 8,
+            "frac_of_total": 0.02,
+            "mean_prob_in_bin": 0.8,
+            "frac_positive_in_bin": 0.625,
+            "calibration_gap": 0.175
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 24,
+            "frac_of_total": 0.06,
+            "mean_prob_in_bin": 0.9167,
+            "frac_positive_in_bin": 0.8333,
+            "calibration_gap": 0.0833
+          }
+        ]
       }
     }
   },
@@ -913,6 +1201,276 @@
             "mean_prob_in_bin": 0.9313,
             "frac_positive_in_bin": 0.875,
             "calibration_gap": 0.0563
+          }
+        ]
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.066,
+        "mce_10bin": 0.6,
+        "brier_score": 0.0677,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.3347,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 306,
+            "frac_of_total": 0.765,
+            "mean_prob_in_bin": 0.0419,
+            "frac_positive_in_bin": 0.0131,
+            "calibration_gap": 0.0288
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.1437,
+            "frac_positive_in_bin": 0.1875,
+            "calibration_gap": -0.0438
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 7,
+            "frac_of_total": 0.0175,
+            "mean_prob_in_bin": 0.3286,
+            "frac_positive_in_bin": 0.2857,
+            "calibration_gap": 0.0429
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.6
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.55,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.55
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.6,
+            "frac_positive_in_bin": 0.8333,
+            "calibration_gap": -0.2333
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 5,
+            "frac_of_total": 0.0125,
+            "mean_prob_in_bin": 0.712,
+            "frac_positive_in_bin": 0.2,
+            "calibration_gap": 0.512
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 21,
+            "frac_of_total": 0.0525,
+            "mean_prob_in_bin": 0.8486,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": 0.1819
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 21,
+            "frac_of_total": 0.0525,
+            "mean_prob_in_bin": 0.9495,
+            "frac_positive_in_bin": 0.619,
+            "calibration_gap": 0.3305
+          }
+        ]
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0516,
+        "mce_10bin": 0.65,
+        "brier_score": 0.0705,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.3073,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 321,
+            "frac_of_total": 0.8025,
+            "mean_prob_in_bin": 0.0394,
+            "frac_positive_in_bin": 0.0249,
+            "calibration_gap": 0.0145
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 27,
+            "frac_of_total": 0.0675,
+            "mean_prob_in_bin": 0.1315,
+            "frac_positive_in_bin": 0.2222,
+            "calibration_gap": -0.0907
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.2333,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": -0.4333
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.35,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.65
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": -0.2667
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.6,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": 0.1
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 5,
+            "frac_of_total": 0.0125,
+            "mean_prob_in_bin": 0.704,
+            "frac_positive_in_bin": 0.4,
+            "calibration_gap": 0.304
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 17,
+            "frac_of_total": 0.0425,
+            "mean_prob_in_bin": 0.85,
+            "frac_positive_in_bin": 0.6471,
+            "calibration_gap": 0.2029
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 17,
+            "frac_of_total": 0.0425,
+            "mean_prob_in_bin": 0.9541,
+            "frac_positive_in_bin": 0.6471,
+            "calibration_gap": 0.3071
+          }
+        ]
+      },
+      "OpenAI GPT-4o cued": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0967,
+        "mce_10bin": 0.3,
+        "brier_score": 0.0682,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.3296,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 119,
+            "frac_of_total": 0.2975,
+            "mean_prob_in_bin": 0.0,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.0
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 167,
+            "frac_of_total": 0.4175,
+            "mean_prob_in_bin": 0.1,
+            "frac_positive_in_bin": 0.024,
+            "calibration_gap": 0.076
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.2,
+            "frac_positive_in_bin": 0.0625,
+            "calibration_gap": 0.1375
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 17,
+            "frac_of_total": 0.0425,
+            "mean_prob_in_bin": 0.3,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.3
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 7,
+            "frac_of_total": 0.0175,
+            "mean_prob_in_bin": 0.5,
+            "frac_positive_in_bin": 0.2857,
+            "calibration_gap": 0.2143
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.7,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": 0.2
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 12,
+            "frac_of_total": 0.03,
+            "mean_prob_in_bin": 0.8,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": 0.3
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 44,
+            "frac_of_total": 0.11,
+            "mean_prob_in_bin": 0.9545,
+            "frac_positive_in_bin": 0.7045,
+            "calibration_gap": 0.25
           }
         ]
       }
@@ -1377,6 +1935,210 @@
             "mean_prob_in_bin": 0.95,
             "frac_positive_in_bin": 0.9286,
             "calibration_gap": 0.0214
+          }
+        ]
+      },
+      "Anthropic Claude Sonnet 4.6 cued": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.0915,
+        "mce_10bin": 0.4167,
+        "brier_score": 0.1797,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": 0.2811,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 86,
+            "frac_of_total": 0.215,
+            "mean_prob_in_bin": 0.0497,
+            "frac_positive_in_bin": 0.1395,
+            "calibration_gap": -0.0899
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 65,
+            "frac_of_total": 0.1625,
+            "mean_prob_in_bin": 0.1362,
+            "frac_positive_in_bin": 0.2308,
+            "calibration_gap": -0.0946
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.25,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": -0.4167
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 36,
+            "frac_of_total": 0.09,
+            "mean_prob_in_bin": 0.3458,
+            "frac_positive_in_bin": 0.3889,
+            "calibration_gap": -0.0431
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 5,
+            "frac_of_total": 0.0125,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.6,
+            "calibration_gap": -0.2
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 14,
+            "frac_of_total": 0.035,
+            "mean_prob_in_bin": 0.5464,
+            "frac_positive_in_bin": 0.5714,
+            "calibration_gap": -0.025
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 17,
+            "frac_of_total": 0.0425,
+            "mean_prob_in_bin": 0.6,
+            "frac_positive_in_bin": 0.5882,
+            "calibration_gap": 0.0118
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.7144,
+            "frac_positive_in_bin": 0.6562,
+            "calibration_gap": 0.0581
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 45,
+            "frac_of_total": 0.1125,
+            "mean_prob_in_bin": 0.846,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": 0.1793
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 94,
+            "frac_of_total": 0.235,
+            "mean_prob_in_bin": 0.9594,
+            "frac_positive_in_bin": 0.883,
+            "calibration_gap": 0.0764
+          }
+        ]
+      },
+      "Anthropic Claude Sonnet 4.6 blind": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.1228,
+        "mce_10bin": 0.25,
+        "brier_score": 0.1889,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": 0.2444,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 103,
+            "frac_of_total": 0.2575,
+            "mean_prob_in_bin": 0.0497,
+            "frac_positive_in_bin": 0.1456,
+            "calibration_gap": -0.0959
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 73,
+            "frac_of_total": 0.1825,
+            "mean_prob_in_bin": 0.1308,
+            "frac_positive_in_bin": 0.3288,
+            "calibration_gap": -0.1979
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 4,
+            "frac_of_total": 0.01,
+            "mean_prob_in_bin": 0.25,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": -0.25
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 21,
+            "frac_of_total": 0.0525,
+            "mean_prob_in_bin": 0.3405,
+            "frac_positive_in_bin": 0.5238,
+            "calibration_gap": -0.1833
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 9,
+            "frac_of_total": 0.0225,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.5556,
+            "calibration_gap": -0.1556
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 11,
+            "frac_of_total": 0.0275,
+            "mean_prob_in_bin": 0.5409,
+            "frac_positive_in_bin": 0.3636,
+            "calibration_gap": 0.1773
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 20,
+            "frac_of_total": 0.05,
+            "mean_prob_in_bin": 0.6,
+            "frac_positive_in_bin": 0.65,
+            "calibration_gap": -0.05
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 24,
+            "frac_of_total": 0.06,
+            "mean_prob_in_bin": 0.7083,
+            "frac_positive_in_bin": 0.5833,
+            "calibration_gap": 0.125
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 45,
+            "frac_of_total": 0.1125,
+            "mean_prob_in_bin": 0.8487,
+            "frac_positive_in_bin": 0.7333,
+            "calibration_gap": 0.1153
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 90,
+            "frac_of_total": 0.225,
+            "mean_prob_in_bin": 0.9602,
+            "frac_positive_in_bin": 0.8778,
+            "calibration_gap": 0.0824
           }
         ]
       }
