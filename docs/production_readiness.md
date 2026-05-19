@@ -408,7 +408,31 @@ Headline survival of prior §4.2 / §4.3 ordering claims under paired tests:
 - **Grok blind > Grok cued on AUC is significant on RAGTruth (p=0.047) and SummEval (p=0.002), not on HaluEval (p=0.290)**. The §4.3 narrative "blind AUC equal to or slightly above cued" understates the gap on the two non-adversarial corpora and is correct on HaluEval. The cued prompt is statistically inferior to the blind prompt as a default judge prompt for non-adversarial summarization.
 - **Grok (either variant) significantly beats substrate, MiniCheck, AlignScore on AUC on every corpus**. The cross-class judge advantage in §4.2 is fully supported.
 
-Across all 84 pairs (28 detector pairs × 3 corpora — Claude cued/blind and GPT-4o cued joined the panel per §4.2.8), 49 are AUC-significant at α=0.05 and 69 are McNemar-significant. McNemar catches pairs where the ranking is similar but the verdicts at F1-opt are different (e.g., one detector's F1-opt threshold puts more weight on recall and the other on precision). Several pairs are McNemar-significant but AUC-not (MiniCheck vs AlignScore on RAGTruth and HaluEval; substrate L6 vs AlignScore on HaluEval). Read McNemar as "the operating points disagree" and AUC paired bootstrap as "the ranking abilities disagree." The individual p-values cited in the bullet list above are byte-identical under the expanded panel because each pair is computed independently; only the totals shift with panel size.
+Across all 84 pairs (28 detector pairs × 3 corpora — Claude cued/blind and GPT-4o cued joined the panel per §4.2.8), 49 are AUC-significant at uncorrected α=0.05 and 69 are McNemar-significant. McNemar catches pairs where the ranking is similar but the verdicts at F1-opt are different (e.g., one detector's F1-opt threshold puts more weight on recall and the other on precision). Several pairs are McNemar-significant but AUC-not (MiniCheck vs AlignScore on RAGTruth and HaluEval; substrate L6 vs AlignScore on HaluEval). Read McNemar as "the operating points disagree" and AUC paired bootstrap as "the ranking abilities disagree." The individual p-values cited in the bullet list above are byte-identical under the expanded panel because each pair is computed independently; only the totals shift with panel size.
+
+**Multiple-comparison-corrected survival counts (added 2026-05-19 in response to red-team review):**
+
+| Family | Significant uncorrected (α=0.05) | Bonferroni (α/test = 0.05/84 = 0.000595) | Benjamini-Hochberg FDR (q=0.05) |
+|---|---|---|---|
+| Paired bootstrap AUC | 49/84 | 33/84 | 47/84 |
+| McNemar @ F1-opt | 69/84 | 54/84 | 69/84 |
+
+**Bullet-list claims that drop under Bonferroni at family-wise α=0.05:**
+
+- "Substrate L6 significantly beats MiniCheck on HaluEval Summarization AUC (p=0.048)" — **DROPS** (0.048 > 0.000595). McNemar at F1-opt survives (p ≈ 0). The verdict-level difference is robust; the rank-level difference is within multi-comparison sampling noise. Read as: substrate and MiniCheck disagree on which examples to flag at F1-opt thresholds on HaluEval, but their full ranking abilities are not statistically distinguishable after Bonferroni.
+- "Substrate L6 significantly beats AlignScore on HaluEval Summarization AUC (p=0.026)" — **DROPS** (0.026 > 0.000595). McNemar at F1-opt also fails to survive (p=0.250). Withdraw the AUC ordering claim on HaluEval against AlignScore.
+- "Grok blind > Grok cued on AUC is significant on RAGTruth (p=0.047)" — **DROPS** (0.047 > 0.000595). McNemar at F1-opt survives (p=0.000431 < 0.000595). The verdict-level cued-vs-blind difference is robust on RAGTruth even after Bonferroni; the AUC-level rank difference is not.
+- "Grok blind > Grok cued on AUC is significant on SummEval (p=0.002)" — **DROPS** (0.002 > 0.000595). McNemar at F1-opt survives (p ≈ 2e-06). Same reading: verdict-level difference robust, rank-level not.
+
+**Bullet-list claims that survive Bonferroni:**
+
+- All "Grok (either variant) significantly beats substrate / MiniCheck / AlignScore on AUC" cells on RAGTruth: AUC p ≈ 0 < 0.000595 on every pair. The Grok-class judge dominance on RAGTruth is statistically robust.
+- All "Grok significantly beats non-judge detectors on AUC" cells on SummEval EXCEPT Grok-cued-vs-MiniCheck (p=0.188) and Grok-blind-vs-MiniCheck (p=0.061). MiniCheck on SummEval is AUC-comparable to the Grok judge even under Bonferroni — a meaningful surviving finding for §5: "for SummEval-shape data, MiniCheck and a frontier judge are statistically indistinguishable at the AUC operating point."
+- The HaluEval Grok-cued-vs-substrate AUC gap is uncorrected p=0.019, drops under Bonferroni. The substrate / Grok ordering on HaluEval AUC is NOT statistically supported after correction; the §4.2 narrative claim "the substrate L6 holds its own on HaluEval" gains additional support from this failure-to-reject.
+
+**Benjamini-Hochberg (FDR control at q=0.05) is the more powerful correction for this many tests.** Under BH, 47 of 84 AUC pairs and 69 of 84 McNemar pairs survive — substantially closer to the uncorrected counts (49 / 69). The two paired-AUC dropouts in BH (vs uncorrected) are exactly the borderline-0.04-0.05 cases that Bonferroni also drops. Cite BH-surviving counts rather than uncorrected counts when reporting; use Bonferroni only for the most-conservative cherry-pick-resistant claims.
+
+Reproduce both corrections by running `python -m benchmarks.external.paired_detector_tests` and then post-processing the output JSON against `0.05 / N_tests` (Bonferroni) or the standard BH step-up procedure on the sorted p-value vector.
 
 **What changes in production-architecture claims after paired tests:**
 
@@ -637,4 +661,6 @@ What changes this story:
 - `python examples/production_verifier.py` — runs an end-to-end demo of the calibrated Verifier API.
 - `python -m benchmarks.external.cross_baseline_summary --markdown` — emits the cross-corpus cross-baseline table including trivial-baseline anchor.
 
-All snapshots are byte-pinned; every reported number is reproducible from a fresh clone.
+All snapshots are byte-pinned with one documented exception (§4.2.8 SummEval / HaluEval Claude-blind cells: Anthropic credits exhausted before the runs completed in the foreground session; cells were filled from a parallel-session snapshot at the same commit boundary, with byte-equality verified post-hoc via the reproducibility audit). Every other reported number is reproducible from a fresh clone with the appropriate vault keys; the substrate / MiniCheck / AlignScore rows reproduce with no API credentials needed. Run `bash benchmarks/external/reproducibility_audit.sh` to verify.
+
+The free-tier detector rows (substrate L6 / MiniCheck / AlignScore) are additionally re-reported at full corpus N (900 / 1600 / 1000 vs the n=400 prefix used in §4.2 tables) by `python -m benchmarks.external.operational_metrics_full_n`. The headline F1-optimal numbers match §2's full-N tables byte-exactly (the n=400 prefix preserves base rate within ±1.5 pp; see §4.2 first paragraph). The full-N R@P90 catch counts are tighter than the n=400 catch counts (e.g., MiniCheck on RAGTruth catches 3 of 204 at full-N vs 1 of 95 at n=400 — same recall rate, larger absolute denominator). Cite full-N when the absolute catch count matters; cite n=400 when comparing against the judge column.
