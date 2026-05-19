@@ -6,6 +6,97 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-19: substrate_plus_judge mode lands on the Verifier; doc-vs-library gap closed; Standard 1.0.0-draft.15
+
+draft.14's stress-test re-review surfaced a structural gap: the §5
+production architecture and the §4.2.8 / §4.3 / §4.3.1 multi-vendor
+evidence all recommend a substrate-plus-judge composition, but the
+library's `Verifier` class had no API for that composition. Three
+places in the doc set (README "Read before deploying" bullet, §5
+architecture paragraph, §4.2.3 calibration implications bullet) cited
+`Verifier(use_minicheck=True)` as the production API; the constructor
+in fact takes `mode=` and `calibration=`, not `use_minicheck=True`,
+and there was no `substrate_plus_judge` mode at all.
+
+draft.15 closes the gap. The `Verifier` class gains:
+
+- A fourth `VerifierMode` literal value: `substrate_plus_judge`.
+- A `judge_hallucinated_prob: float | None = None` parameter on
+  `score()`. Mode auto-selects to `substrate_plus_judge` when this
+  is supplied; mutually exclusive with `minicheck_supported_prob` /
+  `alignscore_supported_prob` in the same call (pick one Stage-2
+  detector per call).
+- A `judge_alpha: float = DEFAULT_JUDGE_ALPHA` parameter for the
+  blend weight. Default is 0.3 (cross-corpus mean of the picked α
+  from §4.3.1's holdout-blend table). Adopters whose corpus is
+  HaluEval-shape SHOULD raise to 0.6-0.7; SummEval-shape SHOULD
+  drop to 0.0 (judge-only). Both regimes are picked deterministically
+  by running `substrate_plus_judge_holdout` on a tune split of the
+  adopter's own data.
+- A linear-blend implementation:
+  `final_prob = judge_alpha * substrate_prob + (1 - judge_alpha) * judge_hallucinated_prob`.
+  Matches the §4.3 / §4.3.1 measurement shape byte-exactly. No new
+  logistic regression coefficients required; the substrate component
+  reuses the existing `substrate_only` calibration.
+- Signal breakdown explicitly carries `substrate_prob`,
+  `judge_hallucinated_prob`, and `judge_alpha` keys for adopter
+  auditability.
+- Three guard rails: judge_hallucinated_prob must be in [0, 1],
+  judge_alpha must be in [0, 1], judge_hallucinated_prob is mutex
+  with minicheck/alignscore probs.
+
+The README and `docs/production_readiness.md` are corrected to cite
+the actual API. `examples/production_verifier.py` gains a third demo
+that exercises the new mode end-to-end (with a mocked judge
+probability so the demo runs without an API call; in production the
+caller invokes Grok/Claude/GPT-4o per §4.2.8 and passes the returned
+P(hallucinated)).
+
+Test coverage:
+
+- 7 new tests in `tests/test_verifier.py` covering: auto mode-select,
+  blend arithmetic over five alpha values, judge_alpha=0 (judge-only)
+  edge case, judge_alpha=1 (substrate-only) edge case, mutex with
+  minicheck and alignscore, out-of-range judge_hallucinated_prob and
+  judge_alpha, explicit-mode requires judge_hallucinated_prob.
+- Total test count: 434 → 441. All pass.
+- ruff lint + format pass on verifier.py and test_verifier.py.
+
+Standard (1.0.0-draft.14 -> 1.0.0-draft.15):
+
+- Status header rewritten to describe the new mode and the doc-vs-
+  library gap closure.
+- `__standard_version__` bumped; CITATION.cff, README BibTeX,
+  methodology.md citation synced.
+
+The four pre-existing modes (`substrate_only`,
+`substrate_plus_minicheck`, `substrate_plus_minicheck_alignscore`)
+ship unchanged. The new mode is additive; no existing snapshots or
+test outputs change.
+
+What this changes for adopters: the §5 architecture recommendation
+("for audit-grade, substrate + judge") is now a one-line deploy:
+
+```python
+from clarethium_touchstone import Verifier
+
+v = Verifier()
+# Caller invokes their preferred judge first:
+judge_prob = call_xai_or_claude_or_openai(text=..., source=...)
+result = v.score(text=..., source=..., judge_hallucinated_prob=judge_prob)
+# result.prob_hallucinated is the blended Stage-1 + Stage-2 probability.
+# result.signal_breakdown carries substrate_prob, judge_hallucinated_prob,
+# judge_alpha for adopter audit; result.top_unsupported gives span
+# localization from the substrate's Layer 11 classifications.
+```
+
+Before draft.15, adopters had to re-implement the linear-blend
+arithmetic themselves outside the Verifier (or pretend the §4.3 / §4.3.1
+evidence applied to a Verifier mode that didn't exist). After draft.15,
+the architecture and the library are aligned.
+
+---
+
 ## 2026-05-18: four critical-tier honesty fixes to the §4 cross-detector evidence; Standard 1.0.0-draft.14
 
 The previous round shipped §4.2 cross-detector measurement on n=400 prefix subsamples. An in-session stress-test review (top-AI-lab framing, code+doc verification) surfaced four critical-tier defects in the §4.1+§4.2 framing. This round lands the four fixes coherently and bumps the Standard to draft.14. None of the underlying judge calls were re-run; every new artifact is a re-analysis of the existing pinned snapshots.
