@@ -1,0 +1,725 @@
+{
+  "ragtruth_summary": {
+    "label": "RAGTruth Summary",
+    "n_subsample": 400,
+    "n_positive": 95,
+    "detectors": [
+      "Touchstone substrate L6 (word_overlap_inv)",
+      "MiniCheck Flan-T5-Large",
+      "AlignScore-base",
+      "xAI Grok 4.20 cued",
+      "xAI Grok 4.20 blind"
+    ],
+    "f1_optimal_thresholds": {
+      "Touchstone substrate L6 (word_overlap_inv)": 0.2759,
+      "MiniCheck Flan-T5-Large": 0.1416,
+      "AlignScore-base": 0.2206,
+      "xAI Grok 4.20 cued": 0.65,
+      "xAI Grok 4.20 blind": 0.4
+    },
+    "per_pair": {
+      "Touchstone substrate L6 (word_overlap_inv)  vs  MiniCheck Flan-T5-Large": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6609,
+          "auc_b": 0.6666,
+          "diff_point": -0.0057,
+          "diff_ci_low": -0.0983,
+          "diff_ci_high": 0.0855,
+          "p_two_sided": 0.904,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2759,
+          "threshold_b": 0.1416,
+          "b": 66,
+          "c": 129,
+          "n_discordant": 195,
+          "p_two_sided": 8e-06
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  AlignScore-base": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6609,
+          "auc_b": 0.7174,
+          "diff_point": -0.0565,
+          "diff_ci_low": -0.1271,
+          "diff_ci_high": 0.0163,
+          "p_two_sided": 0.117,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2759,
+          "threshold_b": 0.2206,
+          "b": 55,
+          "c": 104,
+          "n_discordant": 159,
+          "p_two_sided": 0.000126
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6609,
+          "auc_b": 0.854,
+          "diff_point": -0.1931,
+          "diff_ci_low": -0.2627,
+          "diff_ci_high": -0.1241,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2759,
+          "threshold_b": 0.65,
+          "b": 65,
+          "c": 71,
+          "n_discordant": 136,
+          "p_two_sided": 0.668266
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6609,
+          "auc_b": 0.872,
+          "diff_point": -0.211,
+          "diff_ci_low": -0.2791,
+          "diff_ci_high": -0.1417,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2759,
+          "threshold_b": 0.4,
+          "b": 74,
+          "c": 57,
+          "n_discordant": 131,
+          "p_two_sided": 0.161882
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  AlignScore-base": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6666,
+          "auc_b": 0.7174,
+          "diff_point": -0.0508,
+          "diff_ci_low": -0.1204,
+          "diff_ci_high": 0.0221,
+          "p_two_sided": 0.174,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1416,
+          "threshold_b": 0.2206,
+          "b": 81,
+          "c": 67,
+          "n_discordant": 148,
+          "p_two_sided": 0.285217
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6666,
+          "auc_b": 0.854,
+          "diff_point": -0.1874,
+          "diff_ci_low": -0.256,
+          "diff_ci_high": -0.1167,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1416,
+          "threshold_b": 0.65,
+          "b": 107,
+          "c": 50,
+          "n_discordant": 157,
+          "p_two_sided": 6e-06
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6666,
+          "auc_b": 0.872,
+          "diff_point": -0.2053,
+          "diff_ci_low": -0.2755,
+          "diff_ci_high": -0.1311,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1416,
+          "threshold_b": 0.4,
+          "b": 124,
+          "c": 44,
+          "n_discordant": 168,
+          "p_two_sided": 0.0
+        }
+      },
+      "AlignScore-base  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7174,
+          "auc_b": 0.854,
+          "diff_point": -0.1366,
+          "diff_ci_low": -0.1889,
+          "diff_ci_high": -0.0843,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2206,
+          "threshold_b": 0.65,
+          "b": 78,
+          "c": 35,
+          "n_discordant": 113,
+          "p_two_sided": 6.4e-05
+        }
+      },
+      "AlignScore-base  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7174,
+          "auc_b": 0.872,
+          "diff_point": -0.1545,
+          "diff_ci_low": -0.2088,
+          "diff_ci_high": -0.1034,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2206,
+          "threshold_b": 0.4,
+          "b": 98,
+          "c": 32,
+          "n_discordant": 130,
+          "p_two_sided": 0.0
+        }
+      },
+      "xAI Grok 4.20 cued  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.854,
+          "auc_b": 0.872,
+          "diff_point": -0.0179,
+          "diff_ci_low": -0.0369,
+          "diff_ci_high": -0.0004,
+          "p_two_sided": 0.047,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.65,
+          "threshold_b": 0.4,
+          "b": 32,
+          "c": 9,
+          "n_discordant": 41,
+          "p_two_sided": 0.000431
+        }
+      }
+    }
+  },
+  "summeval": {
+    "label": "SummEval",
+    "n_subsample": 400,
+    "n_positive": 46,
+    "detectors": [
+      "Touchstone substrate L6 (word_overlap_inv)",
+      "MiniCheck Flan-T5-Large",
+      "AlignScore-base",
+      "xAI Grok 4.20 cued",
+      "xAI Grok 4.20 blind"
+    ],
+    "f1_optimal_thresholds": {
+      "Touchstone substrate L6 (word_overlap_inv)": 0.1333,
+      "MiniCheck Flan-T5-Large": 0.7879,
+      "AlignScore-base": 0.3215,
+      "xAI Grok 4.20 cued": 0.7,
+      "xAI Grok 4.20 blind": 0.8
+    },
+    "per_pair": {
+      "Touchstone substrate L6 (word_overlap_inv)  vs  MiniCheck Flan-T5-Large": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6445,
+          "auc_b": 0.8936,
+          "diff_point": -0.2491,
+          "diff_ci_low": -0.3616,
+          "diff_ci_high": -0.1421,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1333,
+          "threshold_b": 0.7879,
+          "b": 11,
+          "c": 34,
+          "n_discordant": 45,
+          "p_two_sided": 0.000824
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  AlignScore-base": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6445,
+          "auc_b": 0.8189,
+          "diff_point": -0.1744,
+          "diff_ci_low": -0.2772,
+          "diff_ci_high": -0.0855,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1333,
+          "threshold_b": 0.3215,
+          "b": 8,
+          "c": 28,
+          "n_discordant": 36,
+          "p_two_sided": 0.001193
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6445,
+          "auc_b": 0.9328,
+          "diff_point": -0.2883,
+          "diff_ci_low": -0.3908,
+          "diff_ci_high": -0.1949,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1333,
+          "threshold_b": 0.7,
+          "b": 7,
+          "c": 60,
+          "n_discordant": 67,
+          "p_two_sided": 0.0
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6445,
+          "auc_b": 0.9455,
+          "diff_point": -0.301,
+          "diff_ci_low": -0.4044,
+          "diff_ci_high": -0.2064,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1333,
+          "threshold_b": 0.8,
+          "b": 10,
+          "c": 43,
+          "n_discordant": 53,
+          "p_two_sided": 6e-06
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  AlignScore-base": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8936,
+          "auc_b": 0.8189,
+          "diff_point": 0.0747,
+          "diff_ci_low": -0.0082,
+          "diff_ci_high": 0.1605,
+          "p_two_sided": 0.072,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.7879,
+          "threshold_b": 0.3215,
+          "b": 26,
+          "c": 23,
+          "n_discordant": 49,
+          "p_two_sided": 0.77545
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8936,
+          "auc_b": 0.9328,
+          "diff_point": -0.0392,
+          "diff_ci_low": -0.1053,
+          "diff_ci_high": 0.0176,
+          "p_two_sided": 0.188,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.7879,
+          "threshold_b": 0.7,
+          "b": 8,
+          "c": 38,
+          "n_discordant": 46,
+          "p_two_sided": 9e-06
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8936,
+          "auc_b": 0.9455,
+          "diff_point": -0.0519,
+          "diff_ci_low": -0.1175,
+          "diff_ci_high": 0.0022,
+          "p_two_sided": 0.061,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.7879,
+          "threshold_b": 0.8,
+          "b": 10,
+          "c": 20,
+          "n_discordant": 30,
+          "p_two_sided": 0.098737
+        }
+      },
+      "AlignScore-base  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8189,
+          "auc_b": 0.9328,
+          "diff_point": -0.1139,
+          "diff_ci_low": -0.1854,
+          "diff_ci_high": -0.0468,
+          "p_two_sided": 0.001,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.3215,
+          "threshold_b": 0.7,
+          "b": 16,
+          "c": 49,
+          "n_discordant": 65,
+          "p_two_sided": 5.1e-05
+        }
+      },
+      "AlignScore-base  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8189,
+          "auc_b": 0.9455,
+          "diff_point": -0.1266,
+          "diff_ci_low": -0.1982,
+          "diff_ci_high": -0.0584,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.3215,
+          "threshold_b": 0.8,
+          "b": 20,
+          "c": 33,
+          "n_discordant": 53,
+          "p_two_sided": 0.098371
+        }
+      },
+      "xAI Grok 4.20 cued  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.9328,
+          "auc_b": 0.9455,
+          "diff_point": -0.0127,
+          "diff_ci_low": -0.0234,
+          "diff_ci_high": -0.0036,
+          "p_two_sided": 0.002,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.7,
+          "threshold_b": 0.8,
+          "b": 20,
+          "c": 0,
+          "n_discordant": 20,
+          "p_two_sided": 2e-06
+        }
+      }
+    }
+  },
+  "halueval_summarization": {
+    "label": "HaluEval Summarization",
+    "n_subsample": 400,
+    "n_positive": 200,
+    "detectors": [
+      "Touchstone substrate L6 (word_overlap_inv)",
+      "MiniCheck Flan-T5-Large",
+      "AlignScore-base",
+      "xAI Grok 4.20 cued",
+      "xAI Grok 4.20 blind"
+    ],
+    "f1_optimal_thresholds": {
+      "Touchstone substrate L6 (word_overlap_inv)": 0.1458,
+      "MiniCheck Flan-T5-Large": 0.0519,
+      "AlignScore-base": 0.2627,
+      "xAI Grok 4.20 cued": 0.65,
+      "xAI Grok 4.20 blind": 0.65
+    },
+    "per_pair": {
+      "Touchstone substrate L6 (word_overlap_inv)  vs  MiniCheck Flan-T5-Large": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7477,
+          "auc_b": 0.6835,
+          "diff_point": 0.0642,
+          "diff_ci_low": 0.0,
+          "diff_ci_high": 0.1244,
+          "p_two_sided": 0.048,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1458,
+          "threshold_b": 0.0519,
+          "b": 14,
+          "c": 110,
+          "n_discordant": 124,
+          "p_two_sided": 0.0
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  AlignScore-base": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7477,
+          "auc_b": 0.6855,
+          "diff_point": 0.0622,
+          "diff_ci_low": 0.0076,
+          "diff_ci_high": 0.1157,
+          "p_two_sided": 0.026,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1458,
+          "threshold_b": 0.2627,
+          "b": 57,
+          "c": 71,
+          "n_discordant": 128,
+          "p_two_sided": 0.25044
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7477,
+          "auc_b": 0.807,
+          "diff_point": -0.0594,
+          "diff_ci_low": -0.112,
+          "diff_ci_high": -0.0122,
+          "p_two_sided": 0.019,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1458,
+          "threshold_b": 0.65,
+          "b": 71,
+          "c": 46,
+          "n_discordant": 117,
+          "p_two_sided": 0.026076
+        }
+      },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7477,
+          "auc_b": 0.8159,
+          "diff_point": -0.0683,
+          "diff_ci_low": -0.1207,
+          "diff_ci_high": -0.0184,
+          "p_two_sided": 0.006,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1458,
+          "threshold_b": 0.65,
+          "b": 116,
+          "c": 31,
+          "n_discordant": 147,
+          "p_two_sided": 0.0
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  AlignScore-base": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6835,
+          "auc_b": 0.6855,
+          "diff_point": -0.002,
+          "diff_ci_low": -0.0553,
+          "diff_ci_high": 0.0514,
+          "p_two_sided": 0.961,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.0519,
+          "threshold_b": 0.2627,
+          "b": 91,
+          "c": 9,
+          "n_discordant": 100,
+          "p_two_sided": 0.0
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6835,
+          "auc_b": 0.807,
+          "diff_point": -0.1236,
+          "diff_ci_low": -0.1701,
+          "diff_ci_high": -0.0762,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.0519,
+          "threshold_b": 0.65,
+          "b": 126,
+          "c": 5,
+          "n_discordant": 131,
+          "p_two_sided": 0.0
+        }
+      },
+      "MiniCheck Flan-T5-Large  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6835,
+          "auc_b": 0.8159,
+          "diff_point": -0.1324,
+          "diff_ci_low": -0.1784,
+          "diff_ci_high": -0.0864,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.0519,
+          "threshold_b": 0.65,
+          "b": 181,
+          "c": 0,
+          "n_discordant": 181,
+          "p_two_sided": 0.0
+        }
+      },
+      "AlignScore-base  vs  xAI Grok 4.20 cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6855,
+          "auc_b": 0.807,
+          "diff_point": -0.1215,
+          "diff_ci_low": -0.1707,
+          "diff_ci_high": -0.075,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2627,
+          "threshold_b": 0.65,
+          "b": 77,
+          "c": 38,
+          "n_discordant": 115,
+          "p_two_sided": 0.000351
+        }
+      },
+      "AlignScore-base  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6855,
+          "auc_b": 0.8159,
+          "diff_point": -0.1304,
+          "diff_ci_low": -0.1804,
+          "diff_ci_high": -0.0828,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2627,
+          "threshold_b": 0.65,
+          "b": 120,
+          "c": 21,
+          "n_discordant": 141,
+          "p_two_sided": 0.0
+        }
+      },
+      "xAI Grok 4.20 cued  vs  xAI Grok 4.20 blind": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.807,
+          "auc_b": 0.8159,
+          "diff_point": -0.0089,
+          "diff_ci_low": -0.025,
+          "diff_ci_high": 0.007,
+          "p_two_sided": 0.29,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.65,
+          "threshold_b": 0.65,
+          "b": 60,
+          "c": 0,
+          "n_discordant": 60,
+          "p_two_sided": 0.0
+        }
+      }
+    }
+  }
+}
