@@ -22,3 +22,9 @@ OK    subsample_pair_files.halueval_summarization  sha256 matches  n=400
   OK    benchmarks/external/operational_metrics_n400_tie_envelope_2026-05-18.json  sha256 matches
   OK    benchmarks/external/substrate_plus_judge_n400_2026-05-18.json  sha256 matches
   OK    benchmarks/external/substrate_plus_judge_holdout_n400_2026-05-19.json  sha256 matches
+  OK    benchmarks/external/paired_detector_tests_n400_2026-05-19.json  sha256 matches
+  OK    benchmarks/external/substrate_recalibration_n400_2026-05-19.json  sha256 matches
+=== 5. Adversarial subtle 16-case detector join ===
+  OK    benchmarks/adversarial_subtle/cross_detector_2026-05-18.json  sha256 matches
+=== Audit complete: 2026-05-19T13:25:32+00:00 ===
+RESULT: All checks passed (0 drift). Snapshots reproducible from a clean clone.
