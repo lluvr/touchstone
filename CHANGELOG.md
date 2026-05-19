@@ -6,6 +6,59 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## 2026-05-18: four critical-tier honesty fixes to the §4 cross-detector evidence; Standard 1.0.0-draft.14
+
+The previous round shipped §4.2 cross-detector measurement on n=400 prefix subsamples. An in-session stress-test review (top-AI-lab framing, code+doc verification) surfaced four critical-tier defects in the §4.1+§4.2 framing. This round lands the four fixes coherently and bumps the Standard to draft.14. None of the underlying judge calls were re-run; every new artifact is a re-analysis of the existing pinned snapshots.
+
+**The four critical fixes:**
+
+1. **Prompt-cueing honesty.** `benchmarks/external/judge_xai_from_pairs.py` had a docstring claiming the Grok prompt is "deliberately minimal and unparameterised." The actual prompt enumerates the six §4 wall-claim categories (polarity flips, attribute swaps, scope shifts, time-frame shifts, relation reversals, imputed causes) — exactly the failure modes the fixture tests. The docstring is rewritten to name the prompt as `cued`. A paired `JUDGE_SYSTEM_PROMPT_BLIND` constant ships alongside, exposed via `--prompt-variant {cued,blind}`. The §4.1 confounds box gains a prompt-cueing bullet with the in-session three-arm stress-test result (cued and blind both at 16/16 on the toy fixture; the toy fixture is at ceiling and cannot measure the cueing effect; the cueing measurement must run on naturalistic data and is queued). Existing snapshots are backfilled with `judge_prompt_variant: "cued"` so they are self-documenting; backward-compatible `JUDGE_SYSTEM_PROMPT` alias preserved.
+
+2. **"Stratified" terminology corrected.** §4.2 called the sampling "stratified n=400" but the `subsample_pairs.py` script writes `sampling_strategy: "first_n_in_original_order"` in every indices snapshot. The doc is corrected to "deterministic first-N prefix" with the base-rate-preservation defense made explicit (RAGTruth flips/IID ratio 0.97; SummEval 1.00; HaluEval 2.00 from perfect label alternation; base rate preserved within ±1.5 pp on each).
+
+3. **Held-out F1-optimal threshold (§4.2.1).** New script `benchmarks/external/operational_metrics_holdout.py`. Each n=400 subsample is split 200/200 via deterministic stratified interleave (positives alternate tune/eval/tune/eval in encounter order; negatives likewise) so both halves preserve the subsample's base rate to within 1 example. F1-optimal threshold is chosen on the tune half, metrics reported on the eval half. The in-sample-vs-holdout inflation is auditable per-detector per-corpus. New artifact `operational_metrics_n400_holdout_2026-05-18.json`. Headline finding: detector orderings preserved on every corpus, but absolute F1 inflation ranges 0.000–0.234. The substrate L6 SummEval F1 was 0.422 in-sample → 0.188 held-out (largest single inflation). The Grok edge is the most robust under holdout (inflation 0.000–0.070 across corpora).
+
+4. **Tie-aware metric envelope (§4.2.2).** New script `benchmarks/external/operational_metrics_tie_envelope.py`. K=100 sub-quantum-jitter permutations on each detector's scores; mean ± std reported for F1-optimal, threshold, P@R90, R@P90, and top-10% lift. Deterministic seed (SHA-1 per detector name) so the snapshot is reproducible. New artifact `operational_metrics_n400_tie_envelope_2026-05-18.json`. Headline finding: Grok 4.20's heavy probability clustering (274/400 SummEval probs at exactly 0.0; 110/400 RAGTruth probs at 0.35; 98/400 HaluEval probs at 0.65) makes its R@P90 the least tie-stable headline in §4.2: the snapshot's "Grok catches 12 of 46 on SummEval at P@R90" is 7 ± 3 under random tie-break; "catches 87 of 200 on HaluEval at P@R90" is 67 ± 16. The original snapshot's point estimates sit at or near the favorable tie-break end. The substrate / MiniCheck / AlignScore numbers are tie-stable (std ≈ 0.000). The Grok-vs-MiniCheck +1F1 advantage on SummEval (0.702 vs 0.695 in-sample) becomes effectively zero under the tie envelope (0.696 ± 0.009 vs 0.695 ± 0.000).
+
+**Standard (1.0.0-draft.13 -> 1.0.0-draft.14):**
+
+- Status header rewritten to enumerate the four fixes. Body sections unchanged; the fixes live in `docs/production_readiness.md` §4.1/§4.2 not in the Standard text itself.
+- `__standard_version__` bumped to `1.0.0-draft.14`; CITATION.cff, README BibTeX, and methodology.md citation synced.
+
+**New files (additive; no existing snapshots changed):**
+
+- `benchmarks/external/operational_metrics_holdout.py`
+- `benchmarks/external/operational_metrics_tie_envelope.py`
+- `benchmarks/external/operational_metrics_n400_holdout_2026-05-18.json`
+- `benchmarks/external/operational_metrics_n400_tie_envelope_2026-05-18.json`
+
+**Modified files:**
+
+- `benchmarks/external/judge_xai_from_pairs.py` — refactored prompt constants, added `--prompt-variant` flag, snapshot now records `judge_prompt_variant`.
+- All four Grok snapshots (`benchmarks/adversarial_subtle/judge_xai_2026-05-18.json` and the three §4.2 corpus snapshots) — backfilled `judge_prompt_variant: "cued"` field. Per-example probabilities, AUC, and runtime values unchanged.
+- `docs/production_readiness.md` — §4.1 confounds box gains prompt-cueing bullet; world-knowledge bullet gains the in-session priors-only measurement; §4.2 first paragraph rewrites "stratified" → "deterministic first-N prefix"; §4.2 caveats list mentions cued prompt variant and across-prefix-offset variance gap; new §4.2.1 (holdout table) and §4.2.2 (tie envelope table) sub-sections.
+- Version bumps in `STANDARDS/touchstone-1.0.md`, `src/clarethium_touchstone/_version.py`, `CITATION.cff`, `README.md`, `docs/methodology.md`.
+
+**Verification:**
+
+- `python -m benchmarks.external.operational_metrics_on_subsample` reproduces the original §4.2 table byte-exactly (no regression from snapshot backfill).
+- `python -m benchmarks.external.operational_metrics_holdout` produces the new holdout snapshot deterministically.
+- `python -m benchmarks.external.operational_metrics_tie_envelope` produces the new tie-envelope snapshot deterministically (SHA-1 seed; MD5-stable across runs).
+- `judge_xai_from_pairs.py --help` lists `--prompt-variant {blind,cued}` with cued as default.
+- All four Grok snapshots load and assert their backfilled `judge_prompt_variant == "cued"`.
+
+**Carried forward (still pending — see `docs/production_readiness.md` §4.2.2 closing paragraph):**
+
+- Calibration metrics (ECE, Brier, reliability) per detector per corpus.
+- Across-subsample variance via K=10 prefix-offset draws (substrate/MiniCheck/AlignScore re-tabulation only; Grok column gated on additional judge budget).
+- World-knowledge ablation on §4.1 fixture (source-removed Grok run; ~32 calls).
+- Per-category audit on a slice of §4.2 naturalistic positives.
+- Cued-vs-blind delta on §4.2 sample (~450 calls).
+- Multi-vendor judge panel (Claude / GPT-4 rows on §4.2).
+- Cost-per-call snapshot.
+
+---
+
 ## 2026-05-17: production-readiness reality check — operational metrics + subtle-case stress test; Standard 1.0.0-draft.13
 
 The user critique: "Are we testing internal code (mocks, self-source, project-authored hand-crafted adversarial straw-men) or testing whether this thing actually solves real problems?" The honest answer turned out to be: we'd been testing internal code. AUC numbers don't answer "would deployment actually help?" This round runs the missing operational analyses and writes the conclusion that emerges.

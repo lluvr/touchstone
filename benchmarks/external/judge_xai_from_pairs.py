@@ -7,10 +7,32 @@ each pair. The credential is decrypted from the vault at invocation
 time and lives only in the child process; never read from a file on
 disk and never written to the snapshot.
 
-The judge prompt is deliberately minimal and unparameterised so the
-calibration story is auditable: ``Given SOURCE and OUTPUT, return the
-probability in [0, 1] that OUTPUT contains a claim not supported by
-SOURCE.`` Anything richer would be a separate experiment.
+Two judge prompt variants ship in this module:
+
+- ``cued`` (``JUDGE_SYSTEM_PROMPT_CUED``). The original prompt the
+  §4.1 and §4.2 snapshots in ``production_readiness.md`` were scored
+  under. It enumerates six failure modes (polarity flip, attribute
+  swap, scope shift, time-frame shift, relation reversal, imputed
+  cause) that the §4 wall claim names as the substrate's structural
+  blind spots. Earlier docstrings called this prompt "deliberately
+  minimal and unparameterised"; that framing was wrong. The category
+  enumeration is steering. The 100% separation in §4.1 and the
+  judge column in §4.2 reflect cued-judge performance, not a generic
+  frontier-judge ceiling. See §4.1's prompt-cueing confound bullet
+  in ``docs/production_readiness.md`` for the load-bearing caveat.
+- ``blind`` (``JUDGE_SYSTEM_PROMPT_BLIND``). Same task, no category
+  enumeration. Use this for the cueing-effect ablation. The
+  cued-vs-blind delta on naturalistic data measures how much of the
+  cued judge's advantage is from the prompt steering versus from
+  general source-reading capability. The 16-case fixture is at
+  ceiling under both prompts (see the in-session stress test summary
+  written into the §4.1 confounds box); the cueing ablation has to
+  run on naturalistic data to be informative.
+
+Pass ``--prompt-variant {cued,blind}``; ``cued`` is the default for
+backward compatibility with the existing snapshots. The snapshot
+records ``judge_prompt_variant`` and the literal ``judge_prompt_system``
+text so downstream consumers can tell the variants apart.
 
 Usage::
 
@@ -20,6 +42,7 @@ Usage::
         --label "Adversarial Subtle 16-case" \\
         --corpus-dir adversarial_subtle \\
         --model grok-4.20-0309-non-reasoning \\
+        --prompt-variant cued \\
         --output benchmarks/adversarial_subtle/judge_xai_2026-05-18.json
 """
 
@@ -35,7 +58,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _bootstrap import auc_roc, bootstrap_auc_ci  # noqa: E402
 
-JUDGE_SYSTEM_PROMPT = (
+JUDGE_SYSTEM_PROMPT_CUED = (
     "You are a strict hallucination detector. Given a SOURCE passage and an OUTPUT passage, "
     "estimate the probability in [0, 1] that the OUTPUT contains any claim that is not directly "
     "supported by the SOURCE. Higher means more likely to contain an unsupported claim. "
@@ -45,16 +68,36 @@ JUDGE_SYSTEM_PROMPT = (
     "No prose, no explanation, no other keys."
 )
 
+JUDGE_SYSTEM_PROMPT_BLIND = (
+    "You are a strict hallucination detector. Given a SOURCE passage and an OUTPUT passage, "
+    "estimate the probability in [0, 1] that the OUTPUT contains any claim that is not directly "
+    "supported by the SOURCE. Higher means more likely to contain an unsupported claim. "
+    'Reply with a single JSON object: {"probability_hallucinated": <number in [0, 1]>}. '
+    "No prose, no explanation, no other keys."
+)
+
+PROMPT_VARIANTS = {
+    "cued": JUDGE_SYSTEM_PROMPT_CUED,
+    "blind": JUDGE_SYSTEM_PROMPT_BLIND,
+}
+
+# Backward-compatible alias. Pre-existing imports of JUDGE_SYSTEM_PROMPT
+# continue to resolve to the cued prompt (the prompt the existing
+# snapshots were scored under).
+JUDGE_SYSTEM_PROMPT = JUDGE_SYSTEM_PROMPT_CUED
+
 
 def build_user_message(context: str, output: str) -> str:
     return f"SOURCE:\n{context.strip()}\n\nOUTPUT:\n{output.strip()}"
 
 
-def score_one(client, model: str, context: str, output: str) -> tuple[float, str]:
+def score_one(
+    client, model: str, context: str, output: str, system_prompt: str
+) -> tuple[float, str]:
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": build_user_message(context, output)},
         ],
         temperature=0.0,
@@ -91,7 +134,19 @@ def main() -> None:
         default=3,
         help="On transient API or parse failures, retry up to this many times before raising.",
     )
+    p.add_argument(
+        "--prompt-variant",
+        choices=sorted(PROMPT_VARIANTS),
+        default="cued",
+        help=(
+            "Which judge prompt to use. 'cued' (default, matches the existing §4.1/§4.2 "
+            "snapshots) enumerates the six §4 wall-claim categories. 'blind' omits the "
+            "category enumeration; use it for the cueing-effect ablation. The chosen "
+            "variant is recorded in the output snapshot under 'judge_prompt_variant'."
+        ),
+    )
     args = p.parse_args()
+    system_prompt = PROMPT_VARIANTS[args.prompt_variant]
 
     api_key = os.environ.get("XAI_API_KEY")
     if not api_key:
@@ -113,7 +168,9 @@ def main() -> None:
         last_err: Exception | None = None
         for attempt in range(args.max_retries_per_pair):
             try:
-                prob, raw = score_one(client, args.model, pair["context"], pair["output"])
+                prob, raw = score_one(
+                    client, args.model, pair["context"], pair["output"], system_prompt
+                )
                 probs.append(prob)
                 raws.append(raw)
                 break
@@ -145,7 +202,8 @@ def main() -> None:
         "corpus": args.corpus_dir,
         "baseline_model": f"xAI {args.model}",
         "baseline_provider": "xAI (OpenAI-compatible API)",
-        "judge_prompt_system": JUDGE_SYSTEM_PROMPT,
+        "judge_prompt_variant": args.prompt_variant,
+        "judge_prompt_system": system_prompt,
         "judge_temperature": 0.0,
         "n_total_pairs": len(pairs),
         "n_positive": ci["n_pos"],

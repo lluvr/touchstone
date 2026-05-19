@@ -1,0 +1,272 @@
+{
+  "ragtruth_summary": {
+    "label": "RAGTruth Summary",
+    "n_subsample": 400,
+    "n_positive": 95,
+    "split": "deterministic stratified interleave (pos\u2192tune,eval,tune,eval; neg likewise)",
+    "tune_n": 201,
+    "eval_n": 200,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.3158,
+        "tune_f1_optimal": 0.4681,
+        "eval_at_tune_threshold": {
+          "threshold": 0.3158,
+          "n_flagged": 48,
+          "tp": 17,
+          "fp": 31,
+          "fn": 30,
+          "precision": 0.3542,
+          "recall": 0.3617,
+          "f1": 0.3579,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.4444,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0865
+      },
+      "MiniCheck Flan-T5-Large": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.9095,
+        "tune_f1_optimal": 0.4595,
+        "eval_at_tune_threshold": {
+          "threshold": 0.9095,
+          "n_flagged": 17,
+          "tp": 11,
+          "fp": 6,
+          "fn": 36,
+          "precision": 0.6471,
+          "recall": 0.234,
+          "f1": 0.3438,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.4727,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.1289
+      },
+      "AlignScore-base": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.2856,
+        "tune_f1_optimal": 0.5042,
+        "eval_at_tune_threshold": {
+          "threshold": 0.2856,
+          "n_flagged": 70,
+          "tp": 28,
+          "fp": 42,
+          "fn": 19,
+          "precision": 0.4,
+          "recall": 0.5957,
+          "f1": 0.4786,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.5211,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0425
+      },
+      "xAI Grok 4.20 non-reasoning": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.65,
+        "tune_f1_optimal": 0.6387,
+        "eval_at_tune_threshold": {
+          "threshold": 0.65,
+          "n_flagged": 80,
+          "tp": 42,
+          "fp": 38,
+          "fn": 5,
+          "precision": 0.525,
+          "recall": 0.8936,
+          "f1": 0.6614,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.7115,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0501
+      }
+    }
+  },
+  "summeval": {
+    "label": "SummEval",
+    "n_subsample": 400,
+    "n_positive": 46,
+    "split": "deterministic stratified interleave (pos\u2192tune,eval,tune,eval; neg likewise)",
+    "tune_n": 200,
+    "eval_n": 200,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.1333,
+        "tune_f1_optimal": 0.6154,
+        "eval_at_tune_threshold": {
+          "threshold": 0.1333,
+          "n_flagged": 9,
+          "tp": 3,
+          "fp": 6,
+          "fn": 20,
+          "precision": 0.3333,
+          "recall": 0.1304,
+          "f1": 0.1875,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.2817,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0942
+      },
+      "MiniCheck Flan-T5-Large": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.4305,
+        "tune_f1_optimal": 0.717,
+        "eval_at_tune_threshold": {
+          "threshold": 0.4305,
+          "n_flagged": 35,
+          "tp": 18,
+          "fp": 17,
+          "fn": 5,
+          "precision": 0.5143,
+          "recall": 0.7826,
+          "f1": 0.6207,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.6939,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0732
+      },
+      "AlignScore-base": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.3215,
+        "tune_f1_optimal": 0.6667,
+        "eval_at_tune_threshold": {
+          "threshold": 0.3215,
+          "n_flagged": 21,
+          "tp": 9,
+          "fp": 12,
+          "fn": 14,
+          "precision": 0.4286,
+          "recall": 0.3913,
+          "f1": 0.4091,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.4308,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0217
+      },
+      "xAI Grok 4.20 non-reasoning": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.8,
+        "tune_f1_optimal": 0.7755,
+        "eval_at_tune_threshold": {
+          "threshold": 0.8,
+          "n_flagged": 34,
+          "tp": 18,
+          "fp": 16,
+          "fn": 5,
+          "precision": 0.5294,
+          "recall": 0.7826,
+          "f1": 0.6316,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.6885,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0569
+      }
+    }
+  },
+  "halueval_summarization": {
+    "label": "HaluEval Summarization",
+    "n_subsample": 400,
+    "n_positive": 200,
+    "split": "deterministic stratified interleave (pos\u2192tune,eval,tune,eval; neg likewise)",
+    "tune_n": 200,
+    "eval_n": 200,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.1519,
+        "tune_f1_optimal": 0.7468,
+        "eval_at_tune_threshold": {
+          "threshold": 0.1519,
+          "n_flagged": 125,
+          "tp": 78,
+          "fp": 47,
+          "fn": 22,
+          "precision": 0.624,
+          "recall": 0.78,
+          "f1": 0.6933,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.707,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0137
+      },
+      "MiniCheck Flan-T5-Large": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.0787,
+        "tune_f1_optimal": 0.7181,
+        "eval_at_tune_threshold": {
+          "threshold": 0.0787,
+          "n_flagged": 156,
+          "tp": 86,
+          "fp": 70,
+          "fn": 14,
+          "precision": 0.5513,
+          "recall": 0.86,
+          "f1": 0.6719,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.6978,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0259
+      },
+      "AlignScore-base": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.2745,
+        "tune_f1_optimal": 0.7395,
+        "eval_at_tune_threshold": {
+          "threshold": 0.2745,
+          "n_flagged": 135,
+          "tp": 74,
+          "fp": 61,
+          "fn": 26,
+          "precision": 0.5481,
+          "recall": 0.74,
+          "f1": 0.6298,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.6857,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0559
+      },
+      "xAI Grok 4.20 non-reasoning": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.65,
+        "tune_f1_optimal": 0.7892,
+        "eval_at_tune_threshold": {
+          "threshold": 0.65,
+          "n_flagged": 118,
+          "tp": 81,
+          "fp": 37,
+          "fn": 19,
+          "precision": 0.6864,
+          "recall": 0.81,
+          "f1": 0.7431,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.7431,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0
+      }
+    }
+  }
+}
