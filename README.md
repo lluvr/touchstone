@@ -56,7 +56,7 @@ What Touchstone IS useful for in production:
 - **Triage / review-queue prioritization**: 2-4× lift over random review on English news summarization corpora (lift of 4.22× on SummEval top-10% review).
 - **Cheap first-pass filter** in a two-stage pipeline ahead of an LLM-based judge.
 - **Drift detection** on stable production streams.
-- **Lexical-feature half of a production hallucination detector** — combine with a trained semantic discriminator via `Verifier(use_minicheck=True)`.
+- **Lexical-feature half of a production hallucination detector** — combine with a trained semantic discriminator via `Verifier(mode="substrate_plus_minicheck").score(text, source, minicheck_supported_prob=mc_prob)`, or with a frontier LLM judge via `Verifier().score(text, source, judge_hallucinated_prob=judge_prob)` (mode auto-selects to `substrate_plus_judge`; linear blend with `judge_alpha` defaulting to 0.3 per §4.3.1).
 
 Full operational analysis with precision/recall/F1/lift numbers, the 16-case stress test results, and the production architecture recommendation: see `docs/production_readiness.md` and `docs/methodology.md`. Read both before shipping anything that depends on Touchstone's output.
 
@@ -390,7 +390,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard ch
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.14). When citing it, please
+The Standard is currently in draft (1.0.0-draft.15). When citing it, please
 indicate the draft state and the version:
 
 ```bibtex
@@ -399,7 +399,7 @@ indicate the draft state and the version:
   title        = {Touchstone Standard 1.0 (draft)},
   year         = {2026},
   howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.14},
+  note         = {Version 1.0.0-draft.15},
   license      = {CC-BY-4.0}
 }
 ```

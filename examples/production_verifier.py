@@ -1,6 +1,6 @@
 """Production usage demo for the Touchstone Verifier.
 
-Shows three operating modes:
+Shows the four operating modes:
 
 1. **Substrate-only** (no extras, sub-100 ms per pair): the default.
    Suitable for drift detection and regression testing; not for
@@ -11,6 +11,13 @@ Shows three operating modes:
    held-out test split. Adds the MiniCheck cost (~5 s/pair on CPU).
 3. **Substrate + MiniCheck + AlignScore**: AUC ≈ 0.77. Adds the
    AlignScore cost (~5 s/pair on CPU) on top of MiniCheck.
+4. **Substrate + LLM judge** (caller invokes any frontier judge —
+   xAI Grok / Anthropic Claude / OpenAI GPT-4o per §4.2.8 — and
+   passes the P(hallucinated) the judge returned). Linear blend
+   with ``judge_alpha`` defaulting to ≈ 0.3 (cross-corpus mean of
+   the §4.3.1 picked α). Highest AUC of the four modes when the
+   judge is competently chosen; deployment cost is one judge call
+   per pair (~1-2 s, $.001-.005 per call depending on vendor).
 
 The Verifier is the production-shaped API: one ``score()`` call,
 calibrated probability + CI bounds + per-sentence localization. See
@@ -57,15 +64,25 @@ def main() -> None:
     print(f"  {SOURCE}")
     print()
 
-    for label, summary in [
-        ("Faithful summary", FAITHFUL_SUMMARY),
-        ("Hallucinated summary", HALLUCINATED_SUMMARY),
-    ]:
+    # The first two demos use substrate-only. The third shows the new
+    # substrate_plus_judge mode (mocked judge probability so the demo runs
+    # without an API call; in production the caller invokes Grok/Claude/
+    # GPT-4o and passes the returned P(hallucinated)).
+    demos: list[tuple[str, str, dict[str, float | None]]] = [
+        ("Faithful summary, substrate-only", FAITHFUL_SUMMARY, {}),
+        ("Hallucinated summary, substrate-only", HALLUCINATED_SUMMARY, {}),
+        (
+            "Hallucinated summary, substrate + judge (judge_hallucinated_prob=0.92, judge_alpha=0.3)",
+            HALLUCINATED_SUMMARY,
+            {"judge_hallucinated_prob": 0.92, "judge_alpha": 0.3},
+        ),
+    ]
+    for label, summary, judge_kwargs in demos:
         print("-" * 70)
         print(f"[{label}]")
         print(f"  {summary}")
         print()
-        result = verifier.score(summary, source=SOURCE)
+        result = verifier.score(summary, source=SOURCE, **judge_kwargs)
         # Two thresholds shown for honesty: 0.5 is the library default but
         # operationally under-flags on the v1.0 corpora (the F1-optimal
         # threshold is 0.07-0.27 there). Adopters MUST tune on their own
@@ -115,7 +132,9 @@ def main() -> None:
     print("    - Drift detection on stable production streams.")
     print("    - The lexical half of a two-stage architecture; combine with a")
     print("      trained semantic discriminator via minicheck_supported_prob and/or")
-    print("      alignscore_supported_prob arguments to score().")
+    print("      alignscore_supported_prob, OR a frontier LLM judge via")
+    print("      judge_hallucinated_prob (mode auto-selects to substrate_plus_judge;")
+    print("      linear blend with judge_alpha defaulting to 0.3 per §4.3.1).")
     print()
     print("  • The default should_flag(threshold=0.5) UNDER-FLAGS for any")
     print("    production deployment. F1-optimal thresholds on v1.0 corpora are")

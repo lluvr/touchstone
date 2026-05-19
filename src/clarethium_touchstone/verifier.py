@@ -35,6 +35,18 @@ increasing per-call latency:
   ``minicheck_supported_prob``. AUC ≈ 0.76.
 * **substrate_plus_minicheck_alignscore** — both baseline probabilities
   supplied. AUC ≈ 0.77.
+* **substrate_plus_judge** — caller invokes a frontier LLM judge (xAI
+  Grok / Anthropic Claude / OpenAI GPT-4o per the §4.2.8 panel) and
+  passes ``judge_hallucinated_prob`` (P(hallucinated), already in the
+  detector-output orientation; do NOT invert). Final probability is a
+  linear blend ``judge_alpha * substrate_prob + (1 - judge_alpha) *
+  judge_hallucinated_prob``. Mode auto-selects when ``judge_hallucinated_prob``
+  is supplied to :meth:`Verifier.score`. The default ``judge_alpha``
+  (≈ 0.3) is the cross-corpus mean of the picked alpha from §4.3.1's
+  holdout-blend table; adopters should tune α on their own held-out
+  data (see ``substrate_plus_judge_holdout`` reproduction). AUC on the
+  three §4.2 corpora ranges 0.78-0.94 depending on judge vendor and
+  cued/blind variant; see §4.2.8 in production_readiness.md.
 
 The honest empirical bound, operational metrics, and subtle-case
 stress test are documented in ``docs/production_readiness.md``.
@@ -61,7 +73,20 @@ VerifierMode = Literal[
     "substrate_only",
     "substrate_plus_minicheck",
     "substrate_plus_minicheck_alignscore",
+    "substrate_plus_judge",
 ]
+
+# Default substrate weight for the substrate_plus_judge linear blend.
+# Source: docs/production_readiness.md §4.3.1 holdout-validated blend table.
+# Across 12 (corpus × judge-variant) cells with α picked on tune-AUC, the
+# mean of the picked α is ≈ 0.375. The default below is a modest tilt
+# toward the judge that still gives the substrate ~30% weight; adopters
+# whose corpus is HaluEval-shape (substrate is itself AUC-strong; see
+# §4.2.7) SHOULD raise this to ~0.6-0.7, and adopters whose corpus is
+# SummEval-shape (substrate adds nothing per §4.3.1) SHOULD drop it to
+# 0.0 (judge-only) — both cases are picked deterministically by running
+# substrate_plus_judge_holdout on a tune split of their own data.
+DEFAULT_JUDGE_ALPHA = 0.3
 
 
 @dataclass(frozen=True)
@@ -278,6 +303,8 @@ class Verifier:
         source: str,
         minicheck_supported_prob: float | None = None,
         alignscore_supported_prob: float | None = None,
+        judge_hallucinated_prob: float | None = None,
+        judge_alpha: float = DEFAULT_JUDGE_ALPHA,
         top_k_unsupported: int = 3,
     ) -> VerifierResult:
         """Score a single (output, source) pair.
@@ -291,6 +318,26 @@ class Verifier:
             alignscore_supported_prob: Optional AlignScore supported-probability
                 in [0, 1] (caller invokes AlignScore themselves). Higher means
                 more supported.
+            judge_hallucinated_prob: Optional LLM-judge probability in [0, 1]
+                that the output is hallucinated (caller invokes the judge
+                themselves; this is the raw P(hallucinated) the judge
+                returned, NOT a P(supported) — the §4 reference judges xAI
+                Grok / Anthropic Claude / OpenAI GPT-4o all return this
+                shape). When supplied, mode auto-selects to
+                ``substrate_plus_judge`` and the final probability is a
+                linear blend ``judge_alpha * substrate_prob +
+                (1 - judge_alpha) * judge_hallucinated_prob``. Cannot be
+                combined with ``minicheck_supported_prob`` or
+                ``alignscore_supported_prob`` in the same call; pick one
+                Stage-2 detector per call.
+            judge_alpha: Substrate weight in the substrate_plus_judge blend.
+                Default ``DEFAULT_JUDGE_ALPHA`` (≈ 0.3) is the cross-corpus
+                mean of the tune-AUC-picked α from §4.3.1's holdout-blend
+                table. Adopters SHOULD run substrate_plus_judge_holdout on
+                a tune split of their own data and use the per-corpus α
+                rather than the default. HaluEval-shape corpora (substrate
+                is itself AUC-strong) prefer α ≈ 0.6-0.7; SummEval-shape
+                corpora (substrate adds nothing) prefer α = 0.0 (judge-only).
             top_k_unsupported: Maximum number of unsupported spans to return.
 
         Returns:
@@ -298,9 +345,23 @@ class Verifier:
             signal breakdown, top unsupported spans, and the raw measure()
             output for drill-down.
         """
+        # judge_hallucinated_prob is mutually exclusive with the trained
+        # discriminator probabilities; the substrate_plus_judge blend
+        # already implies a single Stage-2 detector.
+        if judge_hallucinated_prob is not None and (
+            minicheck_supported_prob is not None or alignscore_supported_prob is not None
+        ):
+            raise ValueError(
+                "judge_hallucinated_prob is mutually exclusive with "
+                "minicheck_supported_prob and alignscore_supported_prob. "
+                "Pick one Stage-2 detector per score() call."
+            )
+
         # Auto-select mode from supplied baselines, unless explicitly set.
         if self._explicit_mode is not None:
             mode = self._explicit_mode
+        elif judge_hallucinated_prob is not None:
+            mode = "substrate_plus_judge"
         elif minicheck_supported_prob is not None and alignscore_supported_prob is not None:
             mode = "substrate_plus_minicheck_alignscore"
         elif minicheck_supported_prob is not None:
@@ -312,8 +373,11 @@ class Verifier:
         measure_result = measure(text, source=source)
         substrate = _extract_substrate_features(measure_result)
 
-        # Build the feature vector matching the mode's calibration shape.
-        calib = self._calibration[mode]
+        # The substrate_plus_judge mode reuses the substrate_only calibration
+        # for the substrate component and linear-blends with the judge prob.
+        # All other modes use their own logistic-regression calibration.
+        calib_key = "substrate_only" if mode == "substrate_plus_judge" else mode
+        calib = self._calibration[calib_key]
         coefs = calib["coef"]
         intercept = float(calib["intercept"])
 
@@ -338,7 +402,25 @@ class Verifier:
             contrib = float(coef) * features[name]
             logit += contrib
             breakdown[name] = round(contrib, 6)
-        prob = _sigmoid(logit)
+        substrate_prob = _sigmoid(logit)
+
+        if mode == "substrate_plus_judge":
+            if judge_hallucinated_prob is None:
+                raise ValueError(
+                    "mode=substrate_plus_judge requires judge_hallucinated_prob; pass it to score()."
+                )
+            jp = float(judge_hallucinated_prob)
+            if not 0.0 <= jp <= 1.0:
+                raise ValueError(f"judge_hallucinated_prob out of [0, 1]: {jp}")
+            if not 0.0 <= float(judge_alpha) <= 1.0:
+                raise ValueError(f"judge_alpha out of [0, 1]: {judge_alpha}")
+            blend_prob = float(judge_alpha) * substrate_prob + (1.0 - float(judge_alpha)) * jp
+            breakdown["substrate_prob"] = round(substrate_prob, 6)
+            breakdown["judge_hallucinated_prob"] = round(jp, 6)
+            breakdown["judge_alpha"] = float(judge_alpha)
+            prob = blend_prob
+        else:
+            prob = substrate_prob
 
         # Per-sentence localization from Layer 11 classifications.
         unsupported = _identify_unsupported_spans(measure_result, top_k_unsupported)

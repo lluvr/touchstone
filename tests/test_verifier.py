@@ -133,6 +133,109 @@ def test_substrate_plus_both_baselines() -> None:
     assert "alignscore_neg" in result.signal_breakdown
 
 
+def test_substrate_plus_judge_auto_selects_mode() -> None:
+    """Passing judge_hallucinated_prob auto-selects substrate_plus_judge mode."""
+    v = Verifier()
+    result = v.score(
+        HALLUCINATED_TEXT,
+        source=HALLUCINATED_SOURCE,
+        judge_hallucinated_prob=0.9,
+    )
+    assert result.mode == "substrate_plus_judge"
+    assert "substrate_prob" in result.signal_breakdown
+    assert "judge_hallucinated_prob" in result.signal_breakdown
+    assert "judge_alpha" in result.signal_breakdown
+    assert 0.0 <= result.prob_hallucinated <= 1.0
+
+
+def test_substrate_plus_judge_blend_arithmetic() -> None:
+    """Final prob exactly equals judge_alpha*substrate + (1-judge_alpha)*judge."""
+    v = Verifier()
+    judge_p = 0.8
+    for alpha in (0.0, 0.3, 0.5, 0.7, 1.0):
+        r = v.score(
+            HALLUCINATED_TEXT,
+            source=HALLUCINATED_SOURCE,
+            judge_hallucinated_prob=judge_p,
+            judge_alpha=alpha,
+        )
+        substrate_p = r.signal_breakdown["substrate_prob"]
+        expected = alpha * substrate_p + (1.0 - alpha) * judge_p
+        assert abs(r.prob_hallucinated - expected) < 1e-4, (
+            f"alpha={alpha}: blend prob {r.prob_hallucinated} != "
+            f"alpha*substrate + (1-alpha)*judge = {expected}"
+        )
+
+
+def test_substrate_plus_judge_judge_only_when_alpha_zero() -> None:
+    """judge_alpha=0 reduces the blend to judge-only."""
+    v = Verifier()
+    for jp in (0.0, 0.25, 0.5, 0.75, 1.0):
+        r = v.score(
+            HALLUCINATED_TEXT,
+            source=HALLUCINATED_SOURCE,
+            judge_hallucinated_prob=jp,
+            judge_alpha=0.0,
+        )
+        assert abs(r.prob_hallucinated - jp) < 1e-6
+
+
+def test_substrate_plus_judge_substrate_only_when_alpha_one() -> None:
+    """judge_alpha=1 reduces the blend to substrate-only."""
+    v = Verifier()
+    r_blend = v.score(
+        HALLUCINATED_TEXT,
+        source=HALLUCINATED_SOURCE,
+        judge_hallucinated_prob=0.99,
+        judge_alpha=1.0,
+    )
+    r_subs = v.score(HALLUCINATED_TEXT, source=HALLUCINATED_SOURCE)
+    # alpha=1 in substrate_plus_judge should match the substrate-only prob.
+    assert abs(r_blend.prob_hallucinated - r_subs.prob_hallucinated) < 1e-4
+
+
+def test_substrate_plus_judge_mutex_with_trained_discriminators() -> None:
+    """judge_hallucinated_prob cannot be combined with minicheck/alignscore."""
+    v = Verifier()
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        v.score(
+            SUPPORTED_TEXT,
+            source=SUPPORTED_SOURCE,
+            judge_hallucinated_prob=0.5,
+            minicheck_supported_prob=0.5,
+        )
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        v.score(
+            SUPPORTED_TEXT,
+            source=SUPPORTED_SOURCE,
+            judge_hallucinated_prob=0.5,
+            alignscore_supported_prob=0.5,
+        )
+
+
+def test_substrate_plus_judge_out_of_range_inputs_raise() -> None:
+    """Out-of-range judge_hallucinated_prob or judge_alpha raise."""
+    v = Verifier()
+    with pytest.raises(ValueError, match="judge_hallucinated_prob out of"):
+        v.score(SUPPORTED_TEXT, source=SUPPORTED_SOURCE, judge_hallucinated_prob=1.5)
+    with pytest.raises(ValueError, match="judge_hallucinated_prob out of"):
+        v.score(SUPPORTED_TEXT, source=SUPPORTED_SOURCE, judge_hallucinated_prob=-0.1)
+    with pytest.raises(ValueError, match="judge_alpha out of"):
+        v.score(
+            SUPPORTED_TEXT,
+            source=SUPPORTED_SOURCE,
+            judge_hallucinated_prob=0.5,
+            judge_alpha=1.5,
+        )
+
+
+def test_substrate_plus_judge_requires_judge_prob_when_explicit() -> None:
+    """If mode=substrate_plus_judge is set explicitly, omitting judge_prob raises."""
+    v = Verifier(mode="substrate_plus_judge")
+    with pytest.raises(ValueError, match="judge_hallucinated_prob"):
+        v.score(SUPPORTED_TEXT, source=SUPPORTED_SOURCE)
+
+
 def test_with_calibration_custom_coefficients() -> None:
     """Verifier.with_calibration accepts a custom coefficient dict."""
     custom = {

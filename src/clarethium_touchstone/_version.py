@@ -13,4 +13,4 @@ discipline.
 """
 
 __version__ = "0.1.0"
-__standard_version__ = "1.0.0-draft.14"
+__standard_version__ = "1.0.0-draft.15"
