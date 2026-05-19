@@ -1,0 +1,286 @@
+{
+  "ragtruth_summary": {
+    "label": "RAGTruth Summary",
+    "n_subsample": 400,
+    "n_positive": 95,
+    "tune_n": 201,
+    "eval_n": 199,
+    "feature_names": [
+      "l6_inv",
+      "l4_unsourced",
+      "l4_n_total_norm",
+      "l11_p",
+      "l5_entity_unsourced",
+      "l5_n_entities_norm"
+    ],
+    "fitted_calibration": {
+      "intercept": -1.492962,
+      "coef": {
+        "l6_inv": 1.125288,
+        "l4_unsourced": -0.201994,
+        "l4_n_total_norm": 0.235286,
+        "l11_p": 0.173521,
+        "l5_entity_unsourced": -0.023621,
+        "l5_n_entities_norm": 0.384109
+      }
+    },
+    "default_calibration_on_eval": {
+      "tune_threshold": 0.2204,
+      "eval_at_tune_threshold": {
+        "threshold": 0.2204,
+        "n_flagged": 96,
+        "tp": 30,
+        "fp": 66,
+        "fn": 17,
+        "precision": 0.3125,
+        "recall": 0.6383,
+        "f1": 0.4196,
+        "n_eval": 199,
+        "n_eval_positive": 47
+      },
+      "eval_auc": 0.633,
+      "eval_precision_at_recall_0.9": {
+        "threshold": 0.1657,
+        "precision": 0.2704,
+        "recall": 0.9149,
+        "n_flagged": 159,
+        "tp": 43,
+        "fp": 116,
+        "false_positive_rate": 0.7632,
+        "false_alarms_per_caught": 2.7
+      },
+      "eval_recall_at_precision_0.9": null
+    },
+    "refit_calibration_on_eval": {
+      "tune_f1_optimal_threshold": 0.251,
+      "tune_f1_optimal": 0.5357,
+      "eval_at_tune_threshold": {
+        "threshold": 0.251,
+        "n_flagged": 57,
+        "tp": 19,
+        "fp": 38,
+        "fn": 28,
+        "precision": 0.3333,
+        "recall": 0.4043,
+        "f1": 0.3654,
+        "n_eval": 199,
+        "n_eval_positive": 47
+      },
+      "eval_auc": 0.6316,
+      "eval_precision_at_recall_0.9": {
+        "threshold": 0.2116,
+        "precision": 0.2471,
+        "recall": 0.9149,
+        "n_flagged": 174,
+        "tp": 43,
+        "fp": 131,
+        "false_positive_rate": 0.8618,
+        "false_alarms_per_caught": 3.05
+      },
+      "eval_recall_at_precision_0.9": {
+        "threshold": 0.3166,
+        "precision": 1.0,
+        "recall": 0.0213,
+        "n_flagged": 1,
+        "tp": 1,
+        "fp": 0
+      }
+    },
+    "refit_gain_eval_auc": -0.0014,
+    "refit_gain_eval_f1": -0.0542
+  },
+  "summeval": {
+    "label": "SummEval",
+    "n_subsample": 400,
+    "n_positive": 46,
+    "tune_n": 200,
+    "eval_n": 200,
+    "feature_names": [
+      "l6_inv",
+      "l4_unsourced",
+      "l4_n_total_norm",
+      "l11_p",
+      "l5_entity_unsourced",
+      "l5_n_entities_norm"
+    ],
+    "fitted_calibration": {
+      "intercept": -2.126522,
+      "coef": {
+        "l6_inv": 1.416695,
+        "l4_unsourced": 0.788998,
+        "l4_n_total_norm": 0.15312,
+        "l11_p": 0.110555,
+        "l5_entity_unsourced": 0.0,
+        "l5_n_entities_norm": 0.114011
+      }
+    },
+    "default_calibration_on_eval": {
+      "tune_threshold": 0.1509,
+      "eval_at_tune_threshold": {
+        "threshold": 0.1509,
+        "n_flagged": 6,
+        "tp": 1,
+        "fp": 5,
+        "fn": 22,
+        "precision": 0.1667,
+        "recall": 0.0435,
+        "f1": 0.069,
+        "n_eval": 200,
+        "n_eval_positive": 23
+      },
+      "eval_auc": 0.5564,
+      "eval_precision_at_recall_0.9": {
+        "threshold": 0.0999,
+        "precision": 0.1304,
+        "recall": 0.913,
+        "n_flagged": 161,
+        "tp": 21,
+        "fp": 140,
+        "false_positive_rate": 0.791,
+        "false_alarms_per_caught": 6.67
+      },
+      "eval_recall_at_precision_0.9": {
+        "threshold": 0.2562,
+        "precision": 1.0,
+        "recall": 0.0435,
+        "n_flagged": 1,
+        "tp": 1,
+        "fp": 0
+      }
+    },
+    "refit_calibration_on_eval": {
+      "tune_f1_optimal_threshold": 0.1306,
+      "tune_f1_optimal": 0.6857,
+      "eval_at_tune_threshold": {
+        "threshold": 0.1306,
+        "n_flagged": 4,
+        "tp": 1,
+        "fp": 3,
+        "fn": 22,
+        "precision": 0.25,
+        "recall": 0.0435,
+        "f1": 0.0741,
+        "n_eval": 200,
+        "n_eval_positive": 23
+      },
+      "eval_auc": 0.5601,
+      "eval_precision_at_recall_0.9": {
+        "threshold": 0.1065,
+        "precision": 0.1304,
+        "recall": 0.913,
+        "n_flagged": 161,
+        "tp": 21,
+        "fp": 140,
+        "false_positive_rate": 0.791,
+        "false_alarms_per_caught": 6.67
+      },
+      "eval_recall_at_precision_0.9": {
+        "threshold": 0.1605,
+        "precision": 1.0,
+        "recall": 0.0435,
+        "n_flagged": 1,
+        "tp": 1,
+        "fp": 0
+      }
+    },
+    "refit_gain_eval_auc": 0.0037,
+    "refit_gain_eval_f1": 0.0051
+  },
+  "halueval_summarization": {
+    "label": "HaluEval Summarization",
+    "n_subsample": 400,
+    "n_positive": 200,
+    "tune_n": 200,
+    "eval_n": 200,
+    "feature_names": [
+      "l6_inv",
+      "l4_unsourced",
+      "l4_n_total_norm",
+      "l11_p",
+      "l5_entity_unsourced",
+      "l5_n_entities_norm"
+    ],
+    "fitted_calibration": {
+      "intercept": -0.444101,
+      "coef": {
+        "l6_inv": 2.368083,
+        "l4_unsourced": -0.010509,
+        "l4_n_total_norm": -0.392436,
+        "l11_p": -0.090531,
+        "l5_entity_unsourced": 0.0,
+        "l5_n_entities_norm": -0.315672
+      }
+    },
+    "default_calibration_on_eval": {
+      "tune_threshold": 0.1751,
+      "eval_at_tune_threshold": {
+        "threshold": 0.1751,
+        "n_flagged": 124,
+        "tp": 75,
+        "fp": 49,
+        "fn": 25,
+        "precision": 0.6048,
+        "recall": 0.75,
+        "f1": 0.6696,
+        "n_eval": 200,
+        "n_eval_positive": 100
+      },
+      "eval_auc": 0.7135,
+      "eval_precision_at_recall_0.9": {
+        "threshold": 0.1451,
+        "precision": 0.5556,
+        "recall": 0.9,
+        "n_flagged": 162,
+        "tp": 90,
+        "fp": 72,
+        "false_positive_rate": 0.72,
+        "false_alarms_per_caught": 0.8
+      },
+      "eval_recall_at_precision_0.9": {
+        "threshold": 0.3762,
+        "precision": 0.9091,
+        "recall": 0.1,
+        "n_flagged": 11,
+        "tp": 10,
+        "fp": 1
+      }
+    },
+    "refit_calibration_on_eval": {
+      "tune_f1_optimal_threshold": 0.4572,
+      "tune_f1_optimal": 0.7355,
+      "eval_at_tune_threshold": {
+        "threshold": 0.4572,
+        "n_flagged": 135,
+        "tp": 81,
+        "fp": 54,
+        "fn": 19,
+        "precision": 0.6,
+        "recall": 0.81,
+        "f1": 0.6894,
+        "n_eval": 200,
+        "n_eval_positive": 100
+      },
+      "eval_auc": 0.7217,
+      "eval_precision_at_recall_0.9": {
+        "threshold": 0.4314,
+        "precision": 0.5732,
+        "recall": 0.9,
+        "n_flagged": 157,
+        "tp": 90,
+        "fp": 67,
+        "false_positive_rate": 0.67,
+        "false_alarms_per_caught": 0.74
+      },
+      "eval_recall_at_precision_0.9": {
+        "threshold": 0.6453,
+        "precision": 0.9091,
+        "recall": 0.1,
+        "n_flagged": 11,
+        "tp": 10,
+        "fp": 1
+      }
+    },
+    "refit_gain_eval_auc": 0.0082,
+    "refit_gain_eval_f1": 0.0198
+  }
+}
