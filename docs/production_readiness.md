@@ -61,87 +61,28 @@ A team that processes 1000 LLM outputs per day and has human review capacity for
 
 **This is a deployable use case.** A team reviewing the top 10% by Touchstone-ranked score catches **2-4× more hallucinations than random review** on naturalistic corpora. That is a real production value-add for a team that has bounded review capacity.
 
-## 4. The subtle-case stress test (where Touchstone breaks)
+## 4. Cross-detector evaluation on naturalistic n=400 subsamples
 
-The corpora above contain a mix of obvious and subtle hallucinations. To isolate where Touchstone breaks, this report ships 16 hand-crafted (source, faithful, hallucinated) triples covering the subtle-hallucination categories that real LLM deployments produce. Run via `python -m benchmarks.adversarial_subtle.run`.
+This section answers "if you deploy Touchstone in production, what would actually happen?" by panel-testing every relevant detector on naturalistic n=400 subsamples of the three external corpora that §2 / §3 used. The 16-case hand-authored stress test that was previously numbered §4 (substrate-only) and §4.1 (cross-detector) is moved to Appendix A as the substrate-debugging probe it actually is. **Do not cite Appendix A externally as production evidence;** the §4 measurements below are the production-relevant evidence. Appendix A is for substrate-internals diagnosis only.
 
-Headline: **Touchstone substrate-only Verifier correctly separates the hallucinated case from the faithful case on 8 of 16 categories (50% — random)**. At the default threshold of 0.5, the Verifier flags **zero** of the 16 hallucinated cases as suspicious.
+The §4 subsections are organized by the discipline they apply rather than by chronological order:
 
-| Category | Touchstone catches? | Why |
-|---|---|---|
-| Number swap ($143B → $134B) | yes | Layer 4 catches the unsourced new number |
-| Percentage shift (12% → 21%) | yes | Same |
-| Magnitude shift (million → billion) | yes | Source text "million" doesn't appear in output that says "billion" |
-| False precision (vague → specific) | yes | New numbers in output are unsourced |
-| Fabricated affiliation (adds Steve Jobs) | yes | Layer 5 catches the unsourced entity |
-| Counterfactual extension (projects Q2 $155B) | yes | Layer 11 catches "Q2", $155B as projected |
-| Subtle entity swap (Maestri → Maestro) | yes (modest) | Layer 5 catches the small entity difference |
-| Role/title swap (CEO → CFO) | yes (modest) | Small vocabulary shift |
-| **Quarter shift (Q1 → Q3)** | **no** | Touchstone has no temporal-coreference signal |
-| **Direction reversal (grew ↔ declined)** | **no** | Same vocabulary, opposite meaning |
-| **Imputed cause ("grew, X happened" → "grew due to X")** | **no** | Same words, different relation |
-| **Time-frame shift (Q1 was X, up from Q4 Y → reverse)** | **no** | Same numbers, swapped binding |
-| **Attribute swap (iPhone grew / Mac declined → reverse)** | **no, and inverts** | Touchstone scored hallucinated LOWER |
-| **Scoping shift (segment → total)** | **no** | Same numbers, different scope |
-| **Numerical conflation (12% to $143B / 8% growth → swapped)** | **no** | Same numbers, swapped assignment |
-| **Relation reversal (Apple acquired X → X acquired Apple)** | **no** | Same words, swapped subject/object |
+- **§4.2** — the headline cross-detector table (substrate / MiniCheck / AlignScore / judges). In-sample point estimates; treat as discovery aid.
+- **§4.2.1** (holdout) + **§4.2.2** (tie envelope) + **§4.2.4** (across-subsample variance) + **§4.2.7** (paired statistical tests) — the statistical discipline that converts §4.2's discovery numbers into production-honest claims.
+- **§4.2.3** — calibration (ECE / Brier / BSS), load-bearing for the §5 architecture story.
+- **§4.2.5** (latency / cost) + **§4.2.6** (per-category audit on naturalistic positives) — production-deployment context.
+- **§4.2.8** — multi-vendor judge panel (Grok / Claude / GPT / Gemini); cross-vendor robustness.
+- **§4.3** + **§4.3.1** — substrate-plus-judge value-add analysis (CV-discovery and holdout-published, respectively).
 
-**The wall is structural.** Touchstone is a regex / arithmetic / lexical-overlap substrate. By construction, it CANNOT detect hallucinations that preserve vocabulary and only change semantic relationships. Those hallucinations require either an NLI model, an LLM judge, or a structured semantic representation.
+The leakage discipline is applied throughout: substrate calibration in-sample inflation on RAGTruth is flagged at §4.2 below and propagated into §4.3 / §4.3.1 caveats.
 
-The 8 categories Touchstone catches are exactly the ones where the hallucination introduces NEW LEXICAL CONTENT (a number not in source, an entity not in source, a year/quarter not in source). The 8 it misses are the ones where the hallucination REARRANGES EXISTING LEXICAL CONTENT.
+### 4.1 (moved to Appendix A)
 
-### 4.1 How the strongest available detectors handle the same 16 cases
-
-The §4 wall claim above states that the substrate's blind spots require "an NLI model, an LLM judge, or a structured semantic representation" to detect. That claim was theoretical when first written. It has now been measured: MiniCheck-Flan-T5-Large, AlignScore-base, and the xAI Grok 4.20 non-reasoning judge were run against the same 16 (source, faithful, hallucinated) triples on 2026-05-18. Reproduce via `python -m benchmarks.adversarial_subtle.join_detectors` after running each detector against `benchmarks/adversarial_subtle/pairs.json`. Full per-case scores live in `benchmarks/adversarial_subtle/cross_detector_2026-05-18.json`.
-
-| Detector | Class | Separated | AUC on the 32 pair rows (95% CI) |
-|---|---|---|---|
-| Touchstone substrate (L1-L11, default Verifier) | Lexical / arithmetic | 8 of 16 (50%) | n/a (single composite score) |
-| MiniCheck Flan-T5-Large | Distilled NLI (~770M) | 15 of 16 (94%) | 0.934 [0.812, 1.000] |
-| AlignScore-base | NLI+QA+regression (~125M) | 14 of 16 (88%) | 0.949 [0.859, 1.000] |
-| xAI Grok 4.20 non-reasoning | Frontier LLM judge | 16 of 16 (100%) | 0.998 [0.988, 1.000] |
-
-Per-category catch matrix (Y = `halluc_prob > faithful_prob`):
-
-| Category | Touchstone | MiniCheck | AlignScore | Grok 4.20 |
-|---|---|---|---|---|
-| number_swap_same_scale | Y | Y | Y | Y |
-| percentage_shift_plausible_range | Y | Y | Y | Y |
-| quarter_shift | . | Y | Y | Y |
-| role_title_swap | Y | Y | Y | Y |
-| direction_reversal | . | Y | Y | Y |
-| imputed_cause | . | Y | . | Y |
-| magnitude_shift | Y | Y | Y | Y |
-| false_precision | Y | Y | Y | Y |
-| time_frame_shift | . | Y | Y | Y |
-| attribute_swap | . | Y | Y | Y |
-| fabricated_affiliation | Y | Y | Y | Y |
-| scoping_shift | . | Y | Y | Y |
-| counterfactual_extension | Y | Y | Y | Y |
-| numerical_conflation | . | Y | Y | Y |
-| subtle_entity_swap | Y | . | Y | Y |
-| relation_reversal | . | Y | . | Y |
-
-**What this measurement establishes (read narrowly):**
-
-- The structural-blindness wall is the *substrate's* wall, not the trained-checker class's wall, on this fixture. A ~770M distilled NLI catches 7 of the 8 categories the substrate misses; a frontier LLM judge catches all 8.
-- The substrate and MiniCheck are nearly complementary on this fixture: MiniCheck misses only `subtle_entity_swap` (Maestri → Maestro), which the substrate catches via Layer 5's unsourced-entity logic; the substrate misses 8 categories MiniCheck catches.
-
-**Methodological confounds you must read before citing these numbers:**
-
-- **World-knowledge contamination — now measured.** The 16 cases use real entities (Apple, Tim Cook, Luca Maestri, fiscal-quarter dates). Grok 4.20 has seen Apple's filings in pretraining; it can in principle flag "CFO Tim Cook" from priors alone without reading the source. A 2026-05-19 ablation runs the SAME Grok model on the 16 cases with the source removed and the prompt rewritten as a strict world-knowledge fact-checker: "estimate the probability that OUTPUT contains a factually incorrect claim based on your background knowledge of Apple." Snapshot at `benchmarks/adversarial_subtle/judge_xai_world_knowledge_only_2026-05-19.json`. **Result: AUC 0.6406 [0.4570, 0.8164]** (95% CI just barely includes 0.5). Separation rate: 7/16 (statistically indistinguishable from random's [37.5%, 62.5%] CI at n=16); 9/16 cases are ties at the prob grid. **Only 2 of 16 cases are strongly separable from priors alone** (gap ≥ 0.4): `role_title_swap` (Tim Cook CEO not CFO; priors give 0.05 vs 0.85) and `subtle_entity_swap` (Maestri not Maestro; 0.05 vs 0.90). 5 cases give weak priors signal (gap 0.05-0.20); 9 cases give no priors signal at all. The §4.1 100% Grok separation rate cannot be reduced to priors-only contamination; the judge IS reading the source on at least 14 of 16 cases. The remaining 2 cases are priors-catchable. **The confound is real but small** (2-of-16 = ~12% upper bound on the contribution of world knowledge to the 16/16 headline). An earlier in-session sanity check by Claude Opus 4.7 (this session) predicted 5/16 strong priors-only separation; the actual Grok run is more discriminating — Grok's priors-only signal is weaker than I predicted. Use the API measurement, not the sanity check.
-- **Pairwise-ranking is not threshold-based deployment.** "Did `halluc_prob > faithful_prob`?" tests ranking when the test designer hands you both options. Production hands one output and asks "flag or not?" The 100% separation rate says nothing about threshold selection, false-positive rate, or operating-point trade-offs — the things that determine whether a detector is deployable.
-- **Random baseline equivalence.** Random scoring expected separation rate is 50% with 95% CI roughly [37.5%, 62.5%] at n=16. The substrate's 8/16 is statistically indistinguishable from random on this test. The "lexical detector that fails on relational cases" framing is correct in principle, but on this n it cannot be distinguished from a random scorer.
-- **n=16 CI overlap between trained detectors.** Bootstrap CIs at n_pos=16, n_neg=16: MiniCheck AUC 0.934 [0.812, 1.000], AlignScore 0.949 [0.859, 1.000]. The CIs overlap each other's point estimates; ordering MiniCheck and AlignScore on this fixture is unsupported.
-- **Calibration-shape claim is a prompt artifact, not a judge characterization.** The Grok output clustering at 0.0 and 0.8-1.0 may be 100% prompt-design effect. LLMs default to round probabilities (0, 0.1, 0.5, 0.9, 1.0) absent explicit calibration training or calibration-eliciting prompts. We ran one prompt at one temperature on n=32 pairs; that is a data point, not a calibration characterization. Treat the binary-shape observation as unverified.
-- **Prompt cueing measured.** The judge prompt used in §4.1 enumerates exactly the six failure modes the §4 wall claim names as the substrate's structural blind spots (polarity flip, attribute swap, scope shift, time-frame shift, relation reversal, imputed cause). The 16-case fixture is constructed from those same categories. A judge given a checklist of the categories the test was designed around is in a near-tautological position. The cued-vs-blind ablation in §4.3 shows: on the 16-case fixture, blind separates 16/16 too (AUC 0.990 vs cued 0.998), so the toy result was robust to cueing. On the naturalistic n=400 corpora, blind judge AUCs are equal to or slightly above cued (RAGTruth 0.872 vs 0.854; SummEval 0.946 vs 0.933; HaluEval 0.816 vs 0.807) — cueing did not give the cued judge an unfair advantage. But the substrate-plus-judge value-add at audit thresholds (§4.3) does shrink with blind judge; the cueing-induced score compression was part of why the substrate's tie-breaking added so much R@P90 in the original §4.3 numbers.
-- **Synthetic atomic perturbations are not production hallucinations.** Each case is a one-sentence source paired with a one-sentence output where exactly one span differs. Production hallucinations are buried in multi-paragraph outputs over multi-KB sources, with most claims correct and 1-3 silently wrong. The same detectors hit F1 0.45-0.71 on naturalistic corpora (see §2 and §4.2 below). The ~25-point gap between the §4.1 separation rates and the §2 operational F1 numbers is the gap between toy and production. Cite §4.1 as a category-coverage debugging probe, never as a production-readiness claim.
-
-The §4.2 cross-detector measurement on real-corpus subsamples is the production-relevant complement to this fixture. Treat §4.1 and §4.2 as a pair, not as independent evidence.
+The cross-detector measurement on the 16-case substrate-debugging fixture (previously numbered §4.1) has been relocated to **Appendix A.1**. That table generated more reader confusion than insight: the toy fixture's 100% Grok separation was a category-coverage probe, not a production claim, but external citations would treat it as one. Subsection numbering for §4.2.X is preserved unchanged to keep snapshot reproducibility commands stable across the move.
 
 ### 4.2 Cross-detector operational metrics on n=400 naturalistic subsamples
 
-The §4.1 toy fixture cannot answer the production question. This section does, on the same naturalistic corpora the §2 operational tables use. To keep the cross-detector judge run inside a sensible cost envelope, the measurement is on deterministic first-N prefix subsamples (n=400) of each corpus. First-N is deliberate: the operational metrics in this section (F1-optimal threshold, precision-at-recall, recall-at-precision, lift-at-top-K) are base-rate dependent, so balanced stratification would distort them. Base rate is preserved to within ~1.5 percentage points of the full corpus on the three external corpora because the source pair files are not label-ordered (RAGTruth and SummEval flips-vs-IID ratios ≈ 1.0; HaluEval is perfectly alternating at 50%). The sampling-strategy claim is recorded in each `subsample_n400_indices_2026-05-18.json` snapshot as `sampling_strategy: "first_n_in_original_order"`. The substrate L6 / MiniCheck / AlignScore arrays are re-tabulated on the same indices from existing snapshots, so all four detectors compare on identical pair sets. Reproduce via `python -m benchmarks.external.subsample_pairs` (once per corpus) and `python -m benchmarks.external.operational_metrics_on_subsample`. Full per-detector metrics live in `benchmarks/external/operational_metrics_n400_2026-05-18.json`. The full-N tables in §2 remain canonical; this section adds the frontier-judge column the §2 tables are missing.
+The Appendix A.1 toy fixture cannot answer the production question. This section does, on the same naturalistic corpora the §2 operational tables use. To keep the cross-detector judge run inside a sensible cost envelope, the measurement is on deterministic first-N prefix subsamples (n=400) of each corpus. First-N is deliberate: the operational metrics in this section (F1-optimal threshold, precision-at-recall, recall-at-precision, lift-at-top-K) are base-rate dependent, so balanced stratification would distort them. Base rate is preserved to within ~1.5 percentage points of the full corpus on the three external corpora because the source pair files are not label-ordered (RAGTruth and SummEval flips-vs-IID ratios ≈ 1.0; HaluEval is perfectly alternating at 50%). The sampling-strategy claim is recorded in each `subsample_n400_indices_2026-05-18.json` snapshot as `sampling_strategy: "first_n_in_original_order"`. The substrate L6 / MiniCheck / AlignScore arrays are re-tabulated on the same indices from existing snapshots, so all four detectors compare on identical pair sets. Reproduce via `python -m benchmarks.external.subsample_pairs` (once per corpus) and `python -m benchmarks.external.operational_metrics_on_subsample`. Full per-detector metrics live in `benchmarks/external/operational_metrics_n400_2026-05-18.json`. The full-N tables in §2 remain canonical; this section adds the frontier-judge column the §2 tables are missing.
 
 The three tables below are **in-sample (F1-optimal chosen on the same 400 rows it is reported on)** and use a **single tie-break realization** (Python stable sort by input order). Held-out F1 numbers are in §4.2.1 (-0.000 to -0.234 inflation under tune/eval); tie-envelope means and stds are in §4.2.2 (Grok R@P90 shifts the most: SummEval "12 of 46" → 7 ± 3, HaluEval "87 of 200" → 67 ± 16). Treat the headline tables as a discovery aid; the §4.2.1 and §4.2.2 numbers are the production-honest point estimates.
 
@@ -182,7 +123,7 @@ The three tables below are **in-sample (F1-optimal chosen on the same 400 rows i
 - **The substrate L6 holds its own on HaluEval.** F1-optimal 0.721, beating both MiniCheck (0.698) and AlignScore (0.692). On the corpus designed to be adversarial against summary-level hallucination detection, the lexical baseline is operationally comparable to trained NLI. This is consistent with the §2 finding and is not an artifact of subsampling.
 - **The substrate L6 collapses on SummEval P@R90 (0.127, 6.9 false alarms per catch) and on RAGTruth P@R90 (0.275).** On the audit-precision end of the curve where the judge advantage is concentrated, the substrate is the weakest of the four. The substrate's value is at triage and on adversarial-summary corpora, not at audit thresholds.
 
-**Production architecture implications (verified against this measurement, not derived from §4.1):**
+**Production architecture implications (verified against this measurement, not derived from Appendix A.1):**
 
 The two-stage architecture in §5 still holds. The new evidence sharpens it:
 
@@ -190,13 +131,13 @@ The two-stage architecture in §5 still holds. The new evidence sharpens it:
 - For triage-grade applications (top-K human review): MiniCheck remains competitive with the judge at substantially lower per-call cost. Pick by budget.
 - For drift detection on stable streams: the substrate L6 remains operationally adequate, often better than trained NLI on adversarial corpora like HaluEval.
 
-The §4.1 toy result over-predicted the judge's production advantage. The actual advantage is meaningful (~5-18 F1 points, concentrated at high-precision operating points) but does not change the conclusion that no current detector is audit-grade on every corpus.
+The Appendix A.1 toy result over-predicted the judge's production advantage. The actual advantage is meaningful (~5-18 F1 points, concentrated at high-precision operating points) but does not change the conclusion that no current detector is audit-grade on every corpus.
 
 **Caveats on this measurement (read before citing):**
 
 - n=400 deterministic-prefix subsample (not stratified; first 400 rows of each source pair file in original order). Within-sample bootstrap CI on AUC at n=400 with realistic base rates is ±~0.04. Across-subsample variance from drawing a different prefix offset is NOT measured by that CI and is a known gap (the substrate/MiniCheck/AlignScore arrays could be re-tabulated at different offsets cheaply; the judge column cannot without re-running the API). Ordering claims within ±0.05 of each other should be treated as a tie.
-- The Grok judge prompt is the same cued prompt used in §4.1 (`JUDGE_SYSTEM_PROMPT_CUED`; enumerates the §4 wall-claim categories). Prompt scaffolding could move the numbers in either direction; this is a single-prompt, single-vendor measurement. The blind variant is shipped in `judge_xai_from_pairs.py` as `--prompt-variant blind`; the cued-vs-blind delta on these corpora has not been measured yet.
-- World-knowledge contamination concerns from §4.1 apply less strongly here (the corpora contain a broad mix of topics from news summarization), but Grok's pretraining likely saw at least some XSum / CNN-DailyMail content; treat the SummEval and HaluEval-summarization advantage as a soft upper bound.
+- The Grok judge prompt is the same cued prompt used in Appendix A.1 (`JUDGE_SYSTEM_PROMPT_CUED`; enumerates the Appendix A wall-claim categories). Prompt scaffolding could move the numbers in either direction; this is a single-prompt, single-vendor measurement. The blind variant is shipped in `judge_xai_from_pairs.py` as `--prompt-variant blind`; the cued-vs-blind delta on these corpora has not been measured yet.
+- World-knowledge contamination concerns from Appendix A.1 apply less strongly here (the corpora contain a broad mix of topics from news summarization), but Grok's pretraining likely saw at least some XSum / CNN-DailyMail content; treat the SummEval and HaluEval-summarization advantage as a soft upper bound.
 - Cost not yet measured. The §5 architecture decision (when to spend judge calls vs settle for substrate or MiniCheck) requires per-call cost data this snapshot does not include.
 - F1-optimal threshold in the tables above is chosen on the same 400 rows it is reported on (in-sample optimum, biased upward). The §4.2.1 sub-table reports the held-out F1 from a 200/200 tune/eval stratified split; treat the held-out number as the conservative point estimate. The headline in-sample tables are kept above because they match the existing pinned `operational_metrics_n400_2026-05-18.json` snapshot exactly; the holdout numbers live in the sibling `operational_metrics_n400_holdout_2026-05-18.json`.
 
@@ -228,7 +169,7 @@ Both cued and blind judge variants are included on identical indices (c02bafe ad
 
 **What the holdout view changes:**
 
-- **The Grok edge is the most robust under holdout** for both variants (cued inflation 0.000-0.070; blind inflation 0.016-0.043). Two competing readings: (a) the frontier judge is genuinely robust to threshold-set choice; (b) the judge's clustered-probability output (see §4.1's `calibration-shape` caveat) makes the threshold less sensitive to which subset chose it. The blind variant's slightly larger inflation is consistent with reading (b) being part of the story for cued (the cued prompt induces stronger clustering per §4.3).
+- **The Grok edge is the most robust under holdout** for both variants (cued inflation 0.000-0.070; blind inflation 0.016-0.043). Two competing readings: (a) the frontier judge is genuinely robust to threshold-set choice; (b) the judge's clustered-probability output (see Appendix A.1's `calibration-shape` caveat) makes the threshold less sensitive to which subset chose it. The blind variant's slightly larger inflation is consistent with reading (b) being part of the story for cued (the cued prompt induces stronger clustering per §4.3).
 - **Blind judge beats cued judge under holdout on SummEval** by 7.2 F1 points (0.704 vs 0.632) and matches it on RAGTruth (0.667 vs 0.661) and HaluEval (0.735 vs 0.743). The §4.3 narrative says blind AUC is "equal to or slightly above cued"; the held-out F1 view sharpens that to "blind is materially better on SummEval at the F1 operating point." If a production team picks Grok as their stage-2 judge, the blind prompt is the better default; the cued prompt's only legitimate use is debugging-the-fixture exploration.
 - **Substrate L6 SummEval inflation is the largest single delta** (0.422 → 0.188, -0.234). The §2 conclusion "substrate L6 is operationally comparable to AlignScore-base on these corpora" needs re-reading at the held-out F1 (substrate 0.188, AlignScore 0.409 on SummEval eval); the substrate is materially weaker than the in-sample comparison suggested on the sparsest-positives corpus, while the HaluEval substrate-comparable claim survives (0.693 holdout vs MiniCheck 0.672 holdout).
 - **Detector orderings are preserved on every corpus**, but absolute magnitudes shift. Cite the held-out numbers when claiming "detector X catches Y% in production"; the in-sample numbers are the discovery aid, not the deployment guarantee.
@@ -349,24 +290,24 @@ Open question deferred to a future round: ship a `cost_per_call.py` script that 
 
 ### 4.2.6 Per-category audit on naturalistic positives (n=15)
 
-§4.1 reports per-category catch on a hand-authored 16-case fixture where each example is one categorized atomic perturbation. Naturalistic positives in §4.2 are not categorized; the headline F1 numbers hide whether each detector's catches are concentrated in 1-2 hallucination subtypes or distributed across the failure-mode space. This sub-section addresses that with a small but explicit hand-audit: 5 positives per corpus from the offset=0 n=400 subsample, classified into the §4.1 taxonomy (closest match) or a new naturalistic category if none of the §4.1 ones fit, with detector catches at the §4.2 in-sample F1-optimal threshold tabulated per case.
+Appendix A.1 reports per-category catch on a hand-authored 16-case fixture where each example is one categorized atomic perturbation. Naturalistic positives in §4.2 are not categorized; the headline F1 numbers hide whether each detector's catches are concentrated in 1-2 hallucination subtypes or distributed across the failure-mode space. This sub-section addresses that with a small but explicit hand-audit: 5 positives per corpus from the offset=0 n=400 subsample, classified into the Appendix A.1 taxonomy (closest match) or a new naturalistic category if none of the Appendix A.1 ones fit, with detector catches at the §4.2 in-sample F1-optimal threshold tabulated per case.
 
-n=15 is small; the table is a directional probe, not a representative-sample claim. The audit was performed by Claude Opus 4.7 (this session's author) from the source/output texts directly; per-case categorization is a single-judge label without inter-annotator agreement. Reproduce by reading `/tmp/alignscore_corpora/<corpus>.json` (the pinned pair files) at the indices below and applying the §4.1 taxonomy.
+n=15 is small; the table is a directional probe, not a representative-sample claim. The audit was performed by Claude Opus 4.7 (this session's author) from the source/output texts directly; per-case categorization is a single-judge label without inter-annotator agreement. Reproduce by reading `/tmp/alignscore_corpora/<corpus>.json` (the pinned pair files) at the indices below and applying the Appendix A.1 taxonomy.
 
-| Case | Closest §4.1 category | Naturalistic-only? | Substrate (thr) | MiniCheck (thr) | AlignScore (thr) | Grok cued (thr) | Grok blind (thr) |
+| Case | Closest Appendix A.1 category | Naturalistic-only? | Substrate (thr) | MiniCheck (thr) | AlignScore (thr) | Grok cued (thr) | Grok blind (thr) |
 |---|---|---|---|---|---|---|---|
 | rag/4 | counterfactual_extension (fabricated "30 in 18 months" stat) | yes | 0.23 (N) | **0.94** (Y) | 0.49 (Y) | **0.65** (Y) | **0.70** (Y) |
 | rag/57 | imputed_cause (fabricated "concerns among the passengers") | yes | **0.33** (Y) | **0.69** (Y) | **0.29** (Y) | **0.75** (Y) | **0.65** (Y) |
-| rag/178 | (no §4.1 fit) format_hallucination ("Sure! Here's…") + minor | YES (new) | **0.31** (Y) | 0.23 (Y) | **0.65** (Y) | **0.65** (=) | **0.65** (Y) |
+| rag/178 | (no Appendix A.1 fit) format_hallucination ("Sure! Here's…") + minor | YES (new) | **0.31** (Y) | 0.23 (Y) | **0.65** (Y) | **0.65** (=) | **0.65** (Y) |
 | rag/248 | (mostly correct; inferred date / "dozens of new cases") | possible | **0.45** (Y) | **0.96** (Y) | **0.43** (Y) | **0.65** (=) | **0.65** (Y) |
 | rag/326 | counterfactual_extension (Julian-calendar / blood-moon priors) | yes | **0.36** (Y) | 0.03 (N) | **0.24** (Y) | **0.65** (=) | **0.65** (Y) |
-| sum/0 | (no clean §4.1) compound_fabrication + ungrammatical extract | YES (new) | 0.08 (N) | **0.93** (Y) | 0.26 (N) | **0.85** (Y) | **0.85** (Y) |
+| sum/0 | (no clean Appendix A.1) compound_fabrication + ungrammatical extract | YES (new) | 0.08 (N) | **0.93** (Y) | 0.26 (N) | **0.85** (Y) | **0.85** (Y) |
 | sum/64 | counterfactual_extension (fabricated "destroyed villages") | yes | 0.09 (N) | 0.10 (N) | 0.23 (N) | **0.80** (Y) | 0.40 (N) |
 | sum/88 | counterfactual_extension (fabricated demographic split) | yes | **0.24** (Y) | **0.93** (Y) | **0.94** (Y) | **0.95** (Y) | **0.95** (Y) |
-| sum/208 | attribute_swap + (no §4.1) gibberish | YES (new) | 0.00 (N) | **0.91** (Y) | **0.41** (Y) | **0.95** (Y) | **0.85** (Y) |
+| sum/208 | attribute_swap + (no Appendix A.1) gibberish | YES (new) | 0.00 (N) | **0.91** (Y) | **0.41** (Y) | **0.95** (Y) | **0.85** (Y) |
 | sum/280 | relation_reversal (Pep Guardiola/Jorge Jesus entity swap) | no | 0.13 (N) | **0.94** (Y) | **0.79** (Y) | **0.95** (Y) | **0.95** (Y) |
 | hal/1 | number_swap_same_scale (50,900 vs ~42,000) | no | **0.20** (Y) | 0.08 (Y) | **0.38** (Y) | **0.65** (=) | 0.35 (N) |
-| hal/41 | (no exact §4.1) future_as_past_tense (Cech "has made debut") | YES (new) | **0.34** (Y) | **0.98** (Y) | **0.99** (Y) | **0.95** (Y) | **0.95** (Y) |
+| hal/41 | (no exact Appendix A.1) future_as_past_tense (Cech "has made debut") | YES (new) | **0.34** (Y) | **0.98** (Y) | **0.99** (Y) | **0.95** (Y) | **0.95** (Y) |
 | hal/121 | direction_reversal (Spurs 7 pts behind ↔ 7 pt gap framing) | no | **0.28** (Y) | **0.49** (Y) | **0.51** (Y) | **0.85** (Y) | **0.75** (Y) |
 | hal/241 | numerical_conflation (Tevez's 26 season-total → match score) | no | **0.25** (Y) | **0.84** (Y) | **0.28** (Y) | **0.85** (Y) | **0.85** (Y) |
 | hal/321 | counterfactual_extension (fabricated "texting" / insurance cap) | yes | **0.37** (Y) | **0.64** (Y) | **0.44** (Y) | **0.85** (Y) | **0.85** (Y) |
@@ -376,18 +317,18 @@ n=15 is small; the table is a directional probe, not a representative-sample cla
 
 **What the per-category audit shows:**
 
-- **Naturalistic positives don't cleanly map to the §4.1 taxonomy.** Of 15 hand-audited cases, only 7 match a §4.1 category cleanly (rag/4, rag/57, sum/64, sum/88, sum/280, hal/121, hal/241). The other 8 are compound (multiple atomic errors per output), are §4.1-adjacent but blurry (rag/248 "mostly correct with inferred date"), or are categories not in §4.1 at all: **format_hallucination** (rag/178 "Sure! Here's…" assistant frame), **gibberish_extractive_summary** (sum/0, sum/208 — repeated words, broken grammar), **future_as_past_tense** (hal/41 — model writes future events as if they happened). The §4.1 taxonomy is a substrate-blind-spot taxonomy, not a naturalistic-hallucination taxonomy.
+- **Naturalistic positives don't cleanly map to the Appendix A.1 taxonomy.** Of 15 hand-audited cases, only 7 match a Appendix A.1 category cleanly (rag/4, rag/57, sum/64, sum/88, sum/280, hal/121, hal/241). The other 8 are compound (multiple atomic errors per output), are Appendix A.1-adjacent but blurry (rag/248 "mostly correct with inferred date"), or are categories not in Appendix A.1 at all: **format_hallucination** (rag/178 "Sure! Here's…" assistant frame), **gibberish_extractive_summary** (sum/0, sum/208 — repeated words, broken grammar), **future_as_past_tense** (hal/41 — model writes future events as if they happened). The Appendix A.1 taxonomy is a substrate-blind-spot taxonomy, not a naturalistic-hallucination taxonomy.
 - **At F1-opt thresholds, all detectors catch ≥11 of 15.** This is consistent with the §4.2 in-sample F1 numbers (0.45-0.77 across corpora at F1-opt) at the much-more-permissive F1-opt threshold than the audit-grade P=0.9 threshold. The audit does NOT contradict §4.2.2's finding that at P=0.9 the catch rate is much lower (single-digit catches per ~50 positives). The audit measures F1-opt catches; deployment at P=0.9 would catch far fewer.
 - **Grok cued catches all 15.** Consistent with its §4.2 in-sample F1 0.67-0.77 (the highest of the five detectors). The two "(=)" cells (rag/178, rag/248, rag/326 at score 0.65 = threshold 0.65) sit exactly at the boundary; under random tie-breaking (§4.2.2) some would flip.
 - **Grok blind misses 3 cases that Grok cued catches** (sum/64, hal/1, plus close calls). On this small sample the cued prompt has the F1-opt-threshold catch-rate edge despite the §4.2.2 finding that blind has a higher F1-optimal AUC. The cued prompt's tendency to compress scores into the 0.65-0.95 bucket gives it more catches at any threshold ≤ 0.65, but those catches are not necessarily more accurate (it also has more false positives, which §4.2.2 captures via wider P@R90 tie envelope).
 - **MiniCheck misses 2 (rag/326, sum/64).** Both are counterfactual-extension cases where the output adds plausible-sounding world-knowledge content (Julian calendar; "destroyed villages"). MiniCheck's training distribution may not have prepared it for plausible-extension hallucinations on out-of-domain summarization.
 - **AlignScore misses 3 (rag/4, sum/0, sum/64).** Two of these are gibberish/extractive-fragment outputs; AlignScore's NLI+QA architecture may give partial credit for vocabulary overlap with the source even when the output is incoherent.
-- **Substrate misses 4 (rag/4, sum/0, sum/64, sum/208).** All four involve fabrication that uses vocabulary from the source (counterfactual extension) or gibberish that re-uses source vocabulary heavily (sum/0, sum/208). The substrate's lexical-overlap baseline cannot distinguish "uses source words" from "uses source words correctly," consistent with the §4 wall claim.
+- **Substrate misses 4 (rag/4, sum/0, sum/64, sum/208).** All four involve fabrication that uses vocabulary from the source (counterfactual extension) or gibberish that re-uses source vocabulary heavily (sum/0, sum/208). The substrate's lexical-overlap baseline cannot distinguish "uses source words" from "uses source words correctly," consistent with the Appendix A wall claim.
 
 **Honest limits on this audit:**
 
 - n=15 is a directional probe, not a representative sample. With ~5 cases per corpus, per-category catch rate estimates have ~30 percentage-point CIs.
-- Single-judge categorization (Claude Opus 4.7, this session). No inter-annotator agreement. The "closest §4.1 category" judgment for compound cases is unavoidably subjective.
+- Single-judge categorization (Claude Opus 4.7, this session). No inter-annotator agreement. The "closest Appendix A.1 category" judgment for compound cases is unavoidably subjective.
 - **Structural conflict (Move 6 disclosure):** the annotator (Claude Opus 4.7) and one of the panel judges (Anthropic Claude Sonnet 4.6, both cued and blind variants) are from the same model family. This means the per-case Sonnet judge scores reported in the table above were not blind to (independent of) the categorical labels assigned by the annotator. The Sonnet rows and the categorization column share a model-family prior; treat any per-category catch-rate comparison that involves Sonnet 4.6 as confounded. The cleanest fix is an external (different-family) annotator; Move 3 (label-noise floor via Agent dispatch with explicit cross-family annotator) is the planned closure. In the interim, prefer cross-family judge comparisons (Grok vs Claude, Gemini vs Claude) to within-family ones when interpreting this table.
 - The "(=)" tie-at-threshold cases were counted as catches; under random tie-break in §4.2.2 some would flip and the catch rates would shift by 1-2 points.
 - Catches are reported at F1-opt thresholds, not P=0.9 thresholds. Production deployments at audit-grade precision would catch substantially fewer of these positives.
@@ -498,7 +439,7 @@ Per-vendor R@P90 (audit-precision recall, single-snapshot tie-break realization;
 - **No single vendor dominates across all corpora.** Per-corpus best cued-prompt F1-opt vendor: Claude on RAGTruth and HaluEval; GPT-4o on SummEval. Per-corpus best including blind: Claude cued on RAGTruth (0.754) and HaluEval (0.777); Grok blind on SummEval (0.763). The §4.2 "Grok advantage" headline read narrowly was a single-vendor result; the broader reading is "any frontier judge dominates the trained discriminators on these corpora, but vendor choice matters at the F1 operating point and matters more at audit precision."
 - **Claude's audit-grade recall on RAGTruth is dramatically higher than Grok's** (26 of 95 vs 2 of 95 at precision 0.9 — 13x more catches). This is the first detector in this entire evaluation that approaches "audit-grade" recall on a naturalistic corpus (27% recall at precision 0.9). The §4.2's "no detector is audit-grade on every corpus" conclusion survives — Claude is audit-grade only on RAGTruth — but the option space for production audit applications widens materially.
 - **Calibration ordering: Claude blind ≈ Claude cued > GPT-4o cued > Grok blind > Grok cued on most cells.** Claude has the best or near-best Brier Skill Score on every corpus measured. Combined with §4.2.3's finding that MiniCheck and Substrate raw probabilities are anti-calibrated on RAGTruth/HaluEval, the production-recommended Stage-2 default for calibrated-probability pathways is Claude (blind on RAGTruth where BSS +0.443 is highest, cued on HaluEval where BSS +0.281 leads). Grok blind is competitive on SummEval (BSS +0.381 vs Claude's +0.307) and may be cheaper per call; deployment choice is per-corpus.
-- **Cued-vs-blind effect is vendor-specific.** Grok shows cued-hurts-blind-helps on RAGTruth (+0.028 blind) and especially SummEval (+0.061 blind). Claude shows cued-vs-blind ties on SummEval (0.685 = 0.685) and a cued-better edge on RAGTruth (+0.019 cued). The §4.1 prompt-cueing concern is a real production-design knob — adopters should ablate cued-vs-blind on their own corpus rather than copy a default from this doc.
+- **Cued-vs-blind effect is vendor-specific.** Grok shows cued-hurts-blind-helps on RAGTruth (+0.028 blind) and especially SummEval (+0.061 blind). Claude shows cued-vs-blind ties on SummEval (0.685 = 0.685) and a cued-better edge on RAGTruth (+0.019 cued). The Appendix A.1 prompt-cueing concern is a real production-design knob — adopters should ablate cued-vs-blind on their own corpus rather than copy a default from this doc.
 - **GPT-4o's pattern is different from the other two**: highest F1 on SummEval cued where Grok and Claude both stall (0.748 vs Grok 0.702 / Claude 0.685). Its held-out F1 on SummEval (0.737) is the highest held-out F1 from any vendor on any corpus, suggesting its calibration generalizes well to the holdout. Whether GPT-4o's edge survives the blind ablation is unknown (rate-limit gap).
 
 **Honest limits:**
@@ -512,7 +453,7 @@ Per-vendor R@P90 (audit-precision recall, single-snapshot tie-break realization;
 
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
-Touchstone's pitch is substrate + judge, not substrate or judge. §4.2 measured each detector independently; this section measures whether the substrate adds operational value to a frontier judge or is redundant. The analysis was first run against the cued judge (the prompt that enumerates the six §4 wall-claim categories) and then re-run with the blind judge to factor out the cueing confound flagged in §4.1. Three combination strategies, all on the same n=400 indices, all pure-python (no sklearn): zero-fit max-ensemble, zero-fit mean-ensemble, and a 5-fold cross-validated linear blend `alpha * substrate + (1 - alpha) * judge` where alpha is selected on each train fold by AUC. Reproduce via `python -m benchmarks.external.substrate_plus_judge_analysis`. Full per-corpus breakdown lives in `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`.
+Touchstone's pitch is substrate + judge, not substrate or judge. §4.2 measured each detector independently; this section measures whether the substrate adds operational value to a frontier judge or is redundant. The analysis was first run against the cued judge (the prompt that enumerates the six Appendix A wall-claim categories) and then re-run with the blind judge to factor out the cueing confound flagged in Appendix A.1. Three combination strategies, all on the same n=400 indices, all pure-python (no sklearn): zero-fit max-ensemble, zero-fit mean-ensemble, and a 5-fold cross-validated linear blend `alpha * substrate + (1 - alpha) * judge` where alpha is selected on each train fold by AUC. Reproduce via `python -m benchmarks.external.substrate_plus_judge_analysis`. Full per-corpus breakdown lives in `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`.
 
 The right way to read this table: the AUC column is the unbiased comparison (no threshold selection); the F1-optimal column for `blend_cv5` is averaged across 5 fold-test sets at n=80 each, with F1-opt re-selected per fold, so it carries the selection inflation flagged in §4.2.1 and is an upper bound. Treat AUC gaps as load-bearing and F1-opt gaps as suggestive.
 
@@ -544,7 +485,7 @@ The right way to read this table: the AUC column is the unbiased comparison (no 
 
 - **A blind judge beats a cued judge on AUC on all three corpora.** RAGTruth 0.872 vs 0.854; SummEval 0.946 vs 0.933; HaluEval 0.816 vs 0.807. All differences are within the n=400 bootstrap CI of ±~0.04 but they all point the same way: the category enumeration in the cued prompt biased the judge toward false positives on naturalistic data rather than steering it toward true positives. The §4.2 headline "Grok dominates" is not a cueing artifact and survives de-cueing; if anything the actual judge advantage is slightly larger than §4.2 reported.
 - **The substrate's AUC value-add shrinks with a blind judge.** Cued: blend AUC beats cued-only AUC by -0.005 (RAGTruth, statistical noise), -0.008 (SummEval), +0.020 (HaluEval). Blind: blend AUC vs blind-only AUC is +0.005, -0.003, +0.020. On SummEval the 5-fold CV with blind judge picks **α=0.00 on every fold** — the substrate adds no AUC value over the blind judge there. On HaluEval the substrate still meaningfully helps (α≈0.70, AUC +0.020). On RAGTruth the substrate helps slightly (α≈0.14, AUC +0.005). The earlier §4.3 claim "substrate is not redundant" is corpus-specific: substrate adds AUC on HaluEval, marginally on RAGTruth, not on SummEval-with-blind-judge.
-- **R@P90 gains shrink but do not vanish under blind judge.** RAGTruth blind-only catches 5 of 95 at precision 0.9; blend with blind catches 33 (still a 6.6x improvement). SummEval blind-only catches 11 of 46; blend catches 22 (~2x). HaluEval blind-only catches 82 of 200; blend catches 84 (essentially tied). Read these R@P90 numbers in conjunction with §4.2.2's tie envelope: the original cued-judge R@P90 numbers had wide tie-break variance because the cued judge produces clustered scores. The blind judge has less clustering (per the prompt-cueing caveat in §4.1) so the blind R@P90 numbers are more tie-stable.
+- **R@P90 gains shrink but do not vanish under blind judge.** RAGTruth blind-only catches 5 of 95 at precision 0.9; blend with blind catches 33 (still a 6.6x improvement). SummEval blind-only catches 11 of 46; blend catches 22 (~2x). HaluEval blind-only catches 82 of 200; blend catches 84 (essentially tied). Read these R@P90 numbers in conjunction with §4.2.2's tie envelope: the original cued-judge R@P90 numbers had wide tie-break variance because the cued judge produces clustered scores. The blind judge has less clustering (per the prompt-cueing caveat in Appendix A.1) so the blind R@P90 numbers are more tie-stable.
 - **The substrate is most useful where the judge is weakest.** Substrate-only AUCs (full n=400 in-sample where calibration was trained — see §4.2 leakage caveat): HaluEval 0.748 (strongest), RAGTruth 0.659 (in-sample inflated; honest OOD is **0.633** per §4.3.1 eval half), SummEval 0.647 (weakest). Out-of-sample substrate AUCs for cross-corpus comparison: HaluEval 0.714 (eval half), RAGTruth **0.633** (eval half, OOD-correct), SummEval 0.556 (eval half; note the eval/tune sampling variance § 4.2.4 documents). Blend-with-blind picks α that mirrors the in-sample ordering: HaluEval α=0.70 (substrate strong → weight it heavily), RAGTruth α=0.14, SummEval α=0.00 (substrate weak → drop it). The "substrate complements judge" story is corpus-dependent in a predictable way: weight the substrate where it shows AUC strength, ignore it where it doesn't. **Important caveat:** the RAGTruth blend gain reported here uses the in-sample substrate column; the honest-holdout blend in §4.3.1 (where the substrate is eval-half OOD) is the more conservative number. The substrate row in the §4.3 table (0.659) inherits the §4.2 RAGTruth in-sample inflation; the RAGTruth blend cells inherit it too. The §4.3.1 holdout discipline is the published-grade reference for RAGTruth; treat §4.3's RAGTruth blend gains as discovery-grade upper bounds.
 - **Mechanism, confirmed by the cued-vs-blind asymmetry.** The original §4.3 "substrate breaks ties in judge's bucketed scores" claim is corroborated, not refuted, by the ablation: the cued judge clusters more (because the prompt induces categorical thinking), so substrate tie-breaking has more material to work with under cued and less under blind. The mechanism is real; its production impact depends on which judge prompt the production team chooses.
 
@@ -634,7 +575,7 @@ What Touchstone IS NOT:
 
 What changes this story:
 
-- Adding a trained semantic discriminator to the Stage-2 architecture moves the production-grade conversation forward. The Verifier ALREADY supports this via `substrate_plus_minicheck` and `substrate_plus_minicheck_alignscore` modes. The 16-case cross-detector measurement in §4.1 is the empirical backing for "the substrate's blind spots are solved by an existing trained checker."
+- Adding a trained semantic discriminator to the Stage-2 architecture moves the production-grade conversation forward. The Verifier ALREADY supports this via `substrate_plus_minicheck` and `substrate_plus_minicheck_alignscore` modes. The 16-case cross-detector measurement in Appendix A.1 is the empirical backing for "the substrate's blind spots are solved by an existing trained checker."
 - Building Touchstone-on-its-own up the operational metrics curve is bounded by the substrate's structural limitations (§4). Further investment in pure-substrate AUC has diminishing returns.
 
 ## 7. Reproducing every number in this document
@@ -645,7 +586,7 @@ What changes this story:
 - `.venv-external/bin/python benchmarks/external/minicheck_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --output benchmarks/adversarial_subtle/minicheck_2026-05-18.json` — re-runs MiniCheck on the 16-case pairs.
 - `.venv-alignscore/bin/python benchmarks/external/alignscore_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --output benchmarks/adversarial_subtle/alignscore_2026-05-18.json` — re-runs AlignScore on the 16-case pairs.
 - `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py benchmarks/adversarial_subtle/pairs.json --label "Adversarial Subtle 16-case" --corpus-dir adversarial_subtle --model grok-4.20-0309-non-reasoning --output benchmarks/adversarial_subtle/judge_xai_2026-05-18.json` — re-runs the xAI Grok judge on the 16-case pairs.
-- `python -m benchmarks.adversarial_subtle.join_detectors` — joins substrate + MiniCheck + AlignScore + Grok per-case scores into the §4.1 table.
+- `python -m benchmarks.adversarial_subtle.join_detectors` — joins substrate + MiniCheck + AlignScore + Grok per-case scores into the Appendix A.1 table.
 - `python -m benchmarks.external.subsample_pairs <pairs.json> --n-total 400 --pairs-out <sub.json> --indices-out <indices.json>` — deterministic first-N-rows subsampler used to build the §4.2 n=400 inputs.
 - `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py <sub.json> --label "<corpus> (n=400)" --corpus-dir <corpus_dir> --model grok-4.20-0309-non-reasoning --output benchmarks/external/<corpus_dir>/results/judge_xai_grok420_n400_2026-05-18.json` — Grok judge run on each n=400 subsample (RAGTruth Summary, SummEval, HaluEval Summarization).
 - `python -m benchmarks.external.operational_metrics_on_subsample` — computes the §4.2 four-detector apples-to-apples table on the same n=400 indices for each corpus.
@@ -654,7 +595,7 @@ What changes this story:
 - `python -m benchmarks.external.calibration_metrics` — computes the §4.2.3 calibration table (ECE, MCE, Brier, Brier skill score, per-bin reliability diagram) per detector per corpus. Reads existing snapshots; no new judge calls.
 - `python -m benchmarks.external.across_subsample_variance` — computes the §4.2.4 across-subsample-variance table by re-tabulating substrate / MiniCheck / AlignScore on K=10 prefix offsets per corpus. Reads existing full-N snapshots; Grok column gated on additional API budget.
 - `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py <pairs.json> --label "<corpus>" --corpus-dir <corpus_dir> --model grok-4.20-0309-non-reasoning --prompt-variant blind --output <out.json>` — re-runs the Grok judge under the blind (no-category-enumeration) prompt variant; pair with the cued snapshot to measure the cueing delta on naturalistic data (the toy fixture is at ceiling under both).
-- World-knowledge-only ablation (the §4.1 contamination check): a one-shot script (not pinned in `benchmarks/`; the snapshot at `benchmarks/adversarial_subtle/judge_xai_world_knowledge_only_2026-05-19.json` is the byte-pinned result). Sends each OUTPUT to Grok with NO SOURCE and a fact-checker prompt asking the judge to flag from priors alone. Reproduce by sending the 32 outputs to xAI with `model=grok-4.20-0309-non-reasoning`, `temperature=0.0`, `response_format=json_object`, and the system prompt stored in the snapshot's `judge_prompt_system` field.
+- World-knowledge-only ablation (the Appendix A.1 contamination check): a one-shot script (not pinned in `benchmarks/`; the snapshot at `benchmarks/adversarial_subtle/judge_xai_world_knowledge_only_2026-05-19.json` is the byte-pinned result). Sends each OUTPUT to Grok with NO SOURCE and a fact-checker prompt asking the judge to flag from priors alone. Reproduce by sending the 32 outputs to xAI with `model=grok-4.20-0309-non-reasoning`, `temperature=0.0`, `response_format=json_object`, and the system prompt stored in the snapshot's `judge_prompt_system` field.
 - `python -m benchmarks.external.score_substrate_on_subsample --pairs /tmp/alignscore_corpora/<corpus>_n400.json --output benchmarks/external/<corpus_dir>/results/substrate_only_n400_2026-05-18.json --corpus-dir <corpus_dir> --label "<corpus>"` — runs the Verifier substrate-only on each n=400 subsample pair (required input for §4.3).
 - `python -m benchmarks.external.paired_detector_tests` — runs paired stratified bootstrap on AUC differences and McNemar exact tests at each detector's F1-optimal threshold for every detector pair on each n=400 subsample. Outputs §4.2.7's pairwise significance matrix to `benchmarks/external/paired_detector_tests_n400_2026-05-19.json`.
 - `python -m benchmarks.external.substrate_plus_judge_analysis` — computes the §4.3 substrate-plus-judge value-add table (zero-fit ensembles + 5-fold CV linear blend) from the substrate and judge per-example snapshots; runs against both the cued and blind judge variants.
@@ -666,3 +607,87 @@ What changes this story:
 All snapshots are byte-pinned with one documented exception (§4.2.8 SummEval / HaluEval Claude-blind cells: Anthropic credits exhausted before the runs completed in the foreground session; cells were filled from a parallel-session snapshot at the same commit boundary, with byte-equality verified post-hoc via the reproducibility audit). Every other reported number is reproducible from a fresh clone with the appropriate vault keys; the substrate / MiniCheck / AlignScore rows reproduce with no API credentials needed. Run `bash benchmarks/external/reproducibility_audit.sh` to verify.
 
 The free-tier detector rows (substrate L6 / MiniCheck / AlignScore) are additionally re-reported at full corpus N (900 / 1600 / 1000 vs the n=400 prefix used in §4.2 tables) by `python -m benchmarks.external.operational_metrics_full_n`. The headline F1-optimal numbers match §2's full-N tables byte-exactly (the n=400 prefix preserves base rate within ±1.5 pp; see §4.2 first paragraph). The full-N R@P90 catch counts are tighter than the n=400 catch counts (e.g., MiniCheck on RAGTruth catches 3 of 204 at full-N vs 1 of 95 at n=400 — same recall rate, larger absolute denominator). Cite full-N when the absolute catch count matters; cite n=400 when comparing against the judge column.
+
+---
+
+## Appendix A. 16-case substrate-debugging probe (not a benchmark)
+
+**This appendix is for substrate-internals diagnosis only. Do NOT cite the numbers below as production evidence.** The 16-case fixture is hand-authored, single-author, with categorized atomic perturbations covering the substrate's known structural blind spots. It exists to confirm that the substrate's lexical-overlap baseline can or cannot detect each category by construction; it does not test naturalistic distributions. The production-relevant evidence lives in §4.2 / §4.3 / §4.3.1 above. Originally numbered §4 / Appendix A.1, relocated here to prevent external citations from treating a category-coverage probe as a production-readiness benchmark.
+
+### A. Substrate-only stress test (where Touchstone breaks)
+
+The corpora in §2 contain a mix of obvious and subtle hallucinations. To isolate where Touchstone breaks, this report ships 16 hand-crafted (source, faithful, hallucinated) triples covering the subtle-hallucination categories that real LLM deployments produce. Run via `python -m benchmarks.adversarial_subtle.run`.
+
+Headline: **Touchstone substrate-only Verifier correctly separates the hallucinated case from the faithful case on 8 of 16 categories (50% — random)**. At the default threshold of 0.5, the Verifier flags **zero** of the 16 hallucinated cases as suspicious.
+
+| Category | Touchstone catches? | Why |
+|---|---|---|
+| Number swap ($143B → $134B) | yes | Layer 4 catches the unsourced new number |
+| Percentage shift (12% → 21%) | yes | Same |
+| Magnitude shift (million → billion) | yes | Source text "million" doesn't appear in output that says "billion" |
+| False precision (vague → specific) | yes | New numbers in output are unsourced |
+| Fabricated affiliation (adds Steve Jobs) | yes | Layer 5 catches the unsourced entity |
+| Counterfactual extension (projects Q2 $155B) | yes | Layer 11 catches "Q2", $155B as projected |
+| Subtle entity swap (Maestri → Maestro) | yes (modest) | Layer 5 catches the small entity difference |
+| Role/title swap (CEO → CFO) | yes (modest) | Small vocabulary shift |
+| **Quarter shift (Q1 → Q3)** | **no** | Touchstone has no temporal-coreference signal |
+| **Direction reversal (grew ↔ declined)** | **no** | Same vocabulary, opposite meaning |
+| **Imputed cause ("grew, X happened" → "grew due to X")** | **no** | Same words, different relation |
+| **Time-frame shift (Q1 was X, up from Q4 Y → reverse)** | **no** | Same numbers, swapped binding |
+| **Attribute swap (iPhone grew / Mac declined → reverse)** | **no, and inverts** | Touchstone scored hallucinated LOWER |
+| **Scoping shift (segment → total)** | **no** | Same numbers, different scope |
+| **Numerical conflation (12% to $143B / 8% growth → swapped)** | **no** | Same numbers, swapped assignment |
+| **Relation reversal (Apple acquired X → X acquired Apple)** | **no** | Same words, swapped subject/object |
+
+**The wall is structural.** Touchstone is a regex / arithmetic / lexical-overlap substrate. By construction, it CANNOT detect hallucinations that preserve vocabulary and only change semantic relationships. Those hallucinations require either an NLI model, an LLM judge, or a structured semantic representation.
+
+The 8 categories Touchstone catches are exactly the ones where the hallucination introduces NEW LEXICAL CONTENT (a number not in source, an entity not in source, a year/quarter not in source). The 8 it misses are the ones where the hallucination REARRANGES EXISTING LEXICAL CONTENT.
+
+### A.1 How the strongest available detectors handle the same 16 cases
+
+The Appendix A wall claim above states that the substrate's blind spots require "an NLI model, an LLM judge, or a structured semantic representation" to detect. That claim was theoretical when first written. It has now been measured: MiniCheck-Flan-T5-Large, AlignScore-base, and the xAI Grok 4.20 non-reasoning judge were run against the same 16 (source, faithful, hallucinated) triples on 2026-05-18. Reproduce via `python -m benchmarks.adversarial_subtle.join_detectors` after running each detector against `benchmarks/adversarial_subtle/pairs.json`. Full per-case scores live in `benchmarks/adversarial_subtle/cross_detector_2026-05-18.json`.
+
+| Detector | Class | Separated | AUC on the 32 pair rows (95% CI) |
+|---|---|---|---|
+| Touchstone substrate (L1-L11, default Verifier) | Lexical / arithmetic | 8 of 16 (50%) | n/a (single composite score) |
+| MiniCheck Flan-T5-Large | Distilled NLI (~770M) | 15 of 16 (94%) | 0.934 [0.812, 1.000] |
+| AlignScore-base | NLI+QA+regression (~125M) | 14 of 16 (88%) | 0.949 [0.859, 1.000] |
+| xAI Grok 4.20 non-reasoning | Frontier LLM judge | 16 of 16 (100%) | 0.998 [0.988, 1.000] |
+
+Per-category catch matrix (Y = `halluc_prob > faithful_prob`):
+
+| Category | Touchstone | MiniCheck | AlignScore | Grok 4.20 |
+|---|---|---|---|---|
+| number_swap_same_scale | Y | Y | Y | Y |
+| percentage_shift_plausible_range | Y | Y | Y | Y |
+| quarter_shift | . | Y | Y | Y |
+| role_title_swap | Y | Y | Y | Y |
+| direction_reversal | . | Y | Y | Y |
+| imputed_cause | . | Y | . | Y |
+| magnitude_shift | Y | Y | Y | Y |
+| false_precision | Y | Y | Y | Y |
+| time_frame_shift | . | Y | Y | Y |
+| attribute_swap | . | Y | Y | Y |
+| fabricated_affiliation | Y | Y | Y | Y |
+| scoping_shift | . | Y | Y | Y |
+| counterfactual_extension | Y | Y | Y | Y |
+| numerical_conflation | . | Y | Y | Y |
+| subtle_entity_swap | Y | . | Y | Y |
+| relation_reversal | . | Y | . | Y |
+
+**What this measurement establishes (read narrowly):**
+
+- The structural-blindness wall is the *substrate's* wall, not the trained-checker class's wall, on this fixture. A ~770M distilled NLI catches 7 of the 8 categories the substrate misses; a frontier LLM judge catches all 8.
+- The substrate and MiniCheck are nearly complementary on this fixture: MiniCheck misses only `subtle_entity_swap` (Maestri → Maestro), which the substrate catches via Layer 5's unsourced-entity logic; the substrate misses 8 categories MiniCheck catches.
+
+**Methodological confounds you must read before citing these numbers:**
+
+- **World-knowledge contamination — now measured.** The 16 cases use real entities (Apple, Tim Cook, Luca Maestri, fiscal-quarter dates). Grok 4.20 has seen Apple's filings in pretraining; it can in principle flag "CFO Tim Cook" from priors alone without reading the source. A 2026-05-19 ablation runs the SAME Grok model on the 16 cases with the source removed and the prompt rewritten as a strict world-knowledge fact-checker: "estimate the probability that OUTPUT contains a factually incorrect claim based on your background knowledge of Apple." Snapshot at `benchmarks/adversarial_subtle/judge_xai_world_knowledge_only_2026-05-19.json`. **Result: AUC 0.6406 [0.4570, 0.8164]** (95% CI just barely includes 0.5). Separation rate: 7/16 (statistically indistinguishable from random's [37.5%, 62.5%] CI at n=16); 9/16 cases are ties at the prob grid. **Only 2 of 16 cases are strongly separable from priors alone** (gap ≥ 0.4): `role_title_swap` (Tim Cook CEO not CFO; priors give 0.05 vs 0.85) and `subtle_entity_swap` (Maestri not Maestro; 0.05 vs 0.90). 5 cases give weak priors signal (gap 0.05-0.20); 9 cases give no priors signal at all. The Appendix A.1 100% Grok separation rate cannot be reduced to priors-only contamination; the judge IS reading the source on at least 14 of 16 cases. The remaining 2 cases are priors-catchable. **The confound is real but small** (2-of-16 = ~12% upper bound on the contribution of world knowledge to the 16/16 headline). An earlier in-session sanity check by Claude Opus 4.7 (this session) predicted 5/16 strong priors-only separation; the actual Grok run is more discriminating — Grok's priors-only signal is weaker than I predicted. Use the API measurement, not the sanity check.
+- **Pairwise-ranking is not threshold-based deployment.** "Did `halluc_prob > faithful_prob`?" tests ranking when the test designer hands you both options. Production hands one output and asks "flag or not?" The 100% separation rate says nothing about threshold selection, false-positive rate, or operating-point trade-offs — the things that determine whether a detector is deployable.
+- **Random baseline equivalence.** Random scoring expected separation rate is 50% with 95% CI roughly [37.5%, 62.5%] at n=16. The substrate's 8/16 is statistically indistinguishable from random on this test. The "lexical detector that fails on relational cases" framing is correct in principle, but on this n it cannot be distinguished from a random scorer.
+- **n=16 CI overlap between trained detectors.** Bootstrap CIs at n_pos=16, n_neg=16: MiniCheck AUC 0.934 [0.812, 1.000], AlignScore 0.949 [0.859, 1.000]. The CIs overlap each other's point estimates; ordering MiniCheck and AlignScore on this fixture is unsupported.
+- **Calibration-shape claim is a prompt artifact, not a judge characterization.** The Grok output clustering at 0.0 and 0.8-1.0 may be 100% prompt-design effect. LLMs default to round probabilities (0, 0.1, 0.5, 0.9, 1.0) absent explicit calibration training or calibration-eliciting prompts. We ran one prompt at one temperature on n=32 pairs; that is a data point, not a calibration characterization. Treat the binary-shape observation as unverified.
+- **Prompt cueing measured.** The judge prompt used in Appendix A.1 enumerates exactly the six failure modes the Appendix A wall claim names as the substrate's structural blind spots (polarity flip, attribute swap, scope shift, time-frame shift, relation reversal, imputed cause). The 16-case fixture is constructed from those same categories. A judge given a checklist of the categories the test was designed around is in a near-tautological position. The cued-vs-blind ablation in §4.3 shows: on the 16-case fixture, blind separates 16/16 too (AUC 0.990 vs cued 0.998), so the toy result was robust to cueing. On the naturalistic n=400 corpora, blind judge AUCs are equal to or slightly above cued (RAGTruth 0.872 vs 0.854; SummEval 0.946 vs 0.933; HaluEval 0.816 vs 0.807) — cueing did not give the cued judge an unfair advantage. But the substrate-plus-judge value-add at audit thresholds (§4.3) does shrink with blind judge; the cueing-induced score compression was part of why the substrate's tie-breaking added so much R@P90 in the original §4.3 numbers.
+- **Synthetic atomic perturbations are not production hallucinations.** Each case is a one-sentence source paired with a one-sentence output where exactly one span differs. Production hallucinations are buried in multi-paragraph outputs over multi-KB sources, with most claims correct and 1-3 silently wrong. The same detectors hit F1 0.45-0.71 on naturalistic corpora (see §2 and §4.2 above). The ~25-point gap between the Appendix A.1 separation rates and the §2 operational F1 numbers is the gap between toy and production. Cite Appendix A.1 as a category-coverage debugging probe, never as a production-readiness claim.
+
+The §4.2 cross-detector measurement on real-corpus subsamples is the production-relevant complement to this appendix. Treat Appendix A.1 and §4.2 as a pair, not as independent evidence; Appendix A.1 is the substrate diagnostic, §4.2 is the published-grade measurement.
