@@ -1,0 +1,55 @@
+{
+  "source_pair_files": {
+    "ragtruth_summary": {
+      "path": "/tmp/alignscore_corpora/ragtruth_summary.json",
+      "sha256": "8fd27200c366812712419114731f09aad0abc1a1f8a83ca80695fb57ac15a9b1",
+      "size_bytes": 3614802,
+      "n_rows": 900
+    },
+    "ragtruth_qa": {
+      "path": "/tmp/alignscore_corpora/ragtruth_qa.json",
+      "sha256": "cbc0991edd66b93b8ad4a9794192e8540e528501e8163f2842e537f98bd85274",
+      "size_bytes": 1839092,
+      "n_rows": 900
+    },
+    "ragtruth_data2txt": {
+      "path": "/tmp/alignscore_corpora/ragtruth_data2txt.json",
+      "sha256": "93e48b1d70ff7a01142f37803585b9c75c86341328e7306472a4568844ff952b",
+      "size_bytes": 3194731,
+      "n_rows": 900
+    },
+    "summeval": {
+      "path": "/tmp/alignscore_corpora/summeval.json",
+      "sha256": "6f911457084c274c31df392ace064375147535315bd57bfa0e9f15cd42fbbd4d",
+      "size_bytes": 4006478,
+      "n_rows": 1600
+    },
+    "halueval_summarization": {
+      "path": "/tmp/alignscore_corpora/halueval.json",
+      "sha256": "01176fa58850c5b5bdbc2fd4a3abe46cbd6ef5b0c125bbe860b88886fed89d0d",
+      "size_bytes": 4231199,
+      "n_rows": 1000
+    }
+  },
+  "subsample_pair_files": {
+    "ragtruth_summary": {
+      "path": "/tmp/alignscore_corpora/ragtruth_summary_n400.json",
+      "sha256": "2488abf86c4b111034230db91ce0a1d44d39994becefec6a2f35173e4b385eac",
+      "size_bytes": 1898899,
+      "n_rows": 400
+    },
+    "summeval": {
+      "path": "/tmp/alignscore_corpora/summeval_n400.json",
+      "sha256": "4ab2a3dfb205dfe83ed2ca6a64d1e70248afee29a853802bff0bb7b8ebd57663",
+      "size_bytes": 962506,
+      "n_rows": 400
+    },
+    "halueval_summarization": {
+      "path": "/tmp/alignscore_corpora/halueval_n400.json",
+      "sha256": "2c8843b1a16dca427ea3f86dfd9b78dfcfd33d0b5053f35024f810fca4f1726a",
+      "size_bytes": 1674513,
+      "n_rows": 400
+    }
+  },
+  "notes": "SHA-256 pins for the source and subsample pair files used to generate every snapshot in benchmarks/external/*/results/. The source files live in /tmp/alignscore_corpora/ and are derived from each corpus's runner under benchmarks/external/<corpus>/ via .venv-external or .venv-alignscore. The subsample files are derived from the source files by benchmarks/external/subsample_pairs.py with --n-total 400."
+}
