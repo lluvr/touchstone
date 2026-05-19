@@ -10,7 +10,8 @@
       "xAI Grok 4.20 cued",
       "xAI Grok 4.20 blind",
       "Anthropic Claude Sonnet 4.6 cued",
-      "Anthropic Claude Sonnet 4.6 blind"
+      "Anthropic Claude Sonnet 4.6 blind",
+      "OpenAI GPT-4o cued"
     ],
     "f1_optimal_thresholds": {
       "Touchstone substrate L6 (word_overlap_inv)": 0.2759,
@@ -19,7 +20,8 @@
       "xAI Grok 4.20 cued": 0.65,
       "xAI Grok 4.20 blind": 0.4,
       "Anthropic Claude Sonnet 4.6 cued": 0.55,
-      "Anthropic Claude Sonnet 4.6 blind": 0.55
+      "Anthropic Claude Sonnet 4.6 blind": 0.55,
+      "OpenAI GPT-4o cued": 0.3
     },
     "per_pair": {
       "Touchstone substrate L6 (word_overlap_inv)  vs  MiniCheck Flan-T5-Large": {
@@ -154,6 +156,28 @@
           "p_two_sided": 0.000333
         }
       },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6609,
+          "auc_b": 0.862,
+          "diff_point": -0.2011,
+          "diff_ci_low": -0.273,
+          "diff_ci_high": -0.1322,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2759,
+          "threshold_b": 0.3,
+          "b": 99,
+          "c": 37,
+          "n_discordant": 136,
+          "p_two_sided": 0.0
+        }
+      },
       "MiniCheck Flan-T5-Large  vs  AlignScore-base": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.6666,
@@ -264,6 +288,28 @@
           "p_two_sided": 0.0
         }
       },
+      "MiniCheck Flan-T5-Large  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6666,
+          "auc_b": 0.862,
+          "diff_point": -0.1954,
+          "diff_ci_low": -0.2663,
+          "diff_ci_high": -0.1233,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1416,
+          "threshold_b": 0.3,
+          "b": 148,
+          "c": 23,
+          "n_discordant": 171,
+          "p_two_sided": 0.0
+        }
+      },
       "AlignScore-base  vs  xAI Grok 4.20 cued": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.7174,
@@ -352,6 +398,28 @@
           "p_two_sided": 0.0
         }
       },
+      "AlignScore-base  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7174,
+          "auc_b": 0.862,
+          "diff_point": -0.1446,
+          "diff_ci_low": -0.2026,
+          "diff_ci_high": -0.0851,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2206,
+          "threshold_b": 0.3,
+          "b": 133,
+          "c": 22,
+          "n_discordant": 155,
+          "p_two_sided": 0.0
+        }
+      },
       "xAI Grok 4.20 cued  vs  xAI Grok 4.20 blind": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.854,
@@ -418,6 +486,28 @@
           "p_two_sided": 0.0
         }
       },
+      "xAI Grok 4.20 cued  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.854,
+          "auc_b": 0.862,
+          "diff_point": -0.008,
+          "diff_ci_low": -0.0407,
+          "diff_ci_high": 0.0269,
+          "p_two_sided": 0.614,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.65,
+          "threshold_b": 0.3,
+          "b": 75,
+          "c": 7,
+          "n_discordant": 82,
+          "p_two_sided": 0.0
+        }
+      },
       "xAI Grok 4.20 blind  vs  Anthropic Claude Sonnet 4.6 cued": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.872,
@@ -462,6 +552,28 @@
           "p_two_sided": 0.000535
         }
       },
+      "xAI Grok 4.20 blind  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.872,
+          "auc_b": 0.862,
+          "diff_point": 0.0099,
+          "diff_ci_low": -0.0243,
+          "diff_ci_high": 0.0456,
+          "p_two_sided": 0.589,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.4,
+          "threshold_b": 0.3,
+          "b": 49,
+          "c": 4,
+          "n_discordant": 53,
+          "p_two_sided": 0.0
+        }
+      },
       "Anthropic Claude Sonnet 4.6 cued  vs  Anthropic Claude Sonnet 4.6 blind": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.8991,
@@ -483,6 +595,50 @@
           "n_discordant": 14,
           "p_two_sided": 0.012939
         }
+      },
+      "Anthropic Claude Sonnet 4.6 cued  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8991,
+          "auc_b": 0.862,
+          "diff_point": 0.0371,
+          "diff_ci_low": -0.0004,
+          "diff_ci_high": 0.0787,
+          "p_two_sided": 0.051,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.55,
+          "threshold_b": 0.3,
+          "b": 41,
+          "c": 12,
+          "n_discordant": 53,
+          "p_two_sided": 8.2e-05
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 blind  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8991,
+          "auc_b": 0.862,
+          "diff_point": 0.0371,
+          "diff_ci_low": -0.0021,
+          "diff_ci_high": 0.0775,
+          "p_two_sided": 0.064,
+          "n_resamples": 2000,
+          "n_pos": 95,
+          "n_neg": 305,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.55,
+          "threshold_b": 0.3,
+          "b": 32,
+          "c": 13,
+          "n_discordant": 45,
+          "p_two_sided": 0.006609
+        }
       }
     }
   },
@@ -497,7 +653,8 @@
       "xAI Grok 4.20 cued",
       "xAI Grok 4.20 blind",
       "Anthropic Claude Sonnet 4.6 cued",
-      "Anthropic Claude Sonnet 4.6 blind"
+      "Anthropic Claude Sonnet 4.6 blind",
+      "OpenAI GPT-4o cued"
     ],
     "f1_optimal_thresholds": {
       "Touchstone substrate L6 (word_overlap_inv)": 0.1333,
@@ -506,7 +663,8 @@
       "xAI Grok 4.20 cued": 0.7,
       "xAI Grok 4.20 blind": 0.8,
       "Anthropic Claude Sonnet 4.6 cued": 0.15,
-      "Anthropic Claude Sonnet 4.6 blind": 0.15
+      "Anthropic Claude Sonnet 4.6 blind": 0.15,
+      "OpenAI GPT-4o cued": 0.5
     },
     "per_pair": {
       "Touchstone substrate L6 (word_overlap_inv)  vs  MiniCheck Flan-T5-Large": {
@@ -641,6 +799,28 @@
           "p_two_sided": 0.0
         }
       },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6445,
+          "auc_b": 0.9332,
+          "diff_point": -0.2887,
+          "diff_ci_low": -0.3971,
+          "diff_ci_high": -0.1879,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1333,
+          "threshold_b": 0.5,
+          "b": 9,
+          "c": 49,
+          "n_discordant": 58,
+          "p_two_sided": 0.0
+        }
+      },
       "MiniCheck Flan-T5-Large  vs  AlignScore-base": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.8936,
@@ -751,6 +931,28 @@
           "p_two_sided": 0.001914
         }
       },
+      "MiniCheck Flan-T5-Large  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8936,
+          "auc_b": 0.9332,
+          "diff_point": -0.0396,
+          "diff_ci_low": -0.109,
+          "diff_ci_high": 0.0196,
+          "p_two_sided": 0.212,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.7879,
+          "threshold_b": 0.5,
+          "b": 11,
+          "c": 28,
+          "n_discordant": 39,
+          "p_two_sided": 0.009475
+        }
+      },
       "AlignScore-base  vs  xAI Grok 4.20 cued": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.8189,
@@ -839,6 +1041,28 @@
           "p_two_sided": 0.000936
         }
       },
+      "AlignScore-base  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8189,
+          "auc_b": 0.9332,
+          "diff_point": -0.1143,
+          "diff_ci_low": -0.1896,
+          "diff_ci_high": -0.0387,
+          "p_two_sided": 0.003,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.3215,
+          "threshold_b": 0.5,
+          "b": 17,
+          "c": 37,
+          "n_discordant": 54,
+          "p_two_sided": 0.009073
+        }
+      },
       "xAI Grok 4.20 cued  vs  xAI Grok 4.20 blind": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.9328,
@@ -905,6 +1129,28 @@
           "p_two_sided": 0.136046
         }
       },
+      "xAI Grok 4.20 cued  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.9328,
+          "auc_b": 0.9332,
+          "diff_point": -0.0004,
+          "diff_ci_low": -0.0233,
+          "diff_ci_high": 0.0246,
+          "p_two_sided": 0.978,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.7,
+          "threshold_b": 0.5,
+          "b": 17,
+          "c": 4,
+          "n_discordant": 21,
+          "p_two_sided": 0.007197
+        }
+      },
       "xAI Grok 4.20 blind  vs  Anthropic Claude Sonnet 4.6 cued": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.9455,
@@ -949,6 +1195,28 @@
           "p_two_sided": 0.089531
         }
       },
+      "xAI Grok 4.20 blind  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.9455,
+          "auc_b": 0.9332,
+          "diff_point": 0.0123,
+          "diff_ci_low": -0.0111,
+          "diff_ci_high": 0.0372,
+          "p_two_sided": 0.308,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.8,
+          "threshold_b": 0.5,
+          "b": 7,
+          "c": 14,
+          "n_discordant": 21,
+          "p_two_sided": 0.189247
+        }
+      },
       "Anthropic Claude Sonnet 4.6 cued  vs  Anthropic Claude Sonnet 4.6 blind": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.9212,
@@ -970,6 +1238,50 @@
           "n_discordant": 23,
           "p_two_sided": 6e-06
         }
+      },
+      "Anthropic Claude Sonnet 4.6 cued  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.9212,
+          "auc_b": 0.9332,
+          "diff_point": -0.012,
+          "diff_ci_low": -0.0503,
+          "diff_ci_high": 0.022,
+          "p_two_sided": 0.536,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.15,
+          "threshold_b": 0.5,
+          "b": 32,
+          "c": 7,
+          "n_discordant": 39,
+          "p_two_sided": 7e-05
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 blind  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.9005,
+          "auc_b": 0.9332,
+          "diff_point": -0.0326,
+          "diff_ci_low": -0.0772,
+          "diff_ci_high": 0.0083,
+          "p_two_sided": 0.118,
+          "n_resamples": 2000,
+          "n_pos": 46,
+          "n_neg": 354,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.15,
+          "threshold_b": 0.5,
+          "b": 17,
+          "c": 13,
+          "n_discordant": 30,
+          "p_two_sided": 0.584665
+        }
       }
     }
   },
@@ -984,7 +1296,8 @@
       "xAI Grok 4.20 cued",
       "xAI Grok 4.20 blind",
       "Anthropic Claude Sonnet 4.6 cued",
-      "Anthropic Claude Sonnet 4.6 blind"
+      "Anthropic Claude Sonnet 4.6 blind",
+      "OpenAI GPT-4o cued"
     ],
     "f1_optimal_thresholds": {
       "Touchstone substrate L6 (word_overlap_inv)": 0.1458,
@@ -993,7 +1306,8 @@
       "xAI Grok 4.20 cued": 0.65,
       "xAI Grok 4.20 blind": 0.65,
       "Anthropic Claude Sonnet 4.6 cued": 0.15,
-      "Anthropic Claude Sonnet 4.6 blind": 0.15
+      "Anthropic Claude Sonnet 4.6 blind": 0.15,
+      "OpenAI GPT-4o cued": 0.2
     },
     "per_pair": {
       "Touchstone substrate L6 (word_overlap_inv)  vs  MiniCheck Flan-T5-Large": {
@@ -1128,6 +1442,28 @@
           "p_two_sided": 0.85463
         }
       },
+      "Touchstone substrate L6 (word_overlap_inv)  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.7477,
+          "auc_b": 0.8131,
+          "diff_point": -0.0654,
+          "diff_ci_low": -0.1178,
+          "diff_ci_high": -0.0144,
+          "p_two_sided": 0.009,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.1458,
+          "threshold_b": 0.2,
+          "b": 77,
+          "c": 41,
+          "n_discordant": 118,
+          "p_two_sided": 0.001178
+        }
+      },
       "MiniCheck Flan-T5-Large  vs  AlignScore-base": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.6835,
@@ -1238,6 +1574,28 @@
           "p_two_sided": 0.0
         }
       },
+      "MiniCheck Flan-T5-Large  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6835,
+          "auc_b": 0.8131,
+          "diff_point": -0.1296,
+          "diff_ci_low": -0.1769,
+          "diff_ci_high": -0.0804,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.0519,
+          "threshold_b": 0.2,
+          "b": 139,
+          "c": 7,
+          "n_discordant": 146,
+          "p_two_sided": 0.0
+        }
+      },
       "AlignScore-base  vs  xAI Grok 4.20 cued": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.6855,
@@ -1326,6 +1684,28 @@
           "p_two_sided": 0.319727
         }
       },
+      "AlignScore-base  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.6855,
+          "auc_b": 0.8131,
+          "diff_point": -0.1276,
+          "diff_ci_low": -0.1763,
+          "diff_ci_high": -0.0795,
+          "p_two_sided": 0.0,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": true
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.2627,
+          "threshold_b": 0.2,
+          "b": 84,
+          "c": 34,
+          "n_discordant": 118,
+          "p_two_sided": 5e-06
+        }
+      },
       "xAI Grok 4.20 cued  vs  xAI Grok 4.20 blind": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.807,
@@ -1392,6 +1772,28 @@
           "p_two_sided": 0.000394
         }
       },
+      "xAI Grok 4.20 cued  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.807,
+          "auc_b": 0.8131,
+          "diff_point": -0.006,
+          "diff_ci_low": -0.0325,
+          "diff_ci_high": 0.0202,
+          "p_two_sided": 0.673,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.65,
+          "threshold_b": 0.2,
+          "b": 35,
+          "c": 24,
+          "n_discordant": 59,
+          "p_two_sided": 0.192526
+        }
+      },
       "xAI Grok 4.20 blind  vs  Anthropic Claude Sonnet 4.6 cued": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.8159,
@@ -1436,6 +1838,28 @@
           "p_two_sided": 0.0
         }
       },
+      "xAI Grok 4.20 blind  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8159,
+          "auc_b": 0.8131,
+          "diff_point": 0.0028,
+          "diff_ci_low": -0.0216,
+          "diff_ci_high": 0.0283,
+          "p_two_sided": 0.813,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.65,
+          "threshold_b": 0.2,
+          "b": 6,
+          "c": 55,
+          "n_discordant": 61,
+          "p_two_sided": 0.0
+        }
+      },
       "Anthropic Claude Sonnet 4.6 cued  vs  Anthropic Claude Sonnet 4.6 blind": {
         "paired_bootstrap_auc_diff": {
           "auc_a": 0.8242,
@@ -1455,6 +1879,50 @@
           "b": 27,
           "c": 0,
           "n_discordant": 27,
+          "p_two_sided": 0.0
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 cued  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8242,
+          "auc_b": 0.8131,
+          "diff_point": 0.0111,
+          "diff_ci_low": -0.0126,
+          "diff_ci_high": 0.037,
+          "p_two_sided": 0.356,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.15,
+          "threshold_b": 0.2,
+          "b": 74,
+          "c": 8,
+          "n_discordant": 82,
+          "p_two_sided": 0.0
+        }
+      },
+      "Anthropic Claude Sonnet 4.6 blind  vs  OpenAI GPT-4o cued": {
+        "paired_bootstrap_auc_diff": {
+          "auc_a": 0.8185,
+          "auc_b": 0.8131,
+          "diff_point": 0.0054,
+          "diff_ci_low": -0.0182,
+          "diff_ci_high": 0.0315,
+          "p_two_sided": 0.688,
+          "n_resamples": 2000,
+          "n_pos": 200,
+          "n_neg": 200,
+          "significant_at_0.05": false
+        },
+        "mcnemar_at_f1_optimal": {
+          "threshold_a": 0.15,
+          "threshold_b": 0.2,
+          "b": 50,
+          "c": 11,
+          "n_discordant": 61,
           "p_two_sided": 0.0
         }
       }

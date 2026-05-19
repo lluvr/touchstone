@@ -342,6 +342,20 @@
         "recall_at_precision_0.9_std": 0.0277,
         "top_10_percent_lift_mean": 1.9215,
         "top_10_percent_lift_std": 0.0304
+      },
+      "OpenAI GPT-4o cued": {
+        "n_permutations": 100,
+        "jitter_epsilon": 1e-06,
+        "f1_optimal_mean": 0.7497,
+        "f1_optimal_std": 0.005,
+        "f1_optimal_threshold_mean": 0.179,
+        "f1_optimal_threshold_std": 0.0518,
+        "precision_at_recall_0.9_mean": 0.5984,
+        "precision_at_recall_0.9_std": 0.0158,
+        "recall_at_precision_0.9_mean": 0.4602,
+        "recall_at_precision_0.9_std": 0.0546,
+        "top_10_percent_lift_mean": 1.955,
+        "top_10_percent_lift_std": 0.0151
       }
     }
   }

@@ -486,6 +486,26 @@
         },
         "eval_in_sample_f1_optimal": 0.7531,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0073
+      },
+      "OpenAI GPT-4o cued": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.2,
+        "tune_f1_optimal": 0.7716,
+        "eval_at_tune_threshold": {
+          "threshold": 0.2,
+          "n_flagged": 115,
+          "tp": 78,
+          "fp": 37,
+          "fn": 22,
+          "precision": 0.6783,
+          "recall": 0.78,
+          "f1": 0.7256,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.7324,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0068
       }
     }
   }
