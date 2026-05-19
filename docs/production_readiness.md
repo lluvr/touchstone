@@ -260,6 +260,43 @@ Both cued and blind judge variants are included on identical indices (c02bafe ad
 - **The substrate / MiniCheck / AlignScore numbers are tie-stable** (std ≈ 0.000) because their score distributions are continuous. The cross-detector orderings between the three are unaffected by ties.
 - **Grok cued F1-optimal threshold has wide tie envelope on RAGTruth** (0.532 ± 0.126); blind is similar (0.559 ± 0.122). A team picking a threshold by `score(query) > optimal_threshold` should treat the snapshot's "thr 0.65" as one realization within a roughly 0.40–0.65 range for cued / 0.44–0.68 for blind; the threshold itself is partially a tie-break artifact.
 
+### 4.2.3 Calibration metrics (ECE, MCE, Brier, Brier skill score)
+
+§4.2.1 noted two competing readings for the Grok edge's robustness under holdout: (a) the judge is genuinely robust; (b) its clustered-probability output makes the threshold less sensitive to which subset chose it. The calibration metrics disentangle. They also matter independently: §5's two-stage Verifier architecture composes per-detector probabilities into a single calibrated `score(text, source)` output. If the input probabilities are not calibrated, the composition is computing with junk. Reproduce via `python -m benchmarks.external.calibration_metrics`. Full per-detector per-bin reliability-diagram data lives in `benchmarks/external/calibration_metrics_n400_2026-05-18.json`.
+
+ECE = expected calibration error (10 equal-width bins on [0,1]; lower is better). MCE = maximum calibration error across bins. Brier = mean (prob − label)². BSS = Brier skill score = 1 − Brier / random_scorer_brier; positive means better than predicting base rate for every example.
+
+| Corpus | Detector | ECE | MCE | Brier | BSS |
+|---|---|---|---|---|---|
+| RAGTruth Summary (base 0.24, rand Brier 0.181) | Substrate L6 | **0.026** | 0.314 | 0.170 | +0.060 |
+| | MiniCheck Flan-T5-Large | 0.189 | 0.549 | 0.222 | **-0.223** |
+| | AlignScore-base | 0.032 | 0.744 | 0.163 | +0.102 |
+| | xAI Grok 4.20 (cued) | 0.179 | 0.295 | 0.160 | +0.115 |
+| | xAI Grok 4.20 (blind) | 0.118 | **0.210** | **0.127** | **+0.297** |
+| SummEval (base 0.12, rand Brier 0.102) | Substrate L6 | 0.071 | 0.670 | 0.097 | +0.048 |
+| | MiniCheck Flan-T5-Large | 0.086 | 0.534 | 0.076 | +0.257 |
+| | AlignScore-base | **0.047** | 0.306 | 0.081 | +0.204 |
+| | xAI Grok 4.20 (cued) | 0.090 | 0.650 | 0.084 | +0.178 |
+| | xAI Grok 4.20 (blind) | 0.070 | 0.700 | **0.063** | **+0.381** |
+| HaluEval Summarization (base 0.50, rand Brier 0.250) | Substrate L6 | 0.294 | 0.458 | 0.302 | **-0.208** |
+| | MiniCheck Flan-T5-Large | 0.248 | 0.438 | 0.292 | -0.167 |
+| | AlignScore-base | 0.120 | **0.189** | 0.237 | +0.052 |
+| | xAI Grok 4.20 (cued) | **0.104** | 0.368 | 0.183 | +0.269 |
+| | xAI Grok 4.20 (blind) | 0.111 | 0.292 | **0.175** | **+0.300** |
+
+**Key calibration findings (load-bearing for the Verifier architecture):**
+
+- **Grok blind has the lowest Brier on every corpus.** Calibrationally the blind variant dominates. The §4.2.1 reading "Grok edge is robust under holdout" gains a third explanation: the blind judge is genuinely well-calibrated, not just consistent. The cued variant's calibration is comparable on F1 but noticeably worse on Brier, consistent with the score-clustering mechanism named in §4.3.
+- **MiniCheck's raw output is WORSE than a random scorer at the Brier level on RAGTruth (BSS -0.223) and HaluEval (BSS -0.167).** The probabilities are mis-calibrated to the point where outputting the base rate for every example would beat them. Composing raw MiniCheck probabilities into a Verifier ensemble without post-hoc calibration (Platt / isotonic) is computing with junk on these corpora. The substrate on HaluEval (BSS -0.208) has the same problem: its rank order is informative (F1 0.721) but the raw scores are not calibrated probabilities.
+- **The substrate's ECE on RAGTruth is the lowest of all five detectors (0.026).** A 3-line word-overlap-inverse computation produces better-calibrated raw scores than a frontier LLM judge on this corpus. Its F1 is mediocre (0.445 in-sample / 0.358 held-out), so this is a calibration-without-discrimination win: the bins map cleanly to the empirical positive rate even though within-bin ranking is weak. Cite the substrate as a calibrated-probability source on RAGTruth-shape inputs even when its discriminative power is bounded.
+- **MCE is high (0.3-0.7) on most cells.** ECE is a weighted average; MCE catches whether the calibration gap is concentrated in a single bin. A high MCE/ECE ratio (AlignScore on RAGTruth: 0.744 / 0.032 = 23×) means there is one bin where the detector systematically over- or under-predicts; reliability-diagram inspection per detector per corpus (in the JSON) is the next step before relying on per-bin probabilities downstream.
+
+**Implications for §5 and §4.3:**
+
+- The two-stage Verifier (`Verifier(use_minicheck=True).score(...)`) MUST calibrate MiniCheck (and probably AlignScore, given its high MCE) before composition on corpora where the raw BSS is negative. Out-of-the-box composition of raw probabilities is unsafe.
+- The §4.3 substrate-plus-judge blend uses raw scores (linear blend `α * substrate + (1 - α) * judge`). On HaluEval the substrate is anti-calibrated (BSS -0.208); a blend weight `α` chosen on AUC may correctly weight the substrate while still composing badly-calibrated probabilities. Re-running §4.3 with post-Platt-calibrated input scores would isolate the discrimination contribution from the probability-arithmetic contribution; deferred.
+- The blind Grok prompt is calibration-better than the cued variant on every corpus. Combined with the F1-optimal advantage flagged in §4.2.2, the blind prompt is the better default for any production use that needs probability outputs, not just classifications.
+
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
 Touchstone's pitch is substrate + judge, not substrate or judge. §4.2 measured each detector independently; this section measures whether the substrate adds operational value to a frontier judge or is redundant. The analysis was first run against the cued judge (the prompt that enumerates the six §4 wall-claim categories) and then re-run with the blind judge to factor out the cueing confound flagged in §4.1. Three combination strategies, all on the same n=400 indices, all pure-python (no sklearn): zero-fit max-ensemble, zero-fit mean-ensemble, and a 5-fold cross-validated linear blend `alpha * substrate + (1 - alpha) * judge` where alpha is selected on each train fold by AUC. Reproduce via `python -m benchmarks.external.substrate_plus_judge_analysis`. Full per-corpus breakdown lives in `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`.
@@ -354,6 +391,7 @@ What changes this story:
 - `python -m benchmarks.external.operational_metrics_on_subsample` — computes the §4.2 four-detector apples-to-apples table on the same n=400 indices for each corpus.
 - `python -m benchmarks.external.operational_metrics_holdout` — computes the §4.2.1 held-out F1-optimal table by splitting each n=400 subsample 200/200 (stratified interleave), tuning the F1-optimal threshold on the tune half, reporting metrics on the eval half. Reads existing snapshots; no new judge calls.
 - `python -m benchmarks.external.operational_metrics_tie_envelope` — computes the §4.2.2 tie-aware metric envelope by K=100 sub-quantum-jitter permutations on every detector's scores; reports mean ± std for F1-optimal, P@R90, R@P90, and top-10% lift. Deterministic (SHA-1 seed per detector name).
+- `python -m benchmarks.external.calibration_metrics` — computes the §4.2.3 calibration table (ECE, MCE, Brier, Brier skill score, per-bin reliability diagram) per detector per corpus. Reads existing snapshots; no new judge calls.
 - `XAI_API_KEY=$(vault decrypt XAI_API_KEY) .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py <pairs.json> --label "<corpus>" --corpus-dir <corpus_dir> --model grok-4.20-0309-non-reasoning --prompt-variant blind --output <out.json>` — re-runs the Grok judge under the blind (no-category-enumeration) prompt variant; pair with the cued snapshot to measure the cueing delta on naturalistic data (the toy fixture is at ceiling under both).
 - `python -m benchmarks.external.score_substrate_on_subsample --pairs /tmp/alignscore_corpora/<corpus>_n400.json --output benchmarks/external/<corpus_dir>/results/substrate_only_n400_2026-05-18.json --corpus-dir <corpus_dir> --label "<corpus>"` — runs the Verifier substrate-only on each n=400 subsample pair (required input for §4.3).
 - `python -m benchmarks.external.substrate_plus_judge_analysis` — computes the §4.3 substrate-plus-judge value-add table (zero-fit ensembles + 5-fold CV linear blend) from the substrate and judge per-example snapshots; runs against both the cued and blind judge variants.
