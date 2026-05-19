@@ -67,7 +67,7 @@
         "eval_in_sample_f1_optimal": 0.5211,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0425
       },
-      "xAI Grok 4.20 non-reasoning": {
+      "xAI Grok 4.20 cued": {
         "tune_n": 201,
         "tune_n_positive": 48,
         "tune_f1_optimal_threshold": 0.65,
@@ -86,6 +86,26 @@
         },
         "eval_in_sample_f1_optimal": 0.7115,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0501
+      },
+      "xAI Grok 4.20 blind": {
+        "tune_n": 201,
+        "tune_n_positive": 48,
+        "tune_f1_optimal_threshold": 0.4,
+        "tune_f1_optimal": 0.7308,
+        "eval_at_tune_threshold": {
+          "threshold": 0.4,
+          "n_flagged": 70,
+          "tp": 39,
+          "fp": 31,
+          "fn": 8,
+          "precision": 0.5571,
+          "recall": 0.8298,
+          "f1": 0.6667,
+          "n_eval": 199,
+          "n_eval_positive": 47
+        },
+        "eval_in_sample_f1_optimal": 0.7097,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.043
       }
     }
   },
@@ -157,7 +177,7 @@
         "eval_in_sample_f1_optimal": 0.4308,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0217
       },
-      "xAI Grok 4.20 non-reasoning": {
+      "xAI Grok 4.20 cued": {
         "tune_n": 200,
         "tune_n_positive": 23,
         "tune_f1_optimal_threshold": 0.8,
@@ -176,6 +196,26 @@
         },
         "eval_in_sample_f1_optimal": 0.6885,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0569
+      },
+      "xAI Grok 4.20 blind": {
+        "tune_n": 200,
+        "tune_n_positive": 23,
+        "tune_f1_optimal_threshold": 0.8,
+        "tune_f1_optimal": 0.7917,
+        "eval_at_tune_threshold": {
+          "threshold": 0.8,
+          "n_flagged": 31,
+          "tp": 19,
+          "fp": 12,
+          "fn": 4,
+          "precision": 0.6129,
+          "recall": 0.8261,
+          "f1": 0.7037,
+          "n_eval": 200,
+          "n_eval_positive": 23
+        },
+        "eval_in_sample_f1_optimal": 0.7451,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0414
       }
     }
   },
@@ -247,7 +287,7 @@
         "eval_in_sample_f1_optimal": 0.6857,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0559
       },
-      "xAI Grok 4.20 non-reasoning": {
+      "xAI Grok 4.20 cued": {
         "tune_n": 200,
         "tune_n_positive": 100,
         "tune_f1_optimal_threshold": 0.65,
@@ -266,6 +306,26 @@
         },
         "eval_in_sample_f1_optimal": 0.7431,
         "in_sample_vs_holdout_F1_inflation_on_eval": 0.0
+      },
+      "xAI Grok 4.20 blind": {
+        "tune_n": 200,
+        "tune_n_positive": 100,
+        "tune_f1_optimal_threshold": 0.65,
+        "tune_f1_optimal": 0.7857,
+        "eval_at_tune_threshold": {
+          "threshold": 0.65,
+          "n_flagged": 85,
+          "tp": 68,
+          "fp": 17,
+          "fn": 32,
+          "precision": 0.8,
+          "recall": 0.68,
+          "f1": 0.7351,
+          "n_eval": 200,
+          "n_eval_positive": 100
+        },
+        "eval_in_sample_f1_optimal": 0.751,
+        "in_sample_vs_holdout_F1_inflation_on_eval": 0.0159
       }
     }
   }
