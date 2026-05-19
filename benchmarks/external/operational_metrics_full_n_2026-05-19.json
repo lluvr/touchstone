@@ -1,0 +1,752 @@
+{
+  "ragtruth_summary": {
+    "label": "RAGTruth Summary",
+    "full_n": 900,
+    "n_positive": 204,
+    "n_negative": 696,
+    "base_rate": 0.2267,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "n_total": 900,
+        "n_positive": 204,
+        "n_negative": 696,
+        "base_rate": 0.2267,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 10,
+          "tp": 7,
+          "fp": 3,
+          "fn": 197,
+          "precision": 0.7,
+          "recall": 0.0343,
+          "f1": 0.0654,
+          "false_positive_rate": 0.0043
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1604,
+          "precision": 0.2714,
+          "recall": 0.902,
+          "n_flagged": 678,
+          "tp": 184,
+          "fp": 494,
+          "false_positive_rate": 0.7098,
+          "false_alarms_per_caught": 2.68
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.6863,
+          "precision": 1.0,
+          "recall": 0.0049,
+          "n_flagged": 1,
+          "tp": 1,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.2609,
+          "precision": 0.3492,
+          "recall": 0.6471,
+          "f1": 0.4536,
+          "n_flagged": 378
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 45,
+            "threshold": 0.4234,
+            "precision": 0.5778,
+            "recall": 0.1275,
+            "lift_vs_random": 2.55,
+            "tp": 26,
+            "fp": 19
+          },
+          "top_10_percent": {
+            "k": 90,
+            "threshold": 0.3671,
+            "precision": 0.4333,
+            "recall": 0.1912,
+            "lift_vs_random": 1.91,
+            "tp": 39,
+            "fp": 51
+          },
+          "top_20_percent": {
+            "k": 180,
+            "threshold": 0.3279,
+            "precision": 0.4,
+            "recall": 0.3529,
+            "lift_vs_random": 1.76,
+            "tp": 72,
+            "fp": 108
+          },
+          "top_30_percent": {
+            "k": 270,
+            "threshold": 0.2936,
+            "precision": 0.363,
+            "recall": 0.4804,
+            "lift_vs_random": 1.6,
+            "tp": 98,
+            "fp": 172
+          }
+        }
+      },
+      "MiniCheck Flan-T5-Large": {
+        "n_total": 900,
+        "n_positive": 204,
+        "n_negative": 696,
+        "base_rate": 0.2267,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 207,
+          "tp": 93,
+          "fp": 114,
+          "fn": 111,
+          "precision": 0.4493,
+          "recall": 0.4559,
+          "f1": 0.4526,
+          "false_positive_rate": 0.1638
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.0483,
+          "precision": 0.2573,
+          "recall": 0.902,
+          "n_flagged": 715,
+          "tp": 184,
+          "fp": 531,
+          "false_positive_rate": 0.7629,
+          "false_alarms_per_caught": 2.89
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9891,
+          "precision": 1.0,
+          "recall": 0.0147,
+          "n_flagged": 3,
+          "tp": 3,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.1994,
+          "precision": 0.3757,
+          "recall": 0.652,
+          "f1": 0.4767,
+          "n_flagged": 354
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 45,
+            "threshold": 0.9416,
+            "precision": 0.7111,
+            "recall": 0.1569,
+            "lift_vs_random": 3.14,
+            "tp": 32,
+            "fp": 13
+          },
+          "top_10_percent": {
+            "k": 90,
+            "threshold": 0.8735,
+            "precision": 0.6222,
+            "recall": 0.2745,
+            "lift_vs_random": 2.75,
+            "tp": 56,
+            "fp": 34
+          },
+          "top_20_percent": {
+            "k": 180,
+            "threshold": 0.6088,
+            "precision": 0.4778,
+            "recall": 0.4216,
+            "lift_vs_random": 2.11,
+            "tp": 86,
+            "fp": 94
+          },
+          "top_30_percent": {
+            "k": 270,
+            "threshold": 0.3244,
+            "precision": 0.3963,
+            "recall": 0.5245,
+            "lift_vs_random": 1.75,
+            "tp": 107,
+            "fp": 163
+          }
+        }
+      },
+      "AlignScore-base": {
+        "n_total": 900,
+        "n_positive": 204,
+        "n_negative": 696,
+        "base_rate": 0.2267,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 82,
+          "tp": 43,
+          "fp": 39,
+          "fn": 161,
+          "precision": 0.5244,
+          "recall": 0.2108,
+          "f1": 0.3007,
+          "false_positive_rate": 0.056
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1346,
+          "precision": 0.2997,
+          "recall": 0.902,
+          "n_flagged": 614,
+          "tp": 184,
+          "fp": 430,
+          "false_positive_rate": 0.6178,
+          "false_alarms_per_caught": 2.34
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9938,
+          "precision": 1.0,
+          "recall": 0.0049,
+          "n_flagged": 1,
+          "tp": 1,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.2178,
+          "precision": 0.3578,
+          "recall": 0.8137,
+          "f1": 0.497,
+          "n_flagged": 464
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 45,
+            "threshold": 0.5577,
+            "precision": 0.5556,
+            "recall": 0.1225,
+            "lift_vs_random": 2.45,
+            "tp": 25,
+            "fp": 20
+          },
+          "top_10_percent": {
+            "k": 90,
+            "threshold": 0.4935,
+            "precision": 0.5,
+            "recall": 0.2206,
+            "lift_vs_random": 2.21,
+            "tp": 45,
+            "fp": 45
+          },
+          "top_20_percent": {
+            "k": 180,
+            "threshold": 0.3878,
+            "precision": 0.4389,
+            "recall": 0.3873,
+            "lift_vs_random": 1.94,
+            "tp": 79,
+            "fp": 101
+          },
+          "top_30_percent": {
+            "k": 270,
+            "threshold": 0.3268,
+            "precision": 0.4074,
+            "recall": 0.5392,
+            "lift_vs_random": 1.8,
+            "tp": 110,
+            "fp": 160
+          }
+        }
+      }
+    },
+    "note": "Judge column intentionally absent: judges are cost-bound at n=400. Full-N expansion of substrate/MiniCheck/AlignScore tightens their sampling CI without re-scoring any examples; judge column remains in operational_metrics_n400_2026-05-18.json."
+  },
+  "summeval": {
+    "label": "SummEval",
+    "full_n": 1600,
+    "n_positive": 161,
+    "n_negative": 1439,
+    "base_rate": 0.1006,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "n_total": 1600,
+        "n_positive": 161,
+        "n_negative": 1439,
+        "base_rate": 0.1006,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 2,
+          "tp": 2,
+          "fp": 0,
+          "fn": 159,
+          "precision": 1.0,
+          "recall": 0.0124,
+          "f1": 0.0245,
+          "false_positive_rate": 0.0
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.0,
+          "precision": 0.1175,
+          "recall": 0.9006,
+          "n_flagged": 1234,
+          "tp": 145,
+          "fp": 1089,
+          "false_positive_rate": 0.7568,
+          "false_alarms_per_caught": 7.51
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.4524,
+          "precision": 1.0,
+          "recall": 0.0311,
+          "n_flagged": 5,
+          "tp": 5,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.0909,
+          "precision": 0.4527,
+          "recall": 0.4161,
+          "f1": 0.4337,
+          "n_flagged": 148
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 80,
+            "threshold": 0.1538,
+            "precision": 0.5625,
+            "recall": 0.2795,
+            "lift_vs_random": 5.59,
+            "tp": 45,
+            "fp": 35
+          },
+          "top_10_percent": {
+            "k": 160,
+            "threshold": 0.0882,
+            "precision": 0.425,
+            "recall": 0.4224,
+            "lift_vs_random": 4.22,
+            "tp": 68,
+            "fp": 92
+          },
+          "top_20_percent": {
+            "k": 320,
+            "threshold": 0.0556,
+            "precision": 0.2781,
+            "recall": 0.5528,
+            "lift_vs_random": 2.76,
+            "tp": 89,
+            "fp": 231
+          },
+          "top_30_percent": {
+            "k": 480,
+            "threshold": 0.0385,
+            "precision": 0.2083,
+            "recall": 0.6211,
+            "lift_vs_random": 2.07,
+            "tp": 100,
+            "fp": 380
+          }
+        }
+      },
+      "MiniCheck Flan-T5-Large": {
+        "n_total": 1600,
+        "n_positive": 161,
+        "n_negative": 1439,
+        "base_rate": 0.1006,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 258,
+          "tp": 127,
+          "fp": 131,
+          "fn": 34,
+          "precision": 0.4922,
+          "recall": 0.7888,
+          "f1": 0.6062,
+          "false_positive_rate": 0.091
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.085,
+          "precision": 0.2433,
+          "recall": 0.9006,
+          "n_flagged": 596,
+          "tp": 145,
+          "fp": 451,
+          "false_positive_rate": 0.3134,
+          "false_alarms_per_caught": 3.11
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9775,
+          "precision": 0.9167,
+          "recall": 0.0683,
+          "n_flagged": 12,
+          "tp": 11,
+          "fp": 1
+        },
+        "f1_optimal": {
+          "threshold": 0.7486,
+          "precision": 0.5938,
+          "recall": 0.7081,
+          "f1": 0.6459,
+          "n_flagged": 192
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 80,
+            "threshold": 0.9434,
+            "precision": 0.7,
+            "recall": 0.3478,
+            "lift_vs_random": 6.96,
+            "tp": 56,
+            "fp": 24
+          },
+          "top_10_percent": {
+            "k": 160,
+            "threshold": 0.8459,
+            "precision": 0.6125,
+            "recall": 0.6087,
+            "lift_vs_random": 6.09,
+            "tp": 98,
+            "fp": 62
+          },
+          "top_20_percent": {
+            "k": 320,
+            "threshold": 0.2868,
+            "precision": 0.425,
+            "recall": 0.8447,
+            "lift_vs_random": 4.22,
+            "tp": 136,
+            "fp": 184
+          },
+          "top_30_percent": {
+            "k": 480,
+            "threshold": 0.1125,
+            "precision": 0.2958,
+            "recall": 0.882,
+            "lift_vs_random": 2.94,
+            "tp": 142,
+            "fp": 338
+          }
+        }
+      },
+      "AlignScore-base": {
+        "n_total": 1600,
+        "n_positive": 161,
+        "n_negative": 1439,
+        "base_rate": 0.1006,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 103,
+          "tp": 49,
+          "fp": 54,
+          "fn": 112,
+          "precision": 0.4757,
+          "recall": 0.3043,
+          "f1": 0.3712,
+          "false_positive_rate": 0.0375
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.0349,
+          "precision": 0.1716,
+          "recall": 0.9006,
+          "n_flagged": 845,
+          "tp": 145,
+          "fp": 700,
+          "false_positive_rate": 0.4864,
+          "false_alarms_per_caught": 4.83
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9914,
+          "precision": 1.0,
+          "recall": 0.0248,
+          "n_flagged": 4,
+          "tp": 4,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.3258,
+          "precision": 0.3874,
+          "recall": 0.5342,
+          "f1": 0.4491,
+          "n_flagged": 222
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 80,
+            "threshold": 0.5707,
+            "precision": 0.45,
+            "recall": 0.2236,
+            "lift_vs_random": 4.47,
+            "tp": 36,
+            "fp": 44
+          },
+          "top_10_percent": {
+            "k": 160,
+            "threshold": 0.3903,
+            "precision": 0.4188,
+            "recall": 0.4161,
+            "lift_vs_random": 4.16,
+            "tp": 67,
+            "fp": 93
+          },
+          "top_20_percent": {
+            "k": 320,
+            "threshold": 0.2632,
+            "precision": 0.2938,
+            "recall": 0.5839,
+            "lift_vs_random": 2.92,
+            "tp": 94,
+            "fp": 226
+          },
+          "top_30_percent": {
+            "k": 480,
+            "threshold": 0.1735,
+            "precision": 0.25,
+            "recall": 0.7453,
+            "lift_vs_random": 2.48,
+            "tp": 120,
+            "fp": 360
+          }
+        }
+      }
+    },
+    "note": "Judge column intentionally absent: judges are cost-bound at n=400. Full-N expansion of substrate/MiniCheck/AlignScore tightens their sampling CI without re-scoring any examples; judge column remains in operational_metrics_n400_2026-05-18.json."
+  },
+  "halueval_summarization": {
+    "label": "HaluEval Summarization",
+    "full_n": 1000,
+    "n_positive": 500,
+    "n_negative": 500,
+    "base_rate": 0.5,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "n_total": 1000,
+        "n_positive": 500,
+        "n_negative": 500,
+        "base_rate": 0.5,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 18,
+          "tp": 14,
+          "fp": 4,
+          "fn": 486,
+          "precision": 0.7778,
+          "recall": 0.028,
+          "f1": 0.0541,
+          "false_positive_rate": 0.008
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1091,
+          "precision": 0.5754,
+          "recall": 0.9,
+          "n_flagged": 782,
+          "tp": 450,
+          "fp": 332,
+          "false_positive_rate": 0.664,
+          "false_alarms_per_caught": 0.74
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.5614,
+          "precision": 1.0,
+          "recall": 0.01,
+          "n_flagged": 5,
+          "tp": 5,
+          "fp": 0
+        },
+        "f1_optimal": {
+          "threshold": 0.1273,
+          "precision": 0.6022,
+          "recall": 0.872,
+          "f1": 0.7124,
+          "n_flagged": 724
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 50,
+            "threshold": 0.4133,
+            "precision": 0.84,
+            "recall": 0.084,
+            "lift_vs_random": 1.68,
+            "tp": 42,
+            "fp": 8
+          },
+          "top_10_percent": {
+            "k": 100,
+            "threshold": 0.36,
+            "precision": 0.82,
+            "recall": 0.164,
+            "lift_vs_random": 1.64,
+            "tp": 82,
+            "fp": 18
+          },
+          "top_20_percent": {
+            "k": 200,
+            "threshold": 0.2973,
+            "precision": 0.795,
+            "recall": 0.318,
+            "lift_vs_random": 1.59,
+            "tp": 159,
+            "fp": 41
+          },
+          "top_30_percent": {
+            "k": 300,
+            "threshold": 0.2593,
+            "precision": 0.77,
+            "recall": 0.462,
+            "lift_vs_random": 1.54,
+            "tp": 231,
+            "fp": 69
+          }
+        }
+      },
+      "MiniCheck Flan-T5-Large": {
+        "n_total": 1000,
+        "n_positive": 500,
+        "n_negative": 500,
+        "base_rate": 0.5,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 557,
+          "tp": 337,
+          "fp": 220,
+          "fn": 163,
+          "precision": 0.605,
+          "recall": 0.674,
+          "f1": 0.6377,
+          "false_positive_rate": 0.44
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.0701,
+          "precision": 0.5632,
+          "recall": 0.9,
+          "n_flagged": 799,
+          "tp": 450,
+          "fp": 349,
+          "false_positive_rate": 0.698,
+          "false_alarms_per_caught": 0.78
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.984,
+          "precision": 0.9231,
+          "recall": 0.048,
+          "n_flagged": 26,
+          "tp": 24,
+          "fp": 2
+        },
+        "f1_optimal": {
+          "threshold": 0.0676,
+          "precision": 0.5638,
+          "recall": 0.91,
+          "f1": 0.6963,
+          "n_flagged": 807
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 50,
+            "threshold": 0.9794,
+            "precision": 0.86,
+            "recall": 0.086,
+            "lift_vs_random": 1.72,
+            "tp": 43,
+            "fp": 7
+          },
+          "top_10_percent": {
+            "k": 100,
+            "threshold": 0.9708,
+            "precision": 0.78,
+            "recall": 0.156,
+            "lift_vs_random": 1.56,
+            "tp": 78,
+            "fp": 22
+          },
+          "top_20_percent": {
+            "k": 200,
+            "threshold": 0.9483,
+            "precision": 0.745,
+            "recall": 0.298,
+            "lift_vs_random": 1.49,
+            "tp": 149,
+            "fp": 51
+          },
+          "top_30_percent": {
+            "k": 300,
+            "threshold": 0.9077,
+            "precision": 0.6767,
+            "recall": 0.406,
+            "lift_vs_random": 1.35,
+            "tp": 203,
+            "fp": 97
+          }
+        }
+      },
+      "AlignScore-base": {
+        "n_total": 1000,
+        "n_positive": 500,
+        "n_negative": 500,
+        "base_rate": 0.5,
+        "at_threshold_0.5": {
+          "threshold": 0.5,
+          "n_flagged": 361,
+          "tp": 250,
+          "fp": 111,
+          "fn": 250,
+          "precision": 0.6925,
+          "recall": 0.5,
+          "f1": 0.5807,
+          "false_positive_rate": 0.222
+        },
+        "precision_at_recall_0.9": {
+          "threshold": 0.1609,
+          "precision": 0.5481,
+          "recall": 0.9,
+          "n_flagged": 821,
+          "tp": 450,
+          "fp": 371,
+          "false_positive_rate": 0.742,
+          "false_alarms_per_caught": 0.82
+        },
+        "recall_at_precision_0.9": {
+          "threshold": 0.9195,
+          "precision": 0.9167,
+          "recall": 0.088,
+          "n_flagged": 48,
+          "tp": 44,
+          "fp": 4
+        },
+        "f1_optimal": {
+          "threshold": 0.0737,
+          "precision": 0.5329,
+          "recall": 0.956,
+          "f1": 0.6843,
+          "n_flagged": 897
+        },
+        "lift_at_top_k": {
+          "top_5_percent": {
+            "k": 50,
+            "threshold": 0.9044,
+            "precision": 0.88,
+            "recall": 0.088,
+            "lift_vs_random": 1.76,
+            "tp": 44,
+            "fp": 6
+          },
+          "top_10_percent": {
+            "k": 100,
+            "threshold": 0.7977,
+            "precision": 0.83,
+            "recall": 0.166,
+            "lift_vs_random": 1.66,
+            "tp": 83,
+            "fp": 17
+          },
+          "top_20_percent": {
+            "k": 200,
+            "threshold": 0.6339,
+            "precision": 0.735,
+            "recall": 0.294,
+            "lift_vs_random": 1.47,
+            "tp": 147,
+            "fp": 53
+          },
+          "top_30_percent": {
+            "k": 300,
+            "threshold": 0.5459,
+            "precision": 0.7033,
+            "recall": 0.422,
+            "lift_vs_random": 1.41,
+            "tp": 211,
+            "fp": 89
+          }
+        }
+      }
+    },
+    "note": "Judge column intentionally absent: judges are cost-bound at n=400. Full-N expansion of substrate/MiniCheck/AlignScore tightens their sampling CI without re-scoring any examples; judge column remains in operational_metrics_n400_2026-05-18.json."
+  }
+}
