@@ -1,0 +1,1385 @@
+{
+  "ragtruth_summary": {
+    "label": "RAGTruth Summary",
+    "n_subsample": 400,
+    "n_positive": 95,
+    "n_bins": 10,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.0259,
+        "mce_10bin": 0.3137,
+        "brier_score": 0.1701,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.0605,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 35,
+            "frac_of_total": 0.0875,
+            "mean_prob_in_bin": 0.0658,
+            "frac_positive_in_bin": 0.1143,
+            "calibration_gap": -0.0485
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 104,
+            "frac_of_total": 0.26,
+            "mean_prob_in_bin": 0.1515,
+            "frac_positive_in_bin": 0.125,
+            "calibration_gap": 0.0265
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 150,
+            "frac_of_total": 0.375,
+            "mean_prob_in_bin": 0.2504,
+            "frac_positive_in_bin": 0.2333,
+            "calibration_gap": 0.0171
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 87,
+            "frac_of_total": 0.2175,
+            "mean_prob_in_bin": 0.3417,
+            "frac_positive_in_bin": 0.3563,
+            "calibration_gap": -0.0146
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 20,
+            "frac_of_total": 0.05,
+            "mean_prob_in_bin": 0.4428,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": -0.0572
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.5394,
+            "frac_positive_in_bin": 0.3333,
+            "calibration_gap": 0.2061
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.6863,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.3137
+          }
+        ]
+      },
+      "MiniCheck Flan-T5-Large": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.1889,
+        "mce_10bin": 0.5486,
+        "brier_score": 0.2215,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": -0.2233,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 156,
+            "frac_of_total": 0.39,
+            "mean_prob_in_bin": 0.0574,
+            "frac_positive_in_bin": 0.1346,
+            "calibration_gap": -0.0772
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 60,
+            "frac_of_total": 0.15,
+            "mean_prob_in_bin": 0.1425,
+            "frac_positive_in_bin": 0.2167,
+            "calibration_gap": -0.0742
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 41,
+            "frac_of_total": 0.1025,
+            "mean_prob_in_bin": 0.2501,
+            "frac_positive_in_bin": 0.3171,
+            "calibration_gap": -0.0669
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 12,
+            "frac_of_total": 0.03,
+            "mean_prob_in_bin": 0.3461,
+            "frac_positive_in_bin": 0.0833,
+            "calibration_gap": 0.2628
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 20,
+            "frac_of_total": 0.05,
+            "mean_prob_in_bin": 0.4425,
+            "frac_positive_in_bin": 0.2,
+            "calibration_gap": 0.2425
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 9,
+            "frac_of_total": 0.0225,
+            "mean_prob_in_bin": 0.5381,
+            "frac_positive_in_bin": 0.1111,
+            "calibration_gap": 0.427
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 19,
+            "frac_of_total": 0.0475,
+            "mean_prob_in_bin": 0.6528,
+            "frac_positive_in_bin": 0.1579,
+            "calibration_gap": 0.4949
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 10,
+            "frac_of_total": 0.025,
+            "mean_prob_in_bin": 0.7486,
+            "frac_positive_in_bin": 0.2,
+            "calibration_gap": 0.5486
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 27,
+            "frac_of_total": 0.0675,
+            "mean_prob_in_bin": 0.8528,
+            "frac_positive_in_bin": 0.3333,
+            "calibration_gap": 0.5195
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 46,
+            "frac_of_total": 0.115,
+            "mean_prob_in_bin": 0.947,
+            "frac_positive_in_bin": 0.6087,
+            "calibration_gap": 0.3383
+          }
+        ]
+      },
+      "AlignScore-base": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.0319,
+        "mce_10bin": 0.7436,
+        "brier_score": 0.1626,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.1022,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 98,
+            "frac_of_total": 0.245,
+            "mean_prob_in_bin": 0.0467,
+            "frac_positive_in_bin": 0.0816,
+            "calibration_gap": -0.0349
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 76,
+            "frac_of_total": 0.19,
+            "mean_prob_in_bin": 0.1491,
+            "frac_positive_in_bin": 0.1447,
+            "calibration_gap": 0.0044
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 97,
+            "frac_of_total": 0.2425,
+            "mean_prob_in_bin": 0.2472,
+            "frac_positive_in_bin": 0.2165,
+            "calibration_gap": 0.0307
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 50,
+            "frac_of_total": 0.125,
+            "mean_prob_in_bin": 0.35,
+            "frac_positive_in_bin": 0.36,
+            "calibration_gap": -0.01
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 38,
+            "frac_of_total": 0.095,
+            "mean_prob_in_bin": 0.4419,
+            "frac_positive_in_bin": 0.4211,
+            "calibration_gap": 0.0209
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 27,
+            "frac_of_total": 0.0675,
+            "mean_prob_in_bin": 0.5406,
+            "frac_positive_in_bin": 0.4444,
+            "calibration_gap": 0.0961
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 10,
+            "frac_of_total": 0.025,
+            "mean_prob_in_bin": 0.6435,
+            "frac_positive_in_bin": 0.7,
+            "calibration_gap": -0.0565
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.7436,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.7436
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.9491,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.0509
+          }
+        ]
+      },
+      "xAI Grok 4.20 cued": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.1791,
+        "mce_10bin": 0.2955,
+        "brier_score": 0.1603,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.115,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 59,
+            "frac_of_total": 0.1475,
+            "mean_prob_in_bin": 0.0449,
+            "frac_positive_in_bin": 0.0339,
+            "calibration_gap": 0.011
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 64,
+            "frac_of_total": 0.16,
+            "mean_prob_in_bin": 0.15,
+            "frac_positive_in_bin": 0.0469,
+            "calibration_gap": 0.1031
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.25,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.25
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 110,
+            "frac_of_total": 0.275,
+            "mean_prob_in_bin": 0.35,
+            "frac_positive_in_bin": 0.0545,
+            "calibration_gap": 0.2955
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 8,
+            "frac_of_total": 0.02,
+            "mean_prob_in_bin": 0.4062,
+            "frac_positive_in_bin": 0.375,
+            "calibration_gap": 0.0312
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 104,
+            "frac_of_total": 0.26,
+            "mean_prob_in_bin": 0.65,
+            "frac_positive_in_bin": 0.3846,
+            "calibration_gap": 0.2654
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 17,
+            "frac_of_total": 0.0425,
+            "mean_prob_in_bin": 0.7176,
+            "frac_positive_in_bin": 0.7647,
+            "calibration_gap": -0.0471
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 35,
+            "frac_of_total": 0.0875,
+            "mean_prob_in_bin": 0.8486,
+            "frac_positive_in_bin": 0.7714,
+            "calibration_gap": 0.0771
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.95,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.05
+          }
+        ]
+      },
+      "xAI Grok 4.20 blind": {
+        "n_total": 400,
+        "n_positive": 95,
+        "base_rate": 0.2375,
+        "ece_10bin": 0.1178,
+        "mce_10bin": 0.21,
+        "brier_score": 0.1273,
+        "random_scorer_brier": 0.1811,
+        "brier_skill_score": 0.2968,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 81,
+            "frac_of_total": 0.2025,
+            "mean_prob_in_bin": 0.0475,
+            "frac_positive_in_bin": 0.0494,
+            "calibration_gap": -0.0019
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 97,
+            "frac_of_total": 0.2425,
+            "mean_prob_in_bin": 0.15,
+            "frac_positive_in_bin": 0.0103,
+            "calibration_gap": 0.1397
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 5,
+            "frac_of_total": 0.0125,
+            "mean_prob_in_bin": 0.21,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.21
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 83,
+            "frac_of_total": 0.2075,
+            "mean_prob_in_bin": 0.35,
+            "frac_positive_in_bin": 0.1446,
+            "calibration_gap": 0.2054
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 18,
+            "frac_of_total": 0.045,
+            "mean_prob_in_bin": 0.4028,
+            "frac_positive_in_bin": 0.2778,
+            "calibration_gap": 0.125
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 71,
+            "frac_of_total": 0.1775,
+            "mean_prob_in_bin": 0.65,
+            "frac_positive_in_bin": 0.5211,
+            "calibration_gap": 0.1289
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 22,
+            "frac_of_total": 0.055,
+            "mean_prob_in_bin": 0.7091,
+            "frac_positive_in_bin": 0.8182,
+            "calibration_gap": -0.1091
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 22,
+            "frac_of_total": 0.055,
+            "mean_prob_in_bin": 0.8386,
+            "frac_positive_in_bin": 0.7727,
+            "calibration_gap": 0.0659
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.95,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.05
+          }
+        ]
+      }
+    }
+  },
+  "summeval": {
+    "label": "SummEval",
+    "n_subsample": 400,
+    "n_positive": 46,
+    "n_bins": 10,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0711,
+        "mce_10bin": 0.6703,
+        "brier_score": 0.0969,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.0478,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 362,
+            "frac_of_total": 0.905,
+            "mean_prob_in_bin": 0.0289,
+            "frac_positive_in_bin": 0.0829,
+            "calibration_gap": -0.054
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 27,
+            "frac_of_total": 0.0675,
+            "mean_prob_in_bin": 0.1313,
+            "frac_positive_in_bin": 0.2963,
+            "calibration_gap": -0.165
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.2351,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": -0.2649
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.3297,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.6703
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.4634,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.5366
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 1,
+            "frac_of_total": 0.0025,
+            "mean_prob_in_bin": 0.5714,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.4286
+          }
+        ]
+      },
+      "MiniCheck Flan-T5-Large": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0858,
+        "mce_10bin": 0.5339,
+        "brier_score": 0.0756,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.2569,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 274,
+            "frac_of_total": 0.685,
+            "mean_prob_in_bin": 0.0467,
+            "frac_positive_in_bin": 0.0182,
+            "calibration_gap": 0.0285
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 31,
+            "frac_of_total": 0.0775,
+            "mean_prob_in_bin": 0.1337,
+            "frac_positive_in_bin": 0.0645,
+            "calibration_gap": 0.0691
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 20,
+            "frac_of_total": 0.05,
+            "mean_prob_in_bin": 0.2567,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.2567
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 8,
+            "frac_of_total": 0.02,
+            "mean_prob_in_bin": 0.3504,
+            "frac_positive_in_bin": 0.25,
+            "calibration_gap": 0.1004
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 5,
+            "frac_of_total": 0.0125,
+            "mean_prob_in_bin": 0.4377,
+            "frac_positive_in_bin": 0.4,
+            "calibration_gap": 0.0377
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 4,
+            "frac_of_total": 0.01,
+            "mean_prob_in_bin": 0.5339,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.5339
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.6303,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": 0.1303
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 11,
+            "frac_of_total": 0.0275,
+            "mean_prob_in_bin": 0.7563,
+            "frac_positive_in_bin": 0.3636,
+            "calibration_gap": 0.3926
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 8,
+            "frac_of_total": 0.02,
+            "mean_prob_in_bin": 0.8393,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": 0.3393
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 37,
+            "frac_of_total": 0.0925,
+            "mean_prob_in_bin": 0.9413,
+            "frac_positive_in_bin": 0.7027,
+            "calibration_gap": 0.2386
+          }
+        ]
+      },
+      "AlignScore-base": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0468,
+        "mce_10bin": 0.3056,
+        "brier_score": 0.081,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.2041,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 243,
+            "frac_of_total": 0.6075,
+            "mean_prob_in_bin": 0.0204,
+            "frac_positive_in_bin": 0.037,
+            "calibration_gap": -0.0166
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 57,
+            "frac_of_total": 0.1425,
+            "mean_prob_in_bin": 0.1469,
+            "frac_positive_in_bin": 0.0526,
+            "calibration_gap": 0.0943
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 50,
+            "frac_of_total": 0.125,
+            "mean_prob_in_bin": 0.2513,
+            "frac_positive_in_bin": 0.18,
+            "calibration_gap": 0.0713
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 17,
+            "frac_of_total": 0.0425,
+            "mean_prob_in_bin": 0.3539,
+            "frac_positive_in_bin": 0.4118,
+            "calibration_gap": -0.0579
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 11,
+            "frac_of_total": 0.0275,
+            "mean_prob_in_bin": 0.4431,
+            "frac_positive_in_bin": 0.3636,
+            "calibration_gap": 0.0795
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 7,
+            "frac_of_total": 0.0175,
+            "mean_prob_in_bin": 0.5412,
+            "frac_positive_in_bin": 0.7143,
+            "calibration_gap": -0.1731
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.6469,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": 0.1469
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.7809,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": 0.1143
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.8383,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": 0.1716
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.9722,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": 0.3056
+          }
+        ]
+      },
+      "xAI Grok 4.20 cued": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0905,
+        "mce_10bin": 0.65,
+        "brier_score": 0.0837,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.178,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 287,
+            "frac_of_total": 0.7175,
+            "mean_prob_in_bin": 0.0023,
+            "frac_positive_in_bin": 0.007,
+            "calibration_gap": -0.0047
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 3,
+            "frac_of_total": 0.0075,
+            "mean_prob_in_bin": 0.2,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.2
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.3417,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.3417
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 22,
+            "frac_of_total": 0.055,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.0909,
+            "calibration_gap": 0.3091
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 4,
+            "frac_of_total": 0.01,
+            "mean_prob_in_bin": 0.65,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.65
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 12,
+            "frac_of_total": 0.03,
+            "mean_prob_in_bin": 0.7,
+            "frac_positive_in_bin": 0.3333,
+            "calibration_gap": 0.3667
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 57,
+            "frac_of_total": 0.1425,
+            "mean_prob_in_bin": 0.8395,
+            "frac_positive_in_bin": 0.5263,
+            "calibration_gap": 0.3132
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 9,
+            "frac_of_total": 0.0225,
+            "mean_prob_in_bin": 0.95,
+            "frac_positive_in_bin": 0.8889,
+            "calibration_gap": 0.0611
+          }
+        ]
+      },
+      "xAI Grok 4.20 blind": {
+        "n_total": 400,
+        "n_positive": 46,
+        "base_rate": 0.115,
+        "ece_10bin": 0.0697,
+        "mce_10bin": 0.7,
+        "brier_score": 0.063,
+        "random_scorer_brier": 0.1018,
+        "brier_skill_score": 0.381,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 288,
+            "frac_of_total": 0.72,
+            "mean_prob_in_bin": 0.0028,
+            "frac_positive_in_bin": 0.0069,
+            "calibration_gap": -0.0042
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 2,
+            "frac_of_total": 0.005,
+            "mean_prob_in_bin": 0.15,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.15
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 18,
+            "frac_of_total": 0.045,
+            "mean_prob_in_bin": 0.2,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.2
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 4,
+            "frac_of_total": 0.01,
+            "mean_prob_in_bin": 0.3,
+            "frac_positive_in_bin": 0.5,
+            "calibration_gap": -0.2
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 21,
+            "frac_of_total": 0.0525,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.0476,
+            "calibration_gap": 0.3524
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 4,
+            "frac_of_total": 0.01,
+            "mean_prob_in_bin": 0.625,
+            "frac_positive_in_bin": 0.75,
+            "calibration_gap": -0.125
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 5,
+            "frac_of_total": 0.0125,
+            "mean_prob_in_bin": 0.7,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.7
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 50,
+            "frac_of_total": 0.125,
+            "mean_prob_in_bin": 0.822,
+            "frac_positive_in_bin": 0.62,
+            "calibration_gap": 0.202
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 8,
+            "frac_of_total": 0.02,
+            "mean_prob_in_bin": 0.9313,
+            "frac_positive_in_bin": 0.875,
+            "calibration_gap": 0.0563
+          }
+        ]
+      }
+    }
+  },
+  "halueval_summarization": {
+    "label": "HaluEval Summarization",
+    "n_subsample": 400,
+    "n_positive": 200,
+    "n_bins": 10,
+    "per_detector": {
+      "Touchstone substrate L6 (word_overlap_inv)": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.294,
+        "mce_10bin": 0.4581,
+        "brier_score": 0.3019,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": -0.2078,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 68,
+            "frac_of_total": 0.17,
+            "mean_prob_in_bin": 0.0555,
+            "frac_positive_in_bin": 0.2647,
+            "calibration_gap": -0.2092
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 139,
+            "frac_of_total": 0.3475,
+            "mean_prob_in_bin": 0.1491,
+            "frac_positive_in_bin": 0.3381,
+            "calibration_gap": -0.1891
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 115,
+            "frac_of_total": 0.2875,
+            "mean_prob_in_bin": 0.2437,
+            "frac_positive_in_bin": 0.6435,
+            "calibration_gap": -0.3998
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 54,
+            "frac_of_total": 0.135,
+            "mean_prob_in_bin": 0.3475,
+            "frac_positive_in_bin": 0.7407,
+            "calibration_gap": -0.3932
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 18,
+            "frac_of_total": 0.045,
+            "mean_prob_in_bin": 0.437,
+            "frac_positive_in_bin": 0.8333,
+            "calibration_gap": -0.3964
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.5419,
+            "frac_positive_in_bin": 1.0,
+            "calibration_gap": -0.4581
+          }
+        ]
+      },
+      "MiniCheck Flan-T5-Large": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.248,
+        "mce_10bin": 0.438,
+        "brier_score": 0.2917,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": -0.1668,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 100,
+            "frac_of_total": 0.25,
+            "mean_prob_in_bin": 0.0579,
+            "frac_positive_in_bin": 0.28,
+            "calibration_gap": -0.2221
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 29,
+            "frac_of_total": 0.0725,
+            "mean_prob_in_bin": 0.1424,
+            "frac_positive_in_bin": 0.5172,
+            "calibration_gap": -0.3749
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 12,
+            "frac_of_total": 0.03,
+            "mean_prob_in_bin": 0.2426,
+            "frac_positive_in_bin": 0.25,
+            "calibration_gap": -0.0074
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 14,
+            "frac_of_total": 0.035,
+            "mean_prob_in_bin": 0.3304,
+            "frac_positive_in_bin": 0.2857,
+            "calibration_gap": 0.0447
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 10,
+            "frac_of_total": 0.025,
+            "mean_prob_in_bin": 0.4702,
+            "frac_positive_in_bin": 0.7,
+            "calibration_gap": -0.2298
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 12,
+            "frac_of_total": 0.03,
+            "mean_prob_in_bin": 0.5403,
+            "frac_positive_in_bin": 0.5833,
+            "calibration_gap": -0.0431
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 18,
+            "frac_of_total": 0.045,
+            "mean_prob_in_bin": 0.6608,
+            "frac_positive_in_bin": 0.6667,
+            "calibration_gap": -0.0059
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 25,
+            "frac_of_total": 0.0625,
+            "mean_prob_in_bin": 0.758,
+            "frac_positive_in_bin": 0.32,
+            "calibration_gap": 0.438
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 44,
+            "frac_of_total": 0.11,
+            "mean_prob_in_bin": 0.8523,
+            "frac_positive_in_bin": 0.6136,
+            "calibration_gap": 0.2386
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 136,
+            "frac_of_total": 0.34,
+            "mean_prob_in_bin": 0.9561,
+            "frac_positive_in_bin": 0.6544,
+            "calibration_gap": 0.3017
+          }
+        ]
+      },
+      "AlignScore-base": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.1199,
+        "mce_10bin": 0.1892,
+        "brier_score": 0.2369,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": 0.0522,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 38,
+            "frac_of_total": 0.095,
+            "mean_prob_in_bin": 0.0476,
+            "frac_positive_in_bin": 0.2368,
+            "calibration_gap": -0.1892
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 47,
+            "frac_of_total": 0.1175,
+            "mean_prob_in_bin": 0.1568,
+            "frac_positive_in_bin": 0.3404,
+            "calibration_gap": -0.1836
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 54,
+            "frac_of_total": 0.135,
+            "mean_prob_in_bin": 0.2452,
+            "frac_positive_in_bin": 0.3519,
+            "calibration_gap": -0.1066
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 55,
+            "frac_of_total": 0.1375,
+            "mean_prob_in_bin": 0.3504,
+            "frac_positive_in_bin": 0.4545,
+            "calibration_gap": -0.1042
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 54,
+            "frac_of_total": 0.135,
+            "mean_prob_in_bin": 0.448,
+            "frac_positive_in_bin": 0.537,
+            "calibration_gap": -0.089
+          },
+          {
+            "bin_lower": 0.5,
+            "bin_upper": 0.6,
+            "n": 53,
+            "frac_of_total": 0.1325,
+            "mean_prob_in_bin": 0.546,
+            "frac_positive_in_bin": 0.6415,
+            "calibration_gap": -0.0955
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.6424,
+            "frac_positive_in_bin": 0.4688,
+            "calibration_gap": 0.1737
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 20,
+            "frac_of_total": 0.05,
+            "mean_prob_in_bin": 0.7443,
+            "frac_positive_in_bin": 0.75,
+            "calibration_gap": -0.0057
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 19,
+            "frac_of_total": 0.0475,
+            "mean_prob_in_bin": 0.8521,
+            "frac_positive_in_bin": 0.7368,
+            "calibration_gap": 0.1153
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 28,
+            "frac_of_total": 0.07,
+            "mean_prob_in_bin": 0.961,
+            "frac_positive_in_bin": 0.8571,
+            "calibration_gap": 0.1039
+          }
+        ]
+      },
+      "xAI Grok 4.20 cued": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.104,
+        "mce_10bin": 0.3677,
+        "brier_score": 0.1827,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": 0.2691,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 66,
+            "frac_of_total": 0.165,
+            "mean_prob_in_bin": 0.028,
+            "frac_positive_in_bin": 0.1061,
+            "calibration_gap": -0.078
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 14,
+            "frac_of_total": 0.035,
+            "mean_prob_in_bin": 0.15,
+            "frac_positive_in_bin": 0.3571,
+            "calibration_gap": -0.2071
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 6,
+            "frac_of_total": 0.015,
+            "mean_prob_in_bin": 0.2083,
+            "frac_positive_in_bin": 0.0,
+            "calibration_gap": 0.2083
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 42,
+            "frac_of_total": 0.105,
+            "mean_prob_in_bin": 0.3488,
+            "frac_positive_in_bin": 0.4286,
+            "calibration_gap": -0.0798
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 31,
+            "frac_of_total": 0.0775,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.0323,
+            "calibration_gap": 0.3677
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 98,
+            "frac_of_total": 0.245,
+            "mean_prob_in_bin": 0.65,
+            "frac_positive_in_bin": 0.5714,
+            "calibration_gap": 0.0786
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 15,
+            "frac_of_total": 0.0375,
+            "mean_prob_in_bin": 0.71,
+            "frac_positive_in_bin": 0.4667,
+            "calibration_gap": 0.2433
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 90,
+            "frac_of_total": 0.225,
+            "mean_prob_in_bin": 0.8456,
+            "frac_positive_in_bin": 0.7778,
+            "calibration_gap": 0.0678
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 38,
+            "frac_of_total": 0.095,
+            "mean_prob_in_bin": 0.95,
+            "frac_positive_in_bin": 0.9474,
+            "calibration_gap": 0.0026
+          }
+        ]
+      },
+      "xAI Grok 4.20 blind": {
+        "n_total": 400,
+        "n_positive": 200,
+        "base_rate": 0.5,
+        "ece_10bin": 0.1114,
+        "mce_10bin": 0.2922,
+        "brier_score": 0.175,
+        "random_scorer_brier": 0.25,
+        "brier_skill_score": 0.3002,
+        "reliability_diagram_bins": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.1,
+            "n": 84,
+            "frac_of_total": 0.21,
+            "mean_prob_in_bin": 0.0321,
+            "frac_positive_in_bin": 0.119,
+            "calibration_gap": -0.0869
+          },
+          {
+            "bin_lower": 0.1,
+            "bin_upper": 0.2,
+            "n": 32,
+            "frac_of_total": 0.08,
+            "mean_prob_in_bin": 0.1453,
+            "frac_positive_in_bin": 0.4375,
+            "calibration_gap": -0.2922
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.3,
+            "n": 15,
+            "frac_of_total": 0.0375,
+            "mean_prob_in_bin": 0.2,
+            "frac_positive_in_bin": 0.0667,
+            "calibration_gap": 0.1333
+          },
+          {
+            "bin_lower": 0.3,
+            "bin_upper": 0.4,
+            "n": 23,
+            "frac_of_total": 0.0575,
+            "mean_prob_in_bin": 0.3478,
+            "frac_positive_in_bin": 0.6087,
+            "calibration_gap": -0.2609
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.5,
+            "n": 65,
+            "frac_of_total": 0.1625,
+            "mean_prob_in_bin": 0.4,
+            "frac_positive_in_bin": 0.2462,
+            "calibration_gap": 0.1538
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.7,
+            "n": 56,
+            "frac_of_total": 0.14,
+            "mean_prob_in_bin": 0.65,
+            "frac_positive_in_bin": 0.75,
+            "calibration_gap": -0.1
+          },
+          {
+            "bin_lower": 0.7,
+            "bin_upper": 0.8,
+            "n": 25,
+            "frac_of_total": 0.0625,
+            "mean_prob_in_bin": 0.708,
+            "frac_positive_in_bin": 0.76,
+            "calibration_gap": -0.052
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 0.9,
+            "n": 72,
+            "frac_of_total": 0.18,
+            "mean_prob_in_bin": 0.8389,
+            "frac_positive_in_bin": 0.8056,
+            "calibration_gap": 0.0333
+          },
+          {
+            "bin_lower": 0.9,
+            "bin_upper": 1.0,
+            "n": 28,
+            "frac_of_total": 0.07,
+            "mean_prob_in_bin": 0.95,
+            "frac_positive_in_bin": 0.9286,
+            "calibration_gap": 0.0214
+          }
+        ]
+      }
+    }
+  }
+}
