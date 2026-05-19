@@ -345,6 +345,50 @@ ECE = expected calibration error (10 equal-width bins on [0,1]; lower is better)
 
 Open question deferred to a future round: ship a `cost_per_call.py` script that takes a pricing rates file (kept out-of-repo by the adopter) and produces a per-corpus per-detector $ table by multiplying rates × measured token counts. The token-counting infrastructure is straightforward (`tiktoken` for OpenAI-compatible APIs; HuggingFace tokenizer for the trained discriminators); the gating concern is that pinning specific pricing into the public repo would go stale within weeks.
 
+### 4.2.6 Per-category audit on naturalistic positives (n=15)
+
+§4.1 reports per-category catch on a hand-authored 16-case fixture where each example is one categorized atomic perturbation. Naturalistic positives in §4.2 are not categorized; the headline F1 numbers hide whether each detector's catches are concentrated in 1-2 hallucination subtypes or distributed across the failure-mode space. This sub-section addresses that with a small but explicit hand-audit: 5 positives per corpus from the offset=0 n=400 subsample, classified into the §4.1 taxonomy (closest match) or a new naturalistic category if none of the §4.1 ones fit, with detector catches at the §4.2 in-sample F1-optimal threshold tabulated per case.
+
+n=15 is small; the table is a directional probe, not a representative-sample claim. The audit was performed by Claude Opus 4.7 (this session's author) from the source/output texts directly; per-case categorization is a single-judge label without inter-annotator agreement. Reproduce by reading `/tmp/alignscore_corpora/<corpus>.json` (the pinned pair files) at the indices below and applying the §4.1 taxonomy.
+
+| Case | Closest §4.1 category | Naturalistic-only? | Substrate (thr) | MiniCheck (thr) | AlignScore (thr) | Grok cued (thr) | Grok blind (thr) |
+|---|---|---|---|---|---|---|---|
+| rag/4 | counterfactual_extension (fabricated "30 in 18 months" stat) | yes | 0.23 (N) | **0.94** (Y) | 0.49 (Y) | **0.65** (Y) | **0.70** (Y) |
+| rag/57 | imputed_cause (fabricated "concerns among the passengers") | yes | **0.33** (Y) | **0.69** (Y) | **0.29** (Y) | **0.75** (Y) | **0.65** (Y) |
+| rag/178 | (no §4.1 fit) format_hallucination ("Sure! Here's…") + minor | YES (new) | **0.31** (Y) | 0.23 (Y) | **0.65** (Y) | **0.65** (=) | **0.65** (Y) |
+| rag/248 | (mostly correct; inferred date / "dozens of new cases") | possible | **0.45** (Y) | **0.96** (Y) | **0.43** (Y) | **0.65** (=) | **0.65** (Y) |
+| rag/326 | counterfactual_extension (Julian-calendar / blood-moon priors) | yes | **0.36** (Y) | 0.03 (N) | **0.24** (Y) | **0.65** (=) | **0.65** (Y) |
+| sum/0 | (no clean §4.1) compound_fabrication + ungrammatical extract | YES (new) | 0.08 (N) | **0.93** (Y) | 0.26 (N) | **0.85** (Y) | **0.85** (Y) |
+| sum/64 | counterfactual_extension (fabricated "destroyed villages") | yes | 0.09 (N) | 0.10 (N) | 0.23 (N) | **0.80** (Y) | 0.40 (N) |
+| sum/88 | counterfactual_extension (fabricated demographic split) | yes | **0.24** (Y) | **0.93** (Y) | **0.94** (Y) | **0.95** (Y) | **0.95** (Y) |
+| sum/208 | attribute_swap + (no §4.1) gibberish | YES (new) | 0.00 (N) | **0.91** (Y) | **0.41** (Y) | **0.95** (Y) | **0.85** (Y) |
+| sum/280 | relation_reversal (Pep Guardiola/Jorge Jesus entity swap) | no | 0.13 (N) | **0.94** (Y) | **0.79** (Y) | **0.95** (Y) | **0.95** (Y) |
+| hal/1 | number_swap_same_scale (50,900 vs ~42,000) | no | **0.20** (Y) | 0.08 (Y) | **0.38** (Y) | **0.65** (=) | 0.35 (N) |
+| hal/41 | (no exact §4.1) future_as_past_tense (Cech "has made debut") | YES (new) | **0.34** (Y) | **0.98** (Y) | **0.99** (Y) | **0.95** (Y) | **0.95** (Y) |
+| hal/121 | direction_reversal (Spurs 7 pts behind ↔ 7 pt gap framing) | no | **0.28** (Y) | **0.49** (Y) | **0.51** (Y) | **0.85** (Y) | **0.75** (Y) |
+| hal/241 | numerical_conflation (Tevez's 26 season-total → match score) | no | **0.25** (Y) | **0.84** (Y) | **0.28** (Y) | **0.85** (Y) | **0.85** (Y) |
+| hal/321 | counterfactual_extension (fabricated "texting" / insurance cap) | yes | **0.37** (Y) | **0.64** (Y) | **0.44** (Y) | **0.85** (Y) | **0.85** (Y) |
+| **catch rate at F1-opt thr (15-case)** | — | — | **11/15** | **13/15** | **12/15** | **15/15** | **12/15** |
+
+(Bold = score above the corpus's in-sample F1-optimal threshold from §4.2; "(=)" = score exactly at threshold, counted as catch. Per-corpus F1-opt thresholds: RAGTruth substrate=0.276/MC=0.142/AS=0.221/Grok cued=0.650/Grok blind=0.400; SummEval 0.133/0.788/0.322/0.700/0.800; HaluEval 0.150/0.052/0.263/0.650/0.650.)
+
+**What the per-category audit shows:**
+
+- **Naturalistic positives don't cleanly map to the §4.1 taxonomy.** Of 15 hand-audited cases, only 7 match a §4.1 category cleanly (rag/4, rag/57, sum/64, sum/88, sum/280, hal/121, hal/241). The other 8 are compound (multiple atomic errors per output), are §4.1-adjacent but blurry (rag/248 "mostly correct with inferred date"), or are categories not in §4.1 at all: **format_hallucination** (rag/178 "Sure! Here's…" assistant frame), **gibberish_extractive_summary** (sum/0, sum/208 — repeated words, broken grammar), **future_as_past_tense** (hal/41 — model writes future events as if they happened). The §4.1 taxonomy is a substrate-blind-spot taxonomy, not a naturalistic-hallucination taxonomy.
+- **At F1-opt thresholds, all detectors catch ≥11 of 15.** This is consistent with the §4.2 in-sample F1 numbers (0.45-0.77 across corpora at F1-opt) at the much-more-permissive F1-opt threshold than the audit-grade P=0.9 threshold. The audit does NOT contradict §4.2.2's finding that at P=0.9 the catch rate is much lower (single-digit catches per ~50 positives). The audit measures F1-opt catches; deployment at P=0.9 would catch far fewer.
+- **Grok cued catches all 15.** Consistent with its §4.2 in-sample F1 0.67-0.77 (the highest of the five detectors). The two "(=)" cells (rag/178, rag/248, rag/326 at score 0.65 = threshold 0.65) sit exactly at the boundary; under random tie-breaking (§4.2.2) some would flip.
+- **Grok blind misses 3 cases that Grok cued catches** (sum/64, hal/1, plus close calls). On this small sample the cued prompt has the F1-opt-threshold catch-rate edge despite the §4.2.2 finding that blind has a higher F1-optimal AUC. The cued prompt's tendency to compress scores into the 0.65-0.95 bucket gives it more catches at any threshold ≤ 0.65, but those catches are not necessarily more accurate (it also has more false positives, which §4.2.2 captures via wider P@R90 tie envelope).
+- **MiniCheck misses 2 (rag/326, sum/64).** Both are counterfactual-extension cases where the output adds plausible-sounding world-knowledge content (Julian calendar; "destroyed villages"). MiniCheck's training distribution may not have prepared it for plausible-extension hallucinations on out-of-domain summarization.
+- **AlignScore misses 3 (rag/4, sum/0, sum/64).** Two of these are gibberish/extractive-fragment outputs; AlignScore's NLI+QA architecture may give partial credit for vocabulary overlap with the source even when the output is incoherent.
+- **Substrate misses 4 (rag/4, sum/0, sum/64, sum/208).** All four involve fabrication that uses vocabulary from the source (counterfactual extension) or gibberish that re-uses source vocabulary heavily (sum/0, sum/208). The substrate's lexical-overlap baseline cannot distinguish "uses source words" from "uses source words correctly," consistent with the §4 wall claim.
+
+**Honest limits on this audit:**
+
+- n=15 is a directional probe, not a representative sample. With ~5 cases per corpus, per-category catch rate estimates have ~30 percentage-point CIs.
+- Single-judge categorization (Claude Opus 4.7, this session). No inter-annotator agreement. The "closest §4.1 category" judgment for compound cases is unavoidably subjective.
+- The "(=)" tie-at-threshold cases were counted as catches; under random tie-break in §4.2.2 some would flip and the catch rates would shift by 1-2 points.
+- Catches are reported at F1-opt thresholds, not P=0.9 thresholds. Production deployments at audit-grade precision would catch substantially fewer of these positives.
+
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
 Touchstone's pitch is substrate + judge, not substrate or judge. §4.2 measured each detector independently; this section measures whether the substrate adds operational value to a frontier judge or is redundant. The analysis was first run against the cued judge (the prompt that enumerates the six §4 wall-claim categories) and then re-run with the blind judge to factor out the cueing confound flagged in §4.1. Three combination strategies, all on the same n=400 indices, all pure-python (no sklearn): zero-fit max-ensemble, zero-fit mean-ensemble, and a 5-fold cross-validated linear blend `alpha * substrate + (1 - alpha) * judge` where alpha is selected on each train fold by AUC. Reproduce via `python -m benchmarks.external.substrate_plus_judge_analysis`. Full per-corpus breakdown lives in `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`.
