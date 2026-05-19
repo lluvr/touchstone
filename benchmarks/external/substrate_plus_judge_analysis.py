@@ -111,41 +111,28 @@ def _mean_ops(ops_per_fold: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
-def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
-    base = BASE / corpus_dir / "results"
-    sub_doc = json.loads((base / "substrate_only_n400_2026-05-18.json").read_text())
-    judge_doc = json.loads((base / "judge_xai_grok420_n400_2026-05-18.json").read_text())
-    substrate = sub_doc["per_example_prob_hallucinated"]
-    judge = judge_doc["per_example_prob_hallucinated"]
-    labels = sub_doc["per_example_label_hallucinated"]
-    if not (len(substrate) == len(judge) == len(labels)):
-        raise SystemExit(
-            f"{corpus_dir}: array lengths differ: substrate={len(substrate)}, "
-            f"judge={len(judge)}, labels={len(labels)}"
-        )
-
-    # Full-corpus zero-fit ensembles and individual detectors.
+def _analyse_one_judge(
+    substrate: list[float],
+    judge: list[float],
+    labels: list[int],
+    judge_label: str,
+) -> OrderedDict[str, Any]:
     full_results: OrderedDict[str, Any] = OrderedDict()
-    full_results["substrate_only"] = {
-        "auc": round(auc_roc(substrate, labels), 4),
-        "ops": _ops_metrics(substrate, labels),
-    }
-    full_results["grok_only"] = {
+    full_results[f"{judge_label}_only"] = {
         "auc": round(auc_roc(judge, labels), 4),
         "ops": _ops_metrics(judge, labels),
     }
     max_scores = [max(s, j) for s, j in zip(substrate, judge, strict=True)]
     mean_scores = _blend(substrate, judge, alpha=0.5)
-    full_results["ensemble_max"] = {
+    full_results[f"ensemble_max_with_{judge_label}"] = {
         "auc": round(auc_roc(max_scores, labels), 4),
         "ops": _ops_metrics(max_scores, labels),
     }
-    full_results["ensemble_mean"] = {
+    full_results[f"ensemble_mean_with_{judge_label}"] = {
         "auc": round(auc_roc(mean_scores, labels), 4),
         "ops": _ops_metrics(mean_scores, labels),
     }
 
-    # 5-fold CV linear blend.
     splits = _kfold_indices(len(labels), 5, labels)
     fold_alphas: list[float] = []
     fold_ops: list[dict[str, Any]] = []
@@ -167,13 +154,40 @@ def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
         fold_alphas.append(best_alpha)
         fold_aucs.append(round(auc_roc(test_blend, test_lab), 4))
         fold_ops.append(_ops_metrics(test_blend, test_lab))
-    full_results["blend_cv5"] = {
+    full_results[f"blend_cv5_with_{judge_label}"] = {
         "fold_alphas": fold_alphas,
         "mean_alpha": round(sum(fold_alphas) / len(fold_alphas), 3),
         "fold_test_aucs": fold_aucs,
         "mean_test_auc": round(sum(fold_aucs) / len(fold_aucs), 4),
         "averaged_ops": _mean_ops(fold_ops),
     }
+    return full_results
+
+
+def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
+    base = BASE / corpus_dir / "results"
+    sub_doc = json.loads((base / "substrate_only_n400_2026-05-18.json").read_text())
+    judge_cued_doc = json.loads((base / "judge_xai_grok420_n400_2026-05-18.json").read_text())
+    judge_blind_doc = json.loads(
+        (base / "judge_xai_grok420_blind_n400_2026-05-18.json").read_text()
+    )
+    substrate = sub_doc["per_example_prob_hallucinated"]
+    judge_cued = judge_cued_doc["per_example_prob_hallucinated"]
+    judge_blind = judge_blind_doc["per_example_prob_hallucinated"]
+    labels = sub_doc["per_example_label_hallucinated"]
+    if not (len(substrate) == len(judge_cued) == len(judge_blind) == len(labels)):
+        raise SystemExit(
+            f"{corpus_dir}: array lengths differ: substrate={len(substrate)}, "
+            f"judge_cued={len(judge_cued)}, judge_blind={len(judge_blind)}, labels={len(labels)}"
+        )
+    full_results: OrderedDict[str, Any] = OrderedDict()
+    full_results["substrate_only"] = {
+        "auc": round(auc_roc(substrate, labels), 4),
+        "ops": _ops_metrics(substrate, labels),
+    }
+    for judge_label, judge in (("cued", judge_cued), ("blind", judge_blind)):
+        per_judge = _analyse_one_judge(substrate, judge, labels, judge_label)
+        full_results.update(per_judge)
 
     return {
         "label": label,
@@ -199,6 +213,21 @@ def _print_row(name: str, auc: float | None, ops: dict[str, Any] | None) -> None
     )
 
 
+def _print_blend(name: str, blend: dict[str, Any]) -> None:
+    avg = blend["averaged_ops"]
+    p_r90 = avg.get("precision_at_recall_0.9")
+    r_p90 = avg.get("recall_at_precision_0.9")
+    lift10 = avg.get("lift_at_top_10_percent")
+    print(
+        f"  {name:32s}  AUC {blend['mean_test_auc']:.3f}  "
+        f"F1opt {avg['f1_optimal']['f1']:.3f}  "
+        f"P@R90 {p_r90['precision'] if p_r90 else 'n/a':<6}  "
+        f"R@P90 {r_p90['recall'] if r_p90 else 'n/a':<6}  "
+        f"lift10 {lift10['lift_vs_random'] if lift10 else 'n/a'}x  "
+        f"(α={blend['mean_alpha']})"
+    )
+
+
 def main() -> None:
     out: OrderedDict[str, Any] = OrderedDict()
     for corpus_dir, label in CORPORA:
@@ -207,19 +236,18 @@ def main() -> None:
         out[corpus_dir] = result
         r = result["results"]
         _print_row("substrate_only", r["substrate_only"]["auc"], r["substrate_only"]["ops"])
-        _print_row("grok_only", r["grok_only"]["auc"], r["grok_only"]["ops"])
-        _print_row("ensemble_max", r["ensemble_max"]["auc"], r["ensemble_max"]["ops"])
-        _print_row("ensemble_mean", r["ensemble_mean"]["auc"], r["ensemble_mean"]["ops"])
-        blend = r["blend_cv5"]
-        avg = blend["averaged_ops"]
-        print(
-            f"  {'blend_cv5':18s}  AUC {blend['mean_test_auc']:.3f}  "
-            f"F1opt {avg['f1_optimal']['f1']:.3f}  "
-            f"P@R90 {avg['precision_at_recall_0.9']['precision'] if avg.get('precision_at_recall_0.9') else 'n/a':<6}  "
-            f"R@P90 {avg['recall_at_precision_0.9']['recall'] if avg.get('recall_at_precision_0.9') else 'n/a':<6}  "
-            f"lift10 {avg['lift_at_top_10_percent']['lift_vs_random'] if avg.get('lift_at_top_10_percent') else 'n/a'}x  "
-            f"(mean alpha {blend['mean_alpha']})"
-        )
+        for judge_label in ("cued", "blind"):
+            _print_row(
+                f"{judge_label}_only",
+                r[f"{judge_label}_only"]["auc"],
+                r[f"{judge_label}_only"]["ops"],
+            )
+            _print_row(
+                f"mean_with_{judge_label}",
+                r[f"ensemble_mean_with_{judge_label}"]["auc"],
+                r[f"ensemble_mean_with_{judge_label}"]["ops"],
+            )
+            _print_blend(f"blend_cv5_with_{judge_label}", r[f"blend_cv5_with_{judge_label}"])
 
     out_path = Path("benchmarks/external/substrate_plus_judge_n400_2026-05-18.json")
     out_path.write_text(json.dumps(out, indent=2))
