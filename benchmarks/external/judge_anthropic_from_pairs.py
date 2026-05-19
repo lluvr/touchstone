@@ -66,15 +66,19 @@ def score_one(
     and use ``tool_choice={"type": "tool", "name": ...}`` to force Claude
     to call it. Returns the tool input dict directly.
     """
-    message = client.messages.create(
-        model=model,
-        max_tokens=512,
-        temperature=0.0,
-        system=system_prompt,
-        tools=[_VERDICT_TOOL],
-        tool_choice={"type": "tool", "name": _VERDICT_TOOL["name"]},
-        messages=[{"role": "user", "content": build_user_message(context, output)}],
-    )
+    # Opus 4.7 deprecates the temperature parameter; pass it only for
+    # models that still accept it (Sonnet 4.6, Haiku, etc.).
+    kwargs: dict = {
+        "model": model,
+        "max_tokens": 512,
+        "system": system_prompt,
+        "tools": [_VERDICT_TOOL],
+        "tool_choice": {"type": "tool", "name": _VERDICT_TOOL["name"]},
+        "messages": [{"role": "user", "content": build_user_message(context, output)}],
+    }
+    if not model.startswith("claude-opus"):
+        kwargs["temperature"] = 0.0
+    message = client.messages.create(**kwargs)
     tool_input = None
     for block in message.content:
         if getattr(block, "type", None) == "tool_use" and block.name == _VERDICT_TOOL["name"]:
@@ -97,6 +101,31 @@ def main() -> None:
     p.add_argument("--model", default="claude-sonnet-4-6")
     p.add_argument("--max-retries-per-pair", type=int, default=3)
     p.add_argument("--prompt-variant", choices=sorted(PROMPT_VARIANTS), default="cued")
+    p.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=20,
+        help=(
+            "Write a partial snapshot every N pairs so credit/rate-limit failures "
+            "do not waste prior work. Restart the same command with --resume to "
+            "continue from the partial."
+        ),
+    )
+    p.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "If the output path already contains a partial snapshot for the same "
+            "model + prompt-variant + corpus, resume from where it left off "
+            "instead of restarting from pair 0."
+        ),
+    )
+    p.add_argument(
+        "--limit",
+        type=int,
+        default=0,
+        help="Only score the first --limit pairs (0 = score all). Useful for budget-bounded probes.",
+    )
     args = p.parse_args()
 
     system_prompt = PROMPT_VARIANTS[args.prompt_variant]
@@ -111,15 +140,61 @@ def main() -> None:
     client = Anthropic(api_key=api_key)
     print(f"Loading pairs from {args.pairs_json}", flush=True)
     pairs = json.loads(Path(args.pairs_json).read_text())
+    if args.limit > 0:
+        pairs = pairs[: args.limit]
+        print(f"  --limit applied: scoring only first {len(pairs)} pairs", flush=True)
     print(
         f"  n = {len(pairs)} pairs; model = {args.model}; variant = {args.prompt_variant}",
         flush=True,
     )
 
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    partial_path = out_path.with_suffix(out_path.suffix + ".partial")
+
     probs: list[float] = []
     raws: list[str] = []
+    if args.resume and partial_path.exists():
+        existing = json.loads(partial_path.read_text())
+        if (
+            existing.get("baseline_model") == f"Anthropic {args.model}"
+            and existing.get("judge_prompt_variant") == args.prompt_variant
+            and existing.get("corpus") == args.corpus_dir
+        ):
+            probs = list(existing.get("per_example_prob_hallucinated", []))
+            raws = list(existing.get("per_example_raw_response", []))
+            print(
+                f"  Resuming from partial: {len(probs)} pairs already scored.",
+                flush=True,
+            )
+        else:
+            print(
+                f"  WARN: partial at {partial_path} has incompatible args; ignoring.",
+                flush=True,
+            )
+
+    def _write_partial(probs_so_far: list[float], raws_so_far: list[str]) -> None:
+        n_done = len(probs_so_far)
+        labels_done = [int(p["label"]) for p in pairs[:n_done]]
+        partial = {
+            "experiment": f"Anthropic Claude judge PARTIAL on {args.label}",
+            "corpus": args.corpus_dir,
+            "baseline_model": f"Anthropic {args.model}",
+            "baseline_provider": "Anthropic (Messages API)",
+            "judge_prompt_variant": args.prompt_variant,
+            "judge_prompt_system": system_prompt,
+            "n_total_pairs_expected": len(pairs),
+            "n_pairs_scored_so_far": n_done,
+            "per_example_prob_hallucinated": [round(float(p), 6) for p in probs_so_far],
+            "per_example_raw_response": raws_so_far,
+            "per_example_label_hallucinated": labels_done,
+        }
+        partial_path.write_text(json.dumps(partial, indent=2))
+
     t0 = time.perf_counter()
-    for i, pair in enumerate(pairs):
+    start_idx = len(probs)
+    for i in range(start_idx, len(pairs)):
+        pair = pairs[i]
         last_err: Exception | None = None
         for attempt in range(args.max_retries_per_pair):
             try:
@@ -133,13 +208,20 @@ def main() -> None:
                 last_err = e
                 time.sleep(1.0 * (attempt + 1))
         else:
-            raise RuntimeError(f"Pair {i} failed after retries: {last_err}")
+            # Save partial before crashing so prior work survives.
+            _write_partial(probs, raws)
+            raise RuntimeError(
+                f"Pair {i} failed after retries: {last_err}. "
+                f"Partial saved to {partial_path} ({len(probs)} pairs); rerun with --resume."
+            )
         if (i + 1) % 8 == 0:
             print(f"  scored {i + 1}/{len(pairs)} ({time.perf_counter() - t0:.1f}s)", flush=True)
+        if (i + 1) % args.checkpoint_every == 0:
+            _write_partial(probs, raws)
 
     elapsed = time.perf_counter() - t0
-    per_ex = elapsed / max(1, len(pairs))
-    print(f"  Judge done: {elapsed:.1f}s ({per_ex:.2f}s/example)", flush=True)
+    per_ex = elapsed / max(1, len(pairs) - start_idx)
+    print(f"  Judge done: {elapsed:.1f}s ({per_ex:.2f}s/example for new pairs)", flush=True)
 
     labels = [int(p["label"]) for p in pairs]
     point = auc_roc(probs, labels)
@@ -157,7 +239,6 @@ def main() -> None:
         "baseline_provider": "Anthropic (Messages API)",
         "judge_prompt_variant": args.prompt_variant,
         "judge_prompt_system": system_prompt,
-        "judge_temperature": 0.0,
         "n_total_pairs": len(pairs),
         "n_positive": ci["n_pos"],
         "n_negative": ci["n_neg"],
@@ -168,12 +249,10 @@ def main() -> None:
         "per_example_prob_hallucinated": [round(float(p), 6) for p in probs],
         "per_example_raw_response": raws,
         "per_example_label_hallucinated": labels,
-        "runtime_seconds": round(elapsed, 1),
-        "per_example_seconds_mean": round(per_ex, 4),
     }
-    out_path = Path(args.output)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(snapshot, indent=2))
+    if partial_path.exists():
+        partial_path.unlink()
     print(f"  Wrote {out_path}", flush=True)
 
 

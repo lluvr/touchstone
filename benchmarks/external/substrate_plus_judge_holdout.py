@@ -137,8 +137,12 @@ def _pick_best_alpha_on_tune_auc(
 JUDGE_SNAPSHOTS = {
     "grok_cued": "judge_xai_grok420_n400_2026-05-18.json",
     "grok_blind": "judge_xai_grok420_blind_n400_2026-05-18.json",
-    "claude_cued": "judge_anthropic_sonnet_46_cued_n400_2026-05-19.json",
-    "claude_blind": "judge_anthropic_sonnet_46_blind_n400_2026-05-19.json",
+    "sonnet_cued": "judge_anthropic_sonnet_46_cued_n400_2026-05-19.json",
+    "sonnet_blind": "judge_anthropic_sonnet_46_blind_n400_2026-05-19.json",
+    "opus_cued": "judge_anthropic_opus_47_cued_n400_2026-05-19.json",
+    "opus_blind": "judge_anthropic_opus_47_blind_n400_2026-05-19.json",
+    "gpt5_mini_cued": "judge_openai_gpt5_mini_cued_n400_2026-05-19.json",
+    "gpt5_mini_blind": "judge_openai_gpt5_mini_blind_n400_2026-05-19.json",
 }
 
 
