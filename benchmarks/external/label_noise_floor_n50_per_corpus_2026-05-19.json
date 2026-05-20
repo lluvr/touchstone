@@ -1,0 +1,994 @@
+{
+  "method": "Independent re-labeling of 50 random pairs per corpus (seed=42) by Claude Opus 4.7 via Agent dispatch, no API calls; compared to published labels.",
+  "n_per_corpus": 50,
+  "sampling_seed": 42,
+  "sampling_indices": [
+    3,
+    12,
+    13,
+    15,
+    16,
+    22,
+    44,
+    47,
+    49,
+    52,
+    57,
+    71,
+    79,
+    81,
+    101,
+    110,
+    111,
+    112,
+    114,
+    119,
+    125,
+    135,
+    140,
+    142,
+    172,
+    174,
+    176,
+    183,
+    194,
+    214,
+    216,
+    229,
+    258,
+    279,
+    287,
+    301,
+    302,
+    308,
+    309,
+    327,
+    332,
+    346,
+    357,
+    359,
+    366,
+    373,
+    377,
+    379,
+    388,
+    390
+  ],
+  "labeling_date": "2026-05-19",
+  "annotator": "Claude Opus 4.7 (1M context), single annotator, blind to published labels at decision time",
+  "per_corpus": {
+    "ragtruth_summary": {
+      "n_pairs_relabeled": 50,
+      "raw_agreement_rate": 0.84,
+      "cohens_kappa": 0.6219,
+      "confusion": {
+        "tp": 11,
+        "fp": 2,
+        "tn": 31,
+        "fn": 6
+      },
+      "implied_ceiling_auc_optimistic": 0.84,
+      "implied_ceiling_auc_conservative": 0.68,
+      "disagreements": [
+        {
+          "pair_index": 15,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Fabricates Phi Kappa Psi 'announced' legal action (only Stelter byline teaser in source); inverts private-figure logic; adds UVA members as plaintiffs."
+        },
+        {
+          "pair_index": 52,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Faithful summary; festival dates and Indiegogo start match."
+        },
+        {
+          "pair_index": 112,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Says Shelton/Bryan opened with a 'powerful joint performance' but source has Eric Church + Keith Urban as openers; hosts opened the show as hosts, not performers."
+        },
+        {
+          "pair_index": 119,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Invents 'family has a long history of fighting for Polish independence'; source only mentions father was a WWII war hero."
+        },
+        {
+          "pair_index": 279,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Virgin Islands pesticide poisoning facts faithful."
+        },
+        {
+          "pair_index": 308,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Misattributes the Clean Power Plan critique to Hansen (op-ed author makes it; Hansen only warned about opposition-to-nuclear in general). Invents 'more expensive' descriptor for small modular reactors."
+        },
+        {
+          "pair_index": 377,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Overstates 'airport has been bombed and is mostly destroyed' - source says airport had previously been bombed and nearby buildings in ruins, not airport mostly destroyed."
+        },
+        {
+          "pair_index": 379,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Claims both Pachauri and Tejpal resigned due to women reporting; source says Pachauri stepped down but Tejpal was arrested and out on bail, not resigned."
+        }
+      ],
+      "per_pair_verdicts": [
+        {
+          "pair_index": 3,
+          "my_label": 0,
+          "reason_short": "All claims (FBI charges, Keonna Thomas details, NY arrests) map to source."
+        },
+        {
+          "pair_index": 12,
+          "my_label": 0,
+          "reason_short": "Columbia review, apology, UVA cannot sue, fraternity hurdles all accurate."
+        },
+        {
+          "pair_index": 13,
+          "my_label": 0,
+          "reason_short": "Private vs public figure framing accurate; UVA cannot sue; defamation hurdles right."
+        },
+        {
+          "pair_index": 15,
+          "my_label": 1,
+          "reason_short": "Fabricates Phi Kappa Psi 'announced' legal action (only Stelter byline teaser in source); inverts private-figure logic; adds UVA members as plaintiffs."
+        },
+        {
+          "pair_index": 16,
+          "my_label": 1,
+          "reason_short": "Invents 'sensitive topic like sexual assault may impact the legal approach' not in source."
+        },
+        {
+          "pair_index": 22,
+          "my_label": 0,
+          "reason_short": "Op-ed paraphrase faithful to source claims."
+        },
+        {
+          "pair_index": 44,
+          "my_label": 0,
+          "reason_short": "Stabbing facts, Hawks arrests, Copeland hospital, all map."
+        },
+        {
+          "pair_index": 47,
+          "my_label": 1,
+          "reason_short": "'Fled the scene' contradicts source: driver detained perpetrator who is now in police custody."
+        },
+        {
+          "pair_index": 49,
+          "my_label": 0,
+          "reason_short": "Selena hologram details all map; 'expected to be more advanced' = faithful paraphrase of 'step forward'."
+        },
+        {
+          "pair_index": 52,
+          "my_label": 0,
+          "reason_short": "Faithful summary; festival dates and Indiegogo start match."
+        },
+        {
+          "pair_index": 57,
+          "my_label": 1,
+          "reason_short": "Says 'unexpected stop in Los Angeles' but flight returned to Seattle; says 'passenger compartment was pressurized' but source specifies cargo hold."
+        },
+        {
+          "pair_index": 71,
+          "my_label": 1,
+          "reason_short": "Fabricates Elijah Kelley having worked with Michael Jackson and Whitney Houston; those are artists Iman listened to growing up, not Kelley collaborators."
+        },
+        {
+          "pair_index": 79,
+          "my_label": 0,
+          "reason_short": "All trailer + cast details map."
+        },
+        {
+          "pair_index": 81,
+          "my_label": 0,
+          "reason_short": "Short faithful summary."
+        },
+        {
+          "pair_index": 101,
+          "my_label": 0,
+          "reason_short": "Fukushima robot facts map; minor conflation of green-glow vs yellow-discoloration unknowns acceptable."
+        },
+        {
+          "pair_index": 110,
+          "my_label": 0,
+          "reason_short": "ACMs summary faithful; Reba's energy described positively in source."
+        },
+        {
+          "pair_index": 111,
+          "my_label": 1,
+          "reason_short": "Claims Shelton/Bryan opened with a performance (they were hosts; Eric Church + Keith Urban opened); fabricates 'Entertainer of the Year' specifically; lists Steven Tyler's facial hair as highlight (source lists it under Worst)."
+        },
+        {
+          "pair_index": 112,
+          "my_label": 1,
+          "reason_short": "Says Shelton/Bryan opened with a 'powerful joint performance' but source has Eric Church + Keith Urban as openers; hosts opened the show as hosts, not performers."
+        },
+        {
+          "pair_index": 114,
+          "my_label": 0,
+          "reason_short": "All Farage/Zylinski/UKIP details map cleanly."
+        },
+        {
+          "pair_index": 119,
+          "my_label": 1,
+          "reason_short": "Invents 'family has a long history of fighting for Polish independence'; source only mentions father was a WWII war hero."
+        },
+        {
+          "pair_index": 125,
+          "my_label": 1,
+          "reason_short": "Fabricates '12:30 AM local time' as crash time; source only says 'overnight Monday'."
+        },
+        {
+          "pair_index": 135,
+          "my_label": 1,
+          "reason_short": "Says case is 'similar to' Planned Parenthood v Danforth, but source attorney argues that precedent CANNOT be invoked here because embryos are not in her body. Inverts meaning."
+        },
+        {
+          "pair_index": 140,
+          "my_label": 0,
+          "reason_short": "Clinton/Rubio launch analysis faithful."
+        },
+        {
+          "pair_index": 142,
+          "my_label": 0,
+          "reason_short": "Generic abstractive summary; no specific fabrications."
+        },
+        {
+          "pair_index": 172,
+          "my_label": 0,
+          "reason_short": "Hernandez murder summary faithful; no fabrications."
+        },
+        {
+          "pair_index": 174,
+          "my_label": 0,
+          "reason_short": "Jordan rescue summary faithful; laundry-fishing detail compressed but accurate."
+        },
+        {
+          "pair_index": 176,
+          "my_label": 1,
+          "reason_short": "'He was aboard a boat when he noticed a signal for help' inverts the scene: JORDAN signaled, the container ship's mate noticed."
+        },
+        {
+          "pair_index": 183,
+          "my_label": 0,
+          "reason_short": "Germanwings/Lubitz summary faithful; 'taken by a passenger' is soft inference but consistent."
+        },
+        {
+          "pair_index": 194,
+          "my_label": 1,
+          "reason_short": "Wildly fabricated: source says no injuries, no radiation, nuclear fuel unloaded; output invents explosion + radiation release + 4 killed + 170 hospitalized + hydrogen leak theory + decommissioning."
+        },
+        {
+          "pair_index": 214,
+          "my_label": 0,
+          "reason_short": "Travolta/Scientology summary faithful."
+        },
+        {
+          "pair_index": 216,
+          "my_label": 0,
+          "reason_short": "Lamborghini crash facts faithful."
+        },
+        {
+          "pair_index": 229,
+          "my_label": 0,
+          "reason_short": "WWI graffiti underground city summary faithful."
+        },
+        {
+          "pair_index": 258,
+          "my_label": 0,
+          "reason_short": "Lazar/Siberia survivors summary faithful."
+        },
+        {
+          "pair_index": 279,
+          "my_label": 0,
+          "reason_short": "Virgin Islands pesticide poisoning facts faithful."
+        },
+        {
+          "pair_index": 287,
+          "my_label": 0,
+          "reason_short": "APhA execution policy summary faithful."
+        },
+        {
+          "pair_index": 301,
+          "my_label": 0,
+          "reason_short": "Long migrant-routes summary faithful; cites Agadez stat correctly."
+        },
+        {
+          "pair_index": 302,
+          "my_label": 1,
+          "reason_short": "Misreads 80% statistic: source says 80% headed for Libyan coast, not 80% came from Africa. Also invents 'social stigma and discrimination they face in their own communities' as a migration driver."
+        },
+        {
+          "pair_index": 308,
+          "my_label": 1,
+          "reason_short": "Misattributes the Clean Power Plan critique to Hansen (op-ed author makes it; Hansen only warned about opposition-to-nuclear in general). Invents 'more expensive' descriptor for small modular reactors."
+        },
+        {
+          "pair_index": 309,
+          "my_label": 0,
+          "reason_short": "Clean Power Plan / nuclear summary faithful; Hansen quote correctly attributed."
+        },
+        {
+          "pair_index": 327,
+          "my_label": 0,
+          "reason_short": "Easter origins summary generic but faithful."
+        },
+        {
+          "pair_index": 332,
+          "my_label": 1,
+          "reason_short": "Fabricates 'tensions with North Korea continue to rise and the country launches missile tests' as the debate context; source only mentions Inoki staging a wrestling tournament in NK."
+        },
+        {
+          "pair_index": 346,
+          "my_label": 0,
+          "reason_short": "Tsunami boat / yellowtail fish summary faithful."
+        },
+        {
+          "pair_index": 357,
+          "my_label": 0,
+          "reason_short": "Asteroid Malala summary faithful."
+        },
+        {
+          "pair_index": 359,
+          "my_label": 0,
+          "reason_short": "Shorter Asteroid Malala summary faithful."
+        },
+        {
+          "pair_index": 366,
+          "my_label": 0,
+          "reason_short": "Obama Summit of Americas op-ed summary faithful."
+        },
+        {
+          "pair_index": 373,
+          "my_label": 0,
+          "reason_short": "Yemen Unicef aid mission summary faithful."
+        },
+        {
+          "pair_index": 377,
+          "my_label": 1,
+          "reason_short": "Overstates 'airport has been bombed and is mostly destroyed' - source says airport had previously been bombed and nearby buildings in ruins, not airport mostly destroyed."
+        },
+        {
+          "pair_index": 379,
+          "my_label": 1,
+          "reason_short": "Claims both Pachauri and Tejpal resigned due to women reporting; source says Pachauri stepped down but Tejpal was arrested and out on bail, not resigned."
+        },
+        {
+          "pair_index": 388,
+          "my_label": 0,
+          "reason_short": "Everest summary faithful."
+        },
+        {
+          "pair_index": 390,
+          "my_label": 0,
+          "reason_short": "Self-testing op-ed summary faithful."
+        }
+      ]
+    },
+    "summeval": {
+      "n_pairs_relabeled": 50,
+      "raw_agreement_rate": 0.92,
+      "cohens_kappa": 0.6212,
+      "confusion": {
+        "tp": 4,
+        "fp": 2,
+        "tn": 42,
+        "fn": 2
+      },
+      "implied_ceiling_auc_optimistic": 0.92,
+      "implied_ceiling_auc_conservative": 0.84,
+      "disagreements": [
+        {
+          "pair_index": 142,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Says 'arab tribal leaders did not say what led to release' but source says Omar (Peshmerga commander) didn't say; Arab tribal leaders helped coordinate per Omar."
+        },
+        {
+          "pair_index": 174,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Japan UFO debate summary faithful."
+        },
+        {
+          "pair_index": 216,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Brisbane crash short summary faithful (the copyright tag is metadata noise, not factual claim)."
+        },
+        {
+          "pair_index": 366,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Garbles Melissa's rap quote, splicing in Jesse's separate line about 'two months' to conceive, producing a quote not in source."
+        }
+      ],
+      "per_pair_verdicts": [
+        {
+          "pair_index": 3,
+          "my_label": 0,
+          "reason_short": "Stiviano lawsuit details faithful despite grammar issues."
+        },
+        {
+          "pair_index": 12,
+          "my_label": 0,
+          "reason_short": "All facts about Stiviano judgment match source."
+        },
+        {
+          "pair_index": 13,
+          "my_label": 0,
+          "reason_short": "Stiviano lawsuit details faithful."
+        },
+        {
+          "pair_index": 15,
+          "my_label": 0,
+          "reason_short": "Stiviano summary faithful."
+        },
+        {
+          "pair_index": 16,
+          "my_label": 1,
+          "reason_short": "'The north coast of mexico is russian for barbara' is nonsense; Varvara is Russian for Barbara, not the place name."
+        },
+        {
+          "pair_index": 22,
+          "my_label": 0,
+          "reason_short": "Varvara whale migration record details faithful."
+        },
+        {
+          "pair_index": 44,
+          "my_label": 0,
+          "reason_short": "Russian jet RC-135U intercept details faithful."
+        },
+        {
+          "pair_index": 47,
+          "my_label": 0,
+          "reason_short": "Russian jet intercept summary faithful, even if awkwardly phrased."
+        },
+        {
+          "pair_index": 49,
+          "my_label": 0,
+          "reason_short": "Lady Antebellum bus fire details faithful."
+        },
+        {
+          "pair_index": 52,
+          "my_label": 0,
+          "reason_short": "Lady Antebellum bus fire faithful."
+        },
+        {
+          "pair_index": 57,
+          "my_label": 0,
+          "reason_short": "Lady Antebellum bus fire faithful."
+        },
+        {
+          "pair_index": 71,
+          "my_label": 0,
+          "reason_short": "Siberia wildfires sunset summary faithful."
+        },
+        {
+          "pair_index": 79,
+          "my_label": 0,
+          "reason_short": "Siberia wildfires summary faithful."
+        },
+        {
+          "pair_index": 81,
+          "my_label": 1,
+          "reason_short": "Misattributes the 'fears 400 migrants could be missing' claim to the Italian coast guard; source attributes it to Save the Children spokesman, and coast guard actually disputed the report."
+        },
+        {
+          "pair_index": 101,
+          "my_label": 0,
+          "reason_short": "SpaceX/Dragon launch summary faithful."
+        },
+        {
+          "pair_index": 110,
+          "my_label": 0,
+          "reason_short": "SpaceX summary faithful (rough grammar)."
+        },
+        {
+          "pair_index": 111,
+          "my_label": 0,
+          "reason_short": "SpaceX summary faithful."
+        },
+        {
+          "pair_index": 112,
+          "my_label": 0,
+          "reason_short": "Murder-suicide attribution to cruise line is supported by source's first sentence."
+        },
+        {
+          "pair_index": 114,
+          "my_label": 0,
+          "reason_short": "Cruise ship deaths summary faithful."
+        },
+        {
+          "pair_index": 119,
+          "my_label": 0,
+          "reason_short": "Cruise ship deaths summary faithful."
+        },
+        {
+          "pair_index": 125,
+          "my_label": 0,
+          "reason_short": "Cruise ship deaths summary faithful."
+        },
+        {
+          "pair_index": 135,
+          "my_label": 0,
+          "reason_short": "Yazidi release summary faithful."
+        },
+        {
+          "pair_index": 140,
+          "my_label": 0,
+          "reason_short": "Yazidi release summary faithful."
+        },
+        {
+          "pair_index": 142,
+          "my_label": 1,
+          "reason_short": "Says 'arab tribal leaders did not say what led to release' but source says Omar (Peshmerga commander) didn't say; Arab tribal leaders helped coordinate per Omar."
+        },
+        {
+          "pair_index": 172,
+          "my_label": 0,
+          "reason_short": "Japan UFO debate summary faithful."
+        },
+        {
+          "pair_index": 174,
+          "my_label": 0,
+          "reason_short": "Japan UFO debate summary faithful."
+        },
+        {
+          "pair_index": 176,
+          "my_label": 1,
+          "reason_short": "Says Tsarnaev 'was sentenced to death' but source says sentencing phase has not yet begun; article is precisely about parents pleading to take death penalty OFF the table."
+        },
+        {
+          "pair_index": 183,
+          "my_label": 0,
+          "reason_short": "Boston Marathon bombing summary faithful."
+        },
+        {
+          "pair_index": 194,
+          "my_label": 0,
+          "reason_short": "Roots remake summary faithful."
+        },
+        {
+          "pair_index": 214,
+          "my_label": 0,
+          "reason_short": "Brisbane multi-vehicle crash summary faithful."
+        },
+        {
+          "pair_index": 216,
+          "my_label": 0,
+          "reason_short": "Brisbane crash short summary faithful (the copyright tag is metadata noise, not factual claim)."
+        },
+        {
+          "pair_index": 229,
+          "my_label": 0,
+          "reason_short": "Serena Williams Fed Cup summary faithful."
+        },
+        {
+          "pair_index": 258,
+          "my_label": 0,
+          "reason_short": "Bolt World Relays summary faithful."
+        },
+        {
+          "pair_index": 279,
+          "my_label": 0,
+          "reason_short": "Guardiola trouser-rip summary faithful (quarter-final inferred correctly since Bayern advanced to semis)."
+        },
+        {
+          "pair_index": 287,
+          "my_label": 0,
+          "reason_short": "Guardiola trouser-rip summary faithful."
+        },
+        {
+          "pair_index": 301,
+          "my_label": 1,
+          "reason_short": "Says 'maurice van ryn has told a court' but the victim (young woman) told the court, not Van Ryn."
+        },
+        {
+          "pair_index": 302,
+          "my_label": 0,
+          "reason_short": "Van Ryn abuse summary faithful."
+        },
+        {
+          "pair_index": 308,
+          "my_label": 0,
+          "reason_short": "England U-17 squad summary faithful."
+        },
+        {
+          "pair_index": 309,
+          "my_label": 0,
+          "reason_short": "England U-17 squad summary faithful."
+        },
+        {
+          "pair_index": 327,
+          "my_label": 0,
+          "reason_short": "Buckingham Palace guard slip summary faithful."
+        },
+        {
+          "pair_index": 332,
+          "my_label": 0,
+          "reason_short": "Buckingham Palace guard slip summary faithful."
+        },
+        {
+          "pair_index": 346,
+          "my_label": 0,
+          "reason_short": "Ze Maria sacking summary faithful."
+        },
+        {
+          "pair_index": 357,
+          "my_label": 0,
+          "reason_short": "Meek pregnancy rap video summary faithful (truncated but accurate)."
+        },
+        {
+          "pair_index": 359,
+          "my_label": 0,
+          "reason_short": "Meek pregnancy rap video summary faithful."
+        },
+        {
+          "pair_index": 366,
+          "my_label": 1,
+          "reason_short": "Garbles Melissa's rap quote, splicing in Jesse's separate line about 'two months' to conceive, producing a quote not in source."
+        },
+        {
+          "pair_index": 373,
+          "my_label": 0,
+          "reason_short": "Poldark baby summary faithful."
+        },
+        {
+          "pair_index": 377,
+          "my_label": 0,
+          "reason_short": "Poldark baby summary faithful."
+        },
+        {
+          "pair_index": 379,
+          "my_label": 0,
+          "reason_short": "Poldark baby summary faithful."
+        },
+        {
+          "pair_index": 388,
+          "my_label": 0,
+          "reason_short": "Chipotle/Postmates delivery summary faithful."
+        },
+        {
+          "pair_index": 390,
+          "my_label": 0,
+          "reason_short": "Chipotle/Postmates delivery summary faithful."
+        }
+      ]
+    },
+    "halueval_summarization": {
+      "n_pairs_relabeled": 50,
+      "raw_agreement_rate": 0.8,
+      "cohens_kappa": 0.6019,
+      "confusion": {
+        "tp": 19,
+        "fp": 7,
+        "tn": 21,
+        "fn": 3
+      },
+      "implied_ceiling_auc_optimistic": 0.8,
+      "implied_ceiling_auc_conservative": 0.6,
+      "disagreements": [
+        {
+          "pair_index": 3,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Loneliness/social-media summary faithful; 'due to social media' is supported by Chloe's testimony."
+        },
+        {
+          "pair_index": 22,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Says family can't afford 'even basic medical care' but source says a local charity covers basic medical care."
+        },
+        {
+          "pair_index": 47,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Sterling contract refusal summary faithful."
+        },
+        {
+          "pair_index": 71,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "City of Cairo treasure recovery summary faithful."
+        },
+        {
+          "pair_index": 140,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Constrains 100bn-barrel claim to 'site in Sussex' but source says whole Weald Basin covering Surrey/Sussex/Hampshire/Kent. Share price stat of '200%' is off from actual 1p\u21924p (300%)."
+        },
+        {
+          "pair_index": 183,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Bird flu / CDC summary faithful."
+        },
+        {
+          "pair_index": 302,
+          "published_label": 0,
+          "my_label": 1,
+          "reasoning": "Invents speaker 'Kevin Robert Frost' not mentioned in source."
+        },
+        {
+          "pair_index": 327,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Saudi execution of Indonesian worker summary faithful."
+        },
+        {
+          "pair_index": 373,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "Bali Nine pair anniversary summary faithful (short)."
+        },
+        {
+          "pair_index": 377,
+          "published_label": 1,
+          "my_label": 0,
+          "reasoning": "NASA SLS CubeSats summary faithful; conflations of missions are loose but not contradictions."
+        }
+      ],
+      "per_pair_verdicts": [
+        {
+          "pair_index": 3,
+          "my_label": 0,
+          "reason_short": "Loneliness/social-media summary faithful; 'due to social media' is supported by Chloe's testimony."
+        },
+        {
+          "pair_index": 12,
+          "my_label": 0,
+          "reason_short": "Sheffield BB-gun gang summary faithful."
+        },
+        {
+          "pair_index": 13,
+          "my_label": 1,
+          "reason_short": "Invents 'rival gangs' clashing and 'breaking into family homes'; source has a single gang and shooting AT homes with BB guns."
+        },
+        {
+          "pair_index": 15,
+          "my_label": 1,
+          "reason_short": "Says Heatlie was 'ordered to pay \u00a37,000 dental bill'; that's McCartney's own bill, and Heatlie is not yet sentenced. Also says Stefani 'continues to endorse' Heatlie - source only describes a 2009 endorsement."
+        },
+        {
+          "pair_index": 16,
+          "my_label": 0,
+          "reason_short": "Helen Mirren 1970s summary faithful (short)."
+        },
+        {
+          "pair_index": 22,
+          "my_label": 1,
+          "reason_short": "Says family can't afford 'even basic medical care' but source says a local charity covers basic medical care."
+        },
+        {
+          "pair_index": 44,
+          "my_label": 0,
+          "reason_short": "Everton training session summary faithful; minor mislabel of Mirallas as midfielder not load-bearing."
+        },
+        {
+          "pair_index": 47,
+          "my_label": 0,
+          "reason_short": "Sterling contract refusal summary faithful."
+        },
+        {
+          "pair_index": 49,
+          "my_label": 1,
+          "reason_short": "Says video 'touched hearts of millions online' but source says 190,000 views; also adds 'praising the father's creativity and nurturing spirit' not in source."
+        },
+        {
+          "pair_index": 52,
+          "my_label": 0,
+          "reason_short": "Bradford Brewery/Galloway summary faithful."
+        },
+        {
+          "pair_index": 57,
+          "my_label": 1,
+          "reason_short": "Says Father Montes 'aimed to be a professional singer and not a priest' but source says he turned to church FIRST while still wanting to be musical artist; the contrast 'and not a priest' is wrong."
+        },
+        {
+          "pair_index": 71,
+          "my_label": 0,
+          "reason_short": "City of Cairo treasure recovery summary faithful."
+        },
+        {
+          "pair_index": 79,
+          "my_label": 1,
+          "reason_short": "Says fire was due to 'malfunction in vehicle's electrical system' but source attributes cause to a rear tire blowout."
+        },
+        {
+          "pair_index": 81,
+          "my_label": 1,
+          "reason_short": "Adds 'last year's Premier League runners-up' descriptor for Liverpool not in source."
+        },
+        {
+          "pair_index": 101,
+          "my_label": 1,
+          "reason_short": "Says dinner happened 'after their win against Chelsea' but source clearly says United LOST 1-0 to Chelsea."
+        },
+        {
+          "pair_index": 110,
+          "my_label": 0,
+          "reason_short": "Mark Selby China Open summary faithful."
+        },
+        {
+          "pair_index": 111,
+          "my_label": 1,
+          "reason_short": "Says Selby won 'seventh ranking title' but source says SIXTH."
+        },
+        {
+          "pair_index": 112,
+          "my_label": 0,
+          "reason_short": "Vorm/Tottenham summary faithful."
+        },
+        {
+          "pair_index": 114,
+          "my_label": 0,
+          "reason_short": "Dangelo Conner stun gun summary faithful."
+        },
+        {
+          "pair_index": 119,
+          "my_label": 1,
+          "reason_short": "Says Church 'successfully stopped' airing - source says Sky calls it a delay, not cancellation. Also says Travolta and Cruise are 'ready to take legal action' but source only mentions Church/Miscavige threats, not personal action by Travolta/Cruise."
+        },
+        {
+          "pair_index": 125,
+          "my_label": 1,
+          "reason_short": "Says Rutland is 'a successful businessman with a vast range of assets' but source describes his company earned \u00a365/week and he was banned from trading for market abuse."
+        },
+        {
+          "pair_index": 135,
+          "my_label": 1,
+          "reason_short": "Says clash lasted 'nearly 12 hours' but source says 'over nine hours' and '9 hours of footage'."
+        },
+        {
+          "pair_index": 140,
+          "my_label": 1,
+          "reason_short": "Constrains 100bn-barrel claim to 'site in Sussex' but source says whole Weald Basin covering Surrey/Sussex/Hampshire/Kent. Share price stat of '200%' is off from actual 1p\u21924p (300%)."
+        },
+        {
+          "pair_index": 142,
+          "my_label": 0,
+          "reason_short": "Health-insurance Gallup summary is direct paraphrase, faithful."
+        },
+        {
+          "pair_index": 172,
+          "my_label": 0,
+          "reason_short": "Bear-baiting Yakutsk summary faithful."
+        },
+        {
+          "pair_index": 174,
+          "my_label": 0,
+          "reason_short": "Conte/Italy/England summary faithful."
+        },
+        {
+          "pair_index": 176,
+          "my_label": 0,
+          "reason_short": "Falcao/Aguero Puma video and Manchester derby summary faithful."
+        },
+        {
+          "pair_index": 183,
+          "my_label": 0,
+          "reason_short": "Bird flu / CDC summary faithful."
+        },
+        {
+          "pair_index": 194,
+          "my_label": 0,
+          "reason_short": "Chicxulub crater short summary faithful."
+        },
+        {
+          "pair_index": 214,
+          "my_label": 0,
+          "reason_short": "Dallas peacock theft summary faithful."
+        },
+        {
+          "pair_index": 216,
+          "my_label": 0,
+          "reason_short": "Greenberg interfaith family summary faithful."
+        },
+        {
+          "pair_index": 229,
+          "my_label": 1,
+          "reason_short": "Says Manchester City and Manchester United are 'first and second respectively' on Weibo but source's follower counts show United first (8.87M) ahead of City (8.32M)."
+        },
+        {
+          "pair_index": 258,
+          "my_label": 0,
+          "reason_short": "Robert Durst cash recovery summary faithful."
+        },
+        {
+          "pair_index": 279,
+          "my_label": 1,
+          "reason_short": "Says Hull lost '2-1' to Swansea but actual scoreline per source is 3-1 (Ki 18, Gomis 37, McShane 50, Gomis 90+1). Output is internally inconsistent."
+        },
+        {
+          "pair_index": 287,
+          "my_label": 1,
+          "reason_short": "Overstates that revisions 'now prevents businesses from denying service' - source says revisions prevent businesses from using the law in court to defend such refusal. Also invents 'death threats' not in source."
+        },
+        {
+          "pair_index": 301,
+          "my_label": 1,
+          "reason_short": "Says crisis 'is reflective of the majority of Muslims' - source explicitly says the OPPOSITE: 'we reject those who believe that this evil is reflective of the majority of Muslims.'"
+        },
+        {
+          "pair_index": 302,
+          "my_label": 1,
+          "reason_short": "Invents speaker 'Kevin Robert Frost' not mentioned in source."
+        },
+        {
+          "pair_index": 308,
+          "my_label": 0,
+          "reason_short": "Netflix/GST summary faithful; the 'billions extra revenue' framing is supported by article lede."
+        },
+        {
+          "pair_index": 309,
+          "my_label": 1,
+          "reason_short": "Says Netflix 'would not increase the cost of its service' but source says Netflix INDICATED IT WOULD INCREASE the cost. Direct inversion."
+        },
+        {
+          "pair_index": 327,
+          "my_label": 0,
+          "reason_short": "Saudi execution of Indonesian worker summary faithful."
+        },
+        {
+          "pair_index": 332,
+          "my_label": 0,
+          "reason_short": "Dr Parker Ebola negative-test summary faithful."
+        },
+        {
+          "pair_index": 346,
+          "my_label": 0,
+          "reason_short": "German dentist tooth-removal summary faithful."
+        },
+        {
+          "pair_index": 357,
+          "my_label": 1,
+          "reason_short": "Says foreign GPs are mostly from 'Australia and New Zealand' but source says they're from India, Pakistan, South Africa and Nigeria."
+        },
+        {
+          "pair_index": 359,
+          "my_label": 1,
+          "reason_short": "Says Costellos own 'a popular North Fork restaurant' but source says horse farm and husband co-owned a marine construction company. Also says foul play 'might have been involved' but source says police 'do not expect foul play'."
+        },
+        {
+          "pair_index": 366,
+          "my_label": 0,
+          "reason_short": "Garnier face cream ad summary faithful."
+        },
+        {
+          "pair_index": 373,
+          "my_label": 0,
+          "reason_short": "Bali Nine pair anniversary summary faithful (short)."
+        },
+        {
+          "pair_index": 377,
+          "my_label": 0,
+          "reason_short": "NASA SLS CubeSats summary faithful; conflations of missions are loose but not contradictions."
+        },
+        {
+          "pair_index": 379,
+          "my_label": 1,
+          "reason_short": "Says Latika wants to 'dedicate her life to helping disadvantaged children' but source says she wants to live in India and write about Indian stories as a journalist."
+        },
+        {
+          "pair_index": 388,
+          "my_label": 0,
+          "reason_short": "Cumberbatch ping pong skit summary faithful."
+        },
+        {
+          "pair_index": 390,
+          "my_label": 0,
+          "reason_short": "Imam Arwani murder summary faithful."
+        }
+      ]
+    }
+  }
+}
