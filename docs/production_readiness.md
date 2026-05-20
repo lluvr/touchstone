@@ -587,6 +587,35 @@ Across the 12 (corpus × judge-variant) cells under honest holdout, only 3 show 
 - Tune/eval split is deterministic (stratified interleave matching §4.2.1). A different split (random, multi-seed) would produce different per-corpus α picks and gain estimates; the across-subsample variance in §4.2.4 suggests the variance on eval F1 across subsample seeds is in the 0.03-0.06 range — comparable to the gains/losses reported here.
 - The substrate is RAGTruth-trained. The HaluEval-blind +0.019 / +0.023 gain is achieved despite the substrate being out-of-distribution; an in-corpus recalibration of substrate weights might shift the result on the other corpora as well.
 
+### 4.3.2 Mechanism check: does substrate signal exist within judge score clusters?
+
+§4.3 and §4.3.1 describe the substrate-plus-judge mechanism qualitatively: "the substrate breaks ties within the judge's clustered scores." That claim is plausible (Grok's blind probabilities cluster at multiples of 0.05) but unmeasured. This sub-section measures it: within each Grok-blind score cluster, what is the substrate's discriminative AUC on the within-cluster hallucinated-vs-faithful pairs? If the mechanism is real, within-cluster substrate AUC should be > 0.5; if substrate AUC is near 0.5 (or inverted, < 0.5) within clusters, the §4.3.1 HaluEval-blind positive blend gain has a different explanation. Reproduce via `python -m benchmarks.external.substrate_within_judge_clusters`. Snapshot: `benchmarks/external/substrate_within_judge_clusters_2026-05-20.json`.
+
+Method: bin Grok-blind probabilities at width 0.05 (the natural cluster grid on this prompt); for each bin with ≥20 pairs and ≥2 per class, compute substrate AUC on within-cluster pairs only.
+
+| Corpus | Clusters with ≥20 pairs | Computable substrate AUC clusters | Weighted-mean within-cluster substrate AUC | Clusters > 0.55 | Clusters > 0.60 |
+|---|---|---|---|---|---|
+| RAGTruth Summary | 4 | 3 | **0.546** | 1 of 3 | 1 of 3 |
+| SummEval | 4 | 3 | **0.215** (dragged by 0.0-bin n=272, substrate AUC 0.161 — inverted) | 1 of 3 | 0 of 3 |
+| HaluEval Summarization | 9 | 7 | **0.644** | 6 of 7 | 5 of 7 |
+
+**What this confirms / refutes:**
+
+- **HaluEval: mechanism CONFIRMED.** Within-cluster substrate AUC is > 0.55 in 6 of 7 clusters; the n=56 bin at Grok-blind 0.85 has substrate AUC **0.803** on a 0.93-positive-prevalence cluster (substrate cleanly ranks the 4 negatives below the 52 positives). The §4.3.1 HaluEval-blind +0.019 F1 / +0.023 AUC blend gain is mechanism-supported: substrate genuinely discriminates within Grok-tie-clusters on HaluEval.
+- **SummEval: mechanism REFUTED.** The dominant cluster (Grok-blind ≈ 0.0, n=272 of 400 pairs, 1% positive prevalence) has substrate AUC 0.161 — substrate is actively INVERTED on that cluster (it ranks the 2 positives below the 270 negatives). Weighted mean within-cluster substrate AUC of 0.215 is the consequence. This is consistent with §4.3.1's α=0 finding for SummEval-blind: the substrate doesn't merely fail to add signal, it would actively HURT a naive blend that doesn't downweight it. The CV honestly picked α=0; this measurement explains why.
+- **RAGTruth: mechanism marginal.** Only 1 of 3 clusters > 0.55; weighted mean 0.546. The substrate has small within-cluster signal but not enough to justify a non-trivial blend weight under honest holdout (per §4.3.1 RAGTruth blind α=0 in the blend_cv5 picked-on-AUC variant).
+
+**Implications for the substrate-plus-judge architecture in §5:**
+
+- The "substrate complements judge" claim is corpus-dependent in a measurable way: substrate has within-cluster signal on HaluEval-distribution corpora, not on SummEval-distribution corpora. The pattern matches the §4.3.1 holdout result.
+- The mechanism description ("tie-breaking within clusters") is now grounded in within-cluster AUC measurements, not just qualitative observation. Adopters can audit their own corpus by running this script on their own (substrate, judge, labels) triples and reading the weighted-mean within-cluster substrate AUC: if it is > 0.55, the substrate-plus-judge blend has a chance of helping; if it is near 0.5 or inverted, the substrate should be dropped.
+
+**Caveats:**
+
+- The 0.85-cluster substrate AUC of 0.803 on HaluEval is computed on 4 negatives and 52 positives (very skewed); the per-cluster AUC has wide bootstrap CI at this n. Cite the cluster-level numbers as directional.
+- The Grok-blind clusters are bins, not exact ties; pairs within a 0.05-wide bin are not strictly tied. A finer bin (0.01) would surface fewer but cleaner clusters; this trade-off is a parameter, not a defect.
+- The measurement is single-judge (Grok blind). The §4.3.1 Claude cells (added by the multi-vendor extension) show different α picks; running this script with `judge=Claude blind` instead would test whether the substrate's tie-breaking signal varies by judge vendor. Deferred to a follow-up.
+
 ## 5. The honest production architecture
 
 Touchstone alone is NOT a sufficient hallucination detector for production deployment in the general case. For real-world AI output verification, the production architecture is:
