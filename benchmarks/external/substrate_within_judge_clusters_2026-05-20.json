@@ -1,0 +1,251 @@
+{
+  "ragtruth_summary": {
+    "label": "RAGTruth Summary",
+    "n_total_pairs": 400,
+    "judge": "xAI Grok 4.20 blind",
+    "bin_width": 0.05,
+    "min_cluster_n": 20,
+    "min_class": 2,
+    "n_clusters_total": 4,
+    "n_clusters_with_computable_auc": 3,
+    "n_clusters_substrate_auc_above_0.55": 1,
+    "n_clusters_substrate_auc_above_0.60": 1,
+    "weighted_mean_within_cluster_substrate_auc": 0.5457,
+    "per_cluster": [
+      {
+        "judge_bin_mid": 0.05,
+        "n_pairs": 77,
+        "n_positive": 4,
+        "n_negative": 73,
+        "label_prevalence": 0.0519,
+        "substrate_auc": 0.6164,
+        "substrate_score_range": [
+          0.0999,
+          0.3532
+        ]
+      },
+      {
+        "judge_bin_mid": 0.15,
+        "n_pairs": 97,
+        "n_positive": 1,
+        "n_negative": 96,
+        "substrate_auc": null,
+        "note": "skipped: <2 per class",
+        "substrate_score_range": [
+          0.1128,
+          0.4481
+        ]
+      },
+      {
+        "judge_bin_mid": 0.35,
+        "n_pairs": 83,
+        "n_positive": 12,
+        "n_negative": 71,
+        "label_prevalence": 0.1446,
+        "substrate_auc": 0.4812,
+        "substrate_score_range": [
+          0.1195,
+          0.5012
+        ]
+      },
+      {
+        "judge_bin_mid": 0.65,
+        "n_pairs": 71,
+        "n_positive": 37,
+        "n_negative": 34,
+        "label_prevalence": 0.5211,
+        "substrate_auc": 0.5445,
+        "substrate_score_range": [
+          0.1288,
+          0.4799
+        ]
+      }
+    ]
+  },
+  "summeval": {
+    "label": "SummEval",
+    "n_total_pairs": 400,
+    "judge": "xAI Grok 4.20 blind",
+    "bin_width": 0.05,
+    "min_cluster_n": 20,
+    "min_class": 2,
+    "n_clusters_total": 4,
+    "n_clusters_with_computable_auc": 3,
+    "n_clusters_substrate_auc_above_0.55": 1,
+    "n_clusters_substrate_auc_above_0.60": 0,
+    "weighted_mean_within_cluster_substrate_auc": 0.2148,
+    "per_cluster": [
+      {
+        "judge_bin_mid": 0.0,
+        "n_pairs": 272,
+        "n_positive": 2,
+        "n_negative": 270,
+        "label_prevalence": 0.0074,
+        "substrate_auc": 0.1611,
+        "substrate_score_range": [
+          0.0999,
+          0.1546
+        ]
+      },
+      {
+        "judge_bin_mid": 0.4,
+        "n_pairs": 21,
+        "n_positive": 1,
+        "n_negative": 20,
+        "substrate_auc": null,
+        "note": "skipped: <2 per class",
+        "substrate_score_range": [
+          0.0999,
+          0.1926
+        ]
+      },
+      {
+        "judge_bin_mid": 0.8,
+        "n_pairs": 28,
+        "n_positive": 14,
+        "n_negative": 14,
+        "label_prevalence": 0.5,
+        "substrate_auc": 0.5536,
+        "substrate_score_range": [
+          0.0999,
+          0.1619
+        ]
+      },
+      {
+        "judge_bin_mid": 0.85,
+        "n_pairs": 22,
+        "n_positive": 17,
+        "n_negative": 5,
+        "label_prevalence": 0.7727,
+        "substrate_auc": 0.4471,
+        "substrate_score_range": [
+          0.0999,
+          0.378
+        ]
+      }
+    ]
+  },
+  "halueval_summarization": {
+    "label": "HaluEval Summarization",
+    "n_total_pairs": 400,
+    "judge": "xAI Grok 4.20 blind",
+    "bin_width": 0.05,
+    "min_cluster_n": 20,
+    "min_class": 2,
+    "n_clusters_total": 9,
+    "n_clusters_with_computable_auc": 7,
+    "n_clusters_substrate_auc_above_0.55": 6,
+    "n_clusters_substrate_auc_above_0.60": 5,
+    "weighted_mean_within_cluster_substrate_auc": 0.6444,
+    "per_cluster": [
+      {
+        "judge_bin_mid": 0.0,
+        "n_pairs": 30,
+        "n_positive": 1,
+        "n_negative": 29,
+        "substrate_auc": null,
+        "note": "skipped: <2 per class",
+        "substrate_score_range": [
+          0.1049,
+          0.4203
+        ]
+      },
+      {
+        "judge_bin_mid": 0.05,
+        "n_pairs": 54,
+        "n_positive": 9,
+        "n_negative": 45,
+        "label_prevalence": 0.1667,
+        "substrate_auc": 0.6272,
+        "substrate_score_range": [
+          0.1049,
+          0.3069
+        ]
+      },
+      {
+        "judge_bin_mid": 0.15,
+        "n_pairs": 29,
+        "n_positive": 13,
+        "n_negative": 16,
+        "label_prevalence": 0.4483,
+        "substrate_auc": 0.6202,
+        "substrate_score_range": [
+          0.1141,
+          0.2653
+        ]
+      },
+      {
+        "judge_bin_mid": 0.35,
+        "n_pairs": 22,
+        "n_positive": 14,
+        "n_negative": 8,
+        "label_prevalence": 0.6364,
+        "substrate_auc": 0.625,
+        "substrate_score_range": [
+          0.1321,
+          0.3481
+        ]
+      },
+      {
+        "judge_bin_mid": 0.4,
+        "n_pairs": 65,
+        "n_positive": 16,
+        "n_negative": 49,
+        "label_prevalence": 0.2462,
+        "substrate_auc": 0.5893,
+        "substrate_score_range": [
+          0.0908,
+          0.3468
+        ]
+      },
+      {
+        "judge_bin_mid": 0.65,
+        "n_pairs": 56,
+        "n_positive": 42,
+        "n_negative": 14,
+        "label_prevalence": 0.75,
+        "substrate_auc": 0.6573,
+        "substrate_score_range": [
+          0.1228,
+          0.4006
+        ]
+      },
+      {
+        "judge_bin_mid": 0.7,
+        "n_pairs": 21,
+        "n_positive": 15,
+        "n_negative": 6,
+        "label_prevalence": 0.7143,
+        "substrate_auc": 0.4556,
+        "substrate_score_range": [
+          0.1349,
+          0.4202
+        ]
+      },
+      {
+        "judge_bin_mid": 0.85,
+        "n_pairs": 56,
+        "n_positive": 52,
+        "n_negative": 4,
+        "label_prevalence": 0.9286,
+        "substrate_auc": 0.8029,
+        "substrate_score_range": [
+          0.1268,
+          0.5687
+        ]
+      },
+      {
+        "judge_bin_mid": 0.95,
+        "n_pairs": 24,
+        "n_positive": 24,
+        "n_negative": 0,
+        "substrate_auc": null,
+        "note": "skipped: <2 per class",
+        "substrate_score_range": [
+          0.1238,
+          0.587
+        ]
+      }
+    ]
+  }
+}
