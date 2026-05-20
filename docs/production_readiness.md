@@ -450,6 +450,46 @@ Per-vendor R@P90 (audit-precision recall, single-snapshot tie-break realization;
 - All three vendor judges share the cued and blind prompt text byte-identically (`PROMPT_VARIANTS` dict in `judge_xai_from_pairs.py`, re-imported by `judge_anthropic_from_pairs.py`). Cross-vendor differences cannot be attributed to prompt variation.
 - Token rates differ across vendors. Per-call cost is the right deployment comparator and is a function of (vendor cost) × (corpus catch rate); not computed here.
 - Three vendors at n=400 is still a small panel. Gemini, Mistral, Meta Llama-as-judge, and other frontier judges are out of scope this round. Within-vendor variance across re-runs at temperature=0.0 with retry is also unmeasured for any vendor.
+- **Gemini probe data point.** Google Gemini-3-flash-preview was added via the LiteLLM proxy on a single corpus / variant: RAGTruth Summary blind n=200 prefix (`benchmarks/external/ragtruth_summary/results/judge_gemini_3_flash_blind_n200_2026-05-19.json`). Headline: **AUC 0.877 [0.815, 0.931]** at base rate 0.255 on this n=200 subsample. For comparison on the same RAGTruth corpus: Grok blind n=400 0.872, Claude Sonnet blind 0.899, GPT-5-mini blind 0.761. Gemini-3-flash sits between Grok and Claude on this single data point; not enough to characterize cross-corpus, but consistent with frontier-vendor cluster. Sequential proxy run (~37 s/pair under throttling); full 6-cell coverage was deferred because proxy throughput would have taken 11+ hours and the headline cross-vendor picture is already established at 3 vendors.
+
+### 4.2.9 Label noise floor on the three external corpora
+
+Every detector AUC / F1 reported in §4.2 / §4.3 is measured against the *published* hallucinated/faithful label on each pair. If those published labels are themselves only X% reliable as a measure of "is this output actually a hallucination of this source," then no detector — not even a perfectly calibrated oracle — can exceed roughly (1 − error_rate) accuracy or (1 − 2·error_rate) worst-case AUC against those labels. The headline numbers in §4.2 are therefore bounded above by the label noise floor, and a lab reviewer reading those numbers without the floor cannot tell whether a 0.74 F1 is "near-ceiling and we are out of signal" or "halfway and a better detector exists."
+
+This sub-section probes the floor on each of the three external corpora. Snapshot: `benchmarks/external/label_noise_floor_n50_per_corpus_2026-05-19.json`.
+
+**Method.** For each corpus, draw 50 pair indices via `random.Random(42).sample(range(400), 50)` (deterministic; same seed; same indices across corpora). For each sampled pair, the annotator (single annotator: Claude Opus 4.7 dispatched via the Agent tool, no Anthropic API spend, no peeking at the published `label` field at decision time) read the source and the output, independently decided 1 (hallucinated) or 0 (faithful), and recorded a one-sentence reason. After all 150 verdicts were committed, the verdicts were compared to the published labels and Cohen's κ + raw agreement + 2x2 confusion + implied ceiling AUC were computed in pure-python (no sklearn dependency).
+
+**Per-corpus results (n=50 each):**
+
+| Corpus | Raw agreement | Cohen's κ | Confusion (TP / FP / TN / FN) | Ceiling AUC (conservative / optimistic) |
+|---|---|---|---|---|
+| RAGTruth Summary | 0.840 | 0.622 | 11 / 2 / 31 / 6 | 0.68 / 0.84 |
+| SummEval | 0.920 | 0.621 | 4 / 2 / 42 / 2 | 0.84 / 0.92 |
+| HaluEval Summarization | 0.800 | 0.602 | 19 / 7 / 21 / 3 | 0.60 / 0.80 |
+
+Convention: positive class = hallucinated; "my label" is the independent re-label, "published label" is what ships in the corpus pair files. TP = both call it hallucinated; FN = published says faithful but I say hallucinated; FP = published says hallucinated but I say faithful; TN = both call it faithful. Ceiling AUC: conservative bound is 1 − 2·error_rate (worst case under class-dependent symmetric noise), optimistic bound is 1 − error_rate (raw accuracy ceiling).
+
+**What the floor implies for §4.2 / §4.3 headlines.**
+
+- **RAGTruth Summary.** Cohen's κ = 0.62 (substantial). The conservative ceiling AUC bound is ~0.68. Reported §4.2.1 held-out F1s on RAGTruth-Summary range from 0.49 (Substrate L6) to 0.73 (Claude cued); the GPT-4o held-out F1 of 0.725 sits below the optimistic ceiling but well above the conservative one. **Detectors at F1 ≥ 0.73 on RAGTruth-Summary are likely within the noise floor of the published labels**, and further detector improvements past that point are unlikely to be cleanly measured by this corpus's current label set without re-labeling or multi-annotator adjudication.
+- **SummEval.** Cohen's κ = 0.62; raw agreement 0.92 because SummEval is positive-class-sparse (only 6 of 50 are published-hallucinated, ~12%). Conservative ceiling 0.84, optimistic 0.92. SummEval's reported held-out F1s (Grok cued 0.63, Claude cued 0.59, GPT-4o cued 0.74) all sit below the optimistic ceiling — the corpus is not yet saturated against label noise; there is room for better detectors.
+- **HaluEval Summarization.** Cohen's κ = 0.60 (substantial-borderline). Conservative ceiling 0.60, optimistic 0.80. HaluEval's 0.5-by-construction base rate (already flagged in §4.3 caveats) compounds with the label-noise floor: against a stated 0.5 base rate, the 0.80 ceiling is close to the operating point where good cued judges live (Claude cued F1 0.78, GPT-4o cued F1 0.75 from §4.2.8). On the conservative reading, **HaluEval-summarization is the closest to the label noise floor of the three corpora.** §4.2.8's reading "frontier judges are at-ceiling on HaluEval" is consistent with this: they are at the *label* ceiling, not necessarily at a hallucination-detection ceiling.
+
+**Sample disagreements (load-bearing examples).** The disagreement set shows that when published and re-label diverge, the published label is sometimes defensible (interpretive ambiguity), sometimes harsh, and sometimes simply incorrect under reasonable reading. Two HaluEval examples where the published label is plainly wrong:
+- **HaluEval pair 79** (published=faithful, mine=hallucinated): Says Lady Antebellum bus fire was "due to a malfunction in the vehicle's electrical system" — source attributes the cause to a rear tire blowout. Direct contradiction.
+- **HaluEval pair 309** (published=faithful, mine=hallucinated): Says "Netflix has indicated that it would NOT increase the cost of its service" — source says the OPPOSITE. Direct inversion.
+
+Full disagreement list (8 RAGTruth + 4 SummEval + 10 HaluEval) with per-pair reasoning is in the snapshot file.
+
+**Honest limits.**
+
+- n=50 per corpus is a probe, not a calibration. Bootstrap 95% CIs on these per-corpus κ values are roughly ±0.15-0.20 wide. Reading any of the three κ values to two decimal places overstates precision; the per-corpus *ordering* is load-bearing, the point estimates aren't.
+- **One annotator.** True inter-annotator agreement requires two or more independent annotators; what's measured here is annotator-vs-published agreement, which mixes (a) genuine label noise in the published corpus, (b) systematic bias from a single annotator, (c) interpretive ambiguity in the hallucination/faithfulness boundary. The Cohen's κ values reported here are best read as lower bounds on label reliability.
+- **The annotator is the same model family as one of the evaluated judges** (Claude Opus 4.7 annotator vs Claude Sonnet 4.6 judge in §4.2.8). Self-eval risk: if the annotator's judgment is correlated with the Claude judge's judgment, then Claude's reported AUCs are over-inflated relative to this noise floor estimate; the floor should be read as applying to *all* judges generously, not Claude specifically. The cleanest fix is a cross-family external annotator (e.g., human or Grok-family LLM); this is deferred.
+- **RAGTruth-Summary's 6 FN vs 2 FP asymmetry** suggests the published label set is biased toward "faithful" by 5-10 pp on this corpus; a second-annotator round would likely shift the corpus's measured base rate of hallucinations upward.
+
+**Bottom line.** Cohen's κ on all three corpora is in the substantial range (0.60-0.62); the implied conservative ceiling AUC ranges from 0.60 (HaluEval) to 0.84 (SummEval). The strongest cued-judge held-out F1s reported in §4.2.8 sit close to or against the conservative ceiling on RAGTruth and HaluEval and well below the SummEval ceiling. **The label-noise floor is the load-bearing reason that further detector tuning on RAGTruth and HaluEval is unlikely to produce cleanly measurable gains without re-labeling.** Adopters who care about audit-grade detector performance on their *own* corpus should run an equivalent 50-pair κ probe on their own labels before trusting any AUC delta below ~0.05.
 
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
