@@ -1,3 +1,6 @@
+# Claude Code session-local settings (per-operator; never ship)
+.claude/
+
 # Python
 __pycache__/
 *.py[cod]
