@@ -82,11 +82,12 @@ NOT yet a production claim (see README §Limitations):
 - [Clarethium](https://clarethium.com) - methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
 
-Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/).
-All eleven Section 5 measurement layers are implemented and tested
-(469 tests; CI green on ruff lint + format, mypy strict, and the
-pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97%
-with a 95% CI gate. Two internal regression benchmarks plus three
+Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/)
+(library) and [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/)
+(MCP server). All eleven Section 5 measurement layers are implemented
+and tested (469 tests total: 452 library + 17 MCP server; CI green on
+ruff lint + format, mypy strict, and the pytest matrix across Python
+3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three
 external corpus comparisons ship in `benchmarks/`. Internal: EXP-081
 (Cohen's d = -5.238 on a 12-document single-vendor corpus, vs the
 recorded `detector_v031` baseline of -5.43) and EXP-095 (P-existence
