@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "touchstone-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Model Context Protocol server for Touchstone: hallucination detection for LLM outputs without calling another LLM. Wraps the calibrated Verifier and the raw measurement orchestrator from the clarethium-touchstone reference implementation as MCP tools."
 readme = "README.md"
 requires-python = ">=3.10"
