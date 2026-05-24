@@ -50,6 +50,33 @@ For full API documentation see [`docs/api-reference.md`](docs/api-reference.md).
 Five working examples are in [`examples/`](examples/) — single document,
 batch triage, holdout calibration, and two-stage cascade with a judge.
 
+## Model Context Protocol (MCP) integration
+
+Touchstone ships an optional MCP server so any host (Claude Desktop,
+Claude Code, Cursor, custom) can call the verifier in-context:
+
+```bash
+pip install "clarethium-touchstone[mcp]"
+```
+
+The console script `touchstone-mcp` is registered automatically and
+runs stdio transport. Drop this into your MCP host config:
+
+```json
+{
+  "mcpServers": {
+    "touchstone": {
+      "command": "touchstone-mcp"
+    }
+  }
+}
+```
+
+Four tools exposed: `verify` (calibrated probability + scope + spans),
+`measure` (raw multi-layer output), `assess_derivation_regime` (Layer
+11 regime classifier), `list_modes` (mode enumeration + versions).
+Full host-wiring and tool catalog in [`docs/mcp.md`](docs/mcp.md).
+
 ---
 
 ## What this is
@@ -78,22 +105,21 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Pre-launch on PyPI. All eleven Section 5 measurement layers are implemented and tested (441 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/). All eleven Section 5 measurement layers are implemented and tested (469 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
-PyPI organization application is pending. Until then, install from source. On modern Debian/Ubuntu/Mac-homebrew Pythons, install into a virtual environment so PEP-668 does not block the editable install:
+```bash
+pip install clarethium-touchstone                  # base library
+pip install "clarethium-touchstone[mcp]"           # + MCP server (touchstone-mcp script)
+```
+
+Alternative: install from source if you need an unreleased commit. On modern Debian/Ubuntu/Mac-homebrew Pythons, install into a virtual environment so PEP-668 does not block the editable install:
 
 ```bash
 git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .
-```
-
-For development (tests, lint, type check), add the `dev` extra:
-
-```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,mcp]"   # dev = test/lint/type tooling; mcp = MCP server
 pytest -q
 ```
 

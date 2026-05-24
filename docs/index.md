@@ -8,9 +8,19 @@ A Clarethium project. Standards and reference implementation for measuring AI ou
 
 - [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) - the canonical specification (CC-BY 4.0)
 - [Getting started](getting-started.md) - install and first measurement
+- [API reference](api-reference.md) - the public Verifier / measure / scope surface
+- [Production readiness](production_readiness.md) - operational metrics, threshold guidance, what Touchstone is and is not for production deployment
 - [Methodology summary](methodology.md) - substrate hypothesis, falsification protocol, cross-corpus evidence, caveats (intended for readers evaluating Touchstone for adoption or methodological critique)
+- [MCP integration](mcp.md) - Model Context Protocol server; host wiring for Claude Desktop / Claude Code / Cursor / custom hosts
 - [Contributing](../CONTRIBUTING.md) - how to propose changes
 - [Suggestion process](../SUGGESTIONS/PROCESS.md) - how Standard and library evolve
+
+## Install
+
+```bash
+pip install clarethium-touchstone                  # base library
+pip install "clarethium-touchstone[mcp]"           # + MCP server
+```
 
 ## Why model-independent
 
@@ -89,8 +99,8 @@ and HaluBench remains open work.
 
 Section 6 (Specification Compliance) is reserved for Standard 1.1.
 
-PyPI organization application is pending; until then, install from
-source per the [Getting started](getting-started.md) guide.
+Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/);
+see [Getting started](getting-started.md) for install and first usage.
 
 ## License
 

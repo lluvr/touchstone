@@ -21,6 +21,7 @@ reference once those have been internalised.
 - [Layer-11 regime classifier: `assess_derivation_regime()`](#assess_derivation_regime)
 - [`EXTERNAL_ENTITIES_DEFAULT`](#external_entities_default)
 - [Conventions and scope](#conventions-and-scope)
+- [MCP integration](#mcp-integration)
 
 ---
 
@@ -287,6 +288,37 @@ result = measure(
   fabricated-number corpora the coefficient should be positive. Adopters
   with a different input distribution MUST recalibrate; the
   `with_calibration()` constructor accepts the re-fitted coefficients.
+
+---
+
+## MCP integration
+
+Touchstone ships an optional Model Context Protocol server as the
+`clarethium_touchstone.mcp` subpackage. Install with the `mcp` extra:
+
+```bash
+pip install "clarethium-touchstone[mcp]"
+```
+
+This registers the `touchstone-mcp` console script (stdio transport
+by default) so any MCP host can attach it. Four tools exposed:
+`verify`, `measure`, `assess_derivation_regime`, `list_modes` — each
+mirrors the corresponding Python API documented on this page.
+
+Programmatic use:
+
+```python
+from clarethium_touchstone.mcp import build_server
+
+server = build_server()
+server.run()                 # stdio transport (default)
+```
+
+Full host-wiring instructions (Claude Desktop, Claude Code, Cursor,
+custom) and the tool catalog are in [`mcp.md`](mcp.md). Importing
+`clarethium_touchstone.mcp` without the `mcp` extra installed raises a
+guided `ImportError`; the base library install does not pull in
+FastMCP.
 
 ---
 
