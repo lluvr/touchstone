@@ -58,16 +58,18 @@ batch triage, holdout calibration, and two-stage cascade with a judge.
 
 ## Touchstone MCP
 
-The optional Touchstone MCP server lets any Model Context Protocol
-host (Claude Desktop, Claude Code, Cursor, custom) call Touchstone
-in-context:
+The Touchstone MCP server lets any Model Context Protocol host
+(Claude Desktop, Claude Code, Cursor, custom) call Touchstone
+in-context. It ships as its own PyPI distribution
+([`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/)):
 
 ```bash
-pip install "clarethium-touchstone[mcp]"
+pip install touchstone-mcp
 ```
 
-The console script `touchstone-mcp` is registered automatically and
-runs stdio transport. Drop this into your MCP host config:
+`clarethium-touchstone` and `fastmcp` install transitively. The
+console script `touchstone-mcp` is registered automatically and runs
+stdio transport. Drop this into your MCP host config:
 
 ```json
 {
@@ -116,7 +118,7 @@ Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethi
 
 ```bash
 pip install clarethium-touchstone                  # base library
-pip install "clarethium-touchstone[mcp]"           # + MCP server (touchstone-mcp script)
+pip install touchstone-mcp                         # MCP server (separate distribution)
 ```
 
 Alternative: install from source if you need an unreleased commit. On modern Debian/Ubuntu/Mac-homebrew Pythons, install into a virtual environment so PEP-668 does not block the editable install:
@@ -126,8 +128,10 @@ git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,mcp]"   # dev = test/lint/type tooling; mcp = MCP server
-pytest -q
+pip install -e ".[dev]"                            # library + dev tooling
+pip install -e ./touchstone-mcp                    # MCP server (in-repo)
+pytest -q                                          # library test suite
+pytest -q touchstone-mcp/tests                     # MCP server test suite
 ```
 
 ## Read before deploying: `docs/production_readiness.md`

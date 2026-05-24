@@ -1,30 +1,48 @@
-"""Touchstone MCP server (FastMCP) exposing Touchstone as MCP tools.
+"""Touchstone MCP server: hallucination detection for LLM outputs
+without calling another LLM, exposed as Model Context Protocol tools.
 
-The server exposes four tools to MCP hosts:
+Install with::
 
-* ``verify`` — calibrated production Verifier. Returns probability,
+    pip install touchstone-mcp
+
+The ``touchstone-mcp`` console script is registered automatically and
+runs on the stdio transport by default, matching the convention every
+MCP host (Claude Desktop, Claude Code, Cursor, custom) expects for
+local servers.
+
+Programmatic use::
+
+    from touchstone_mcp import build_server
+
+    server = build_server()
+    server.run()                 # stdio transport
+
+The four tools exposed:
+
+* ``verify`` -- calibrated production Verifier. Returns probability,
   scope, signal breakdown, and span-level localization for a
   ``(text, source)`` pair. Use this for the common "is this output
   faithful to its source" decision.
-* ``measure`` — low-level orchestrator that runs every Touchstone
+* ``measure`` -- low-level orchestrator that runs every Touchstone
   Section 5 measurement layer whose preconditions are met. Use this
   when the caller needs the raw layer outputs for drill-down.
-* ``assess_derivation_regime`` — Layer 11 standalone regime classifier.
+* ``assess_derivation_regime`` -- Layer 11 standalone regime classifier.
   Useful for surfacing a "trust this signal" hint before any
   measurement runs.
-* ``list_modes`` — enumerate the four Verifier modes and their
+* ``list_modes`` -- enumerate the four Verifier modes and their
   preconditions. Helpful for hosts that present a mode selector.
 
 The server uses FastMCP's decorator API. Type hints on the tool
 functions drive the MCP schema; docstrings drive the tool descriptions
-exposed to the host.
+exposed to the host. Measurement semantics and calibration coefficients
+are defined and tested in ``clarethium-touchstone`` (the reference
+implementation); this module is a thin wrapper around its public
+surface.
 """
 
 from __future__ import annotations
 
 from typing import Any
-
-from fastmcp import FastMCP
 
 from clarethium_touchstone import (
     VERIFIER_MODES,
@@ -42,6 +60,9 @@ from clarethium_touchstone._version import (
 from clarethium_touchstone._version import (
     __version__ as _touchstone_lib_version,
 )
+from fastmcp import FastMCP
+
+__version__ = "0.1.0"
 
 # Module-level Verifier so the calibration coefficients load once and
 # repeated calls reuse them. The Verifier is stateless across calls;
@@ -110,7 +131,7 @@ def build_server() -> FastMCP:
             A dict with keys ``prob_hallucinated`` (float in [0, 1]),
             ``mode`` (which calibration mode produced the score),
             ``scope`` (``"validated"`` / ``"limited_signal"`` /
-            ``"insufficient_input"`` — see scope_notes for the
+            ``"insufficient_input"`` -- see scope_notes for the
             classification reason), ``scope_notes`` (list of
             diagnostic strings), ``signal_breakdown`` (per-feature
             logit contributions), and ``top_unsupported`` (list of
@@ -275,6 +296,7 @@ def build_server() -> FastMCP:
             "versions": {
                 "touchstone_library": _touchstone_lib_version,
                 "touchstone_standard": __standard_version__,
+                "touchstone_mcp_server": __version__,
             },
         }
 

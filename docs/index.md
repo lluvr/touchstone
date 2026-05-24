@@ -19,7 +19,7 @@ A Clarethium project. Standard and reference implementation for measuring LLM-ge
 
 ```bash
 pip install clarethium-touchstone                  # base library
-pip install "clarethium-touchstone[mcp]"           # + MCP server
+pip install touchstone-mcp                         # MCP server (separate distribution)
 ```
 
 ## Why model-independent
