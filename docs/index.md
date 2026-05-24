@@ -1,8 +1,8 @@
 # Touchstone
 
-Model-independent verification for AI-coupled work.
+Hallucination detection for LLM outputs — without calling another LLM.
 
-A Clarethium project. Standards and reference implementation for measuring AI output structure, fabrication, grounding, and (in a future release) specification compliance without depending on a model to judge a model.
+A Clarethium project. Standard and reference implementation for measuring LLM-generated text against its source: structural quality, claim density, source matching, grounding decomposition, and other layers. The scoring substrate is regex, structural analysis, source matching, and arithmetic; no model is called to judge another model's output. Specification compliance verification is reserved for Standard 1.1.
 
 ## Start here
 
@@ -74,7 +74,7 @@ Plausibly suited but not yet validated against an externally curated corpus:
 NOT yet a production claim (see README §Limitations):
 
 - Internal AI-quality verification at organizations operating at scale (no batch API, no performance characterization).
-- Substrate enforcement on AI-coupled work platforms (no adversarial-robustness claim; patterns are public and evadable).
+- Substrate enforcement on platforms that host LLM-generated content (no adversarial-robustness claim; patterns are public and evadable).
 - Independent third-party verification of AI vendor claims (no external-corpus validation; no head-to-head baselines).
 
 ## Related projects

@@ -1,8 +1,10 @@
 """Touchstone reference implementation.
 
-Model-independent verification for AI-coupled work. Implements
-Section 5 (Output Measurement) of the Touchstone Standard. See
-``STANDARDS/touchstone-1.0.md`` for the canonical reference.
+Hallucination detection for LLM outputs without calling another LLM.
+Scores whether LLM-generated text is supported by its source using
+regex, structural analysis, source matching, and arithmetic.
+Implements Section 5 (Output Measurement) of the Touchstone Standard.
+See ``STANDARDS/touchstone-1.0.md`` for the canonical reference.
 
 Public API (v0.1):
 

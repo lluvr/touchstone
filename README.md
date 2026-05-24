@@ -1,6 +1,13 @@
 # Touchstone
 
-Model-independent verification for AI-coupled work.
+Hallucination detection for LLM outputs — without calling another LLM.
+
+Touchstone scores whether an LLM-generated text is supported by its
+source. The substrate is regex, structural analysis, source matching,
+and arithmetic; no LLM judge is required to grade the output. You get
+a calibrated probability, a scope flag that tells you when the score
+is trustworthy, and span-level highlights of the specific sentences
+that look unsupported.
 
 ## Quickstart (60 seconds)
 
