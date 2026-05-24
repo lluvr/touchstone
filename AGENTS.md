@@ -95,21 +95,20 @@ False positives can be tagged with an inline comment: `# canon-exempt: <reason>`
 
 ## Credentials and tokens
 
-Any token the maintainer's tooling needs is stored in the secrets-vault
-at `~/secrets-vault/`. Discover the key with `vault inventory`; load it
-at the child-process scope with `VAR=$(vault decrypt KEY)` and never:
+Publishing and benchmark API tokens are held only by the maintainer and
+are never committed. Whatever invokes a token keeps it at child-process
+scope and never:
 
-- export the token into the shell environment (it leaks into history and
+- exports the token into the shell environment (it leaks into history and
   child processes you did not intend);
-- write the token to `~/.pypirc`, `~/.npmrc`, `.env`, or any other file
+- writes the token to `~/.pypirc`, `~/.npmrc`, `.env`, or any other file
   on disk;
-- ask the maintainer to paste the token into chat (the vault is the
-  canonical source; if the key is missing, create it with `vault put`).
+- pastes the token into chat or logs.
 
-`PYPI_API_TOKEN` is the canonical PyPI publishing key; `RELEASING.md`
-step 13 documents the exact `twine upload` invocation. The same
-discipline applies to any provider API key the benchmarks need
-(`XAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
+`PYPI_API_TOKEN` is the PyPI publishing key; `RELEASING.md` step 14
+documents the exact `twine upload` invocation. The same discipline
+applies to any provider API key the benchmarks need (`XAI_API_KEY`,
+`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
 
 ## Build artifacts
 
