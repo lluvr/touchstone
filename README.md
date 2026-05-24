@@ -2,6 +2,56 @@
 
 Model-independent verification for AI-coupled work.
 
+## Quickstart (60 seconds)
+
+```bash
+git clone https://github.com/Clarethium/touchstone.git
+cd touchstone && python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+```
+
+```python
+from clarethium_touchstone import Verifier
+
+v = Verifier()
+result = v.score(
+    text=(
+        "Apple reported Q1 fiscal 2026 revenue of $185 billion, the company's "
+        "highest ever. McKinsey forecasts industry-wide growth of 47% next "
+        "quarter. The Federal Reserve will raise rates 75 basis points in "
+        "response. Tesla announced a competing AR product for late 2027."
+    ),
+    source=(
+        "Apple reported Q1 fiscal 2026 revenue of $143 billion. The company's "
+        "iPhone segment grew 8% year-over-year. Tim Cook commented on AI "
+        "investments during the earnings call. Operating margins reached 32%."
+    ),
+)
+print(f"prob_hallucinated = {result.prob_hallucinated:.3f}")  # → 0.796
+print(f"scope             = {result.scope}")                  # → validated
+print(f"should_flag()     = {result.should_flag()}")          # → True
+for span in result.top_unsupported:
+    print(f"  [{span.layer11_primary}] {span.sentence!r} {span.p_markers}")
+```
+
+What just happened: the substrate classified three sentences as Layer 11
+P-markers — the unsourced `$185 billion`, the unsourced 47% McKinsey
+forecast, and the unsourced 2027 Tesla year — and produced a calibrated
+0.796 probability. The `scope` field tells you whether the probability is
+trustworthy (`"validated"`) or whether the substrate lacked enough
+informative signals to produce a calibrated reading (`"limited_signal"`
+or `"insufficient_input"`); `should_flag()` refuses to flag low-signal
+results by default. Pass `fail_open=True` to flag on probability alone.
+
+**Before deploying read [`docs/production_readiness.md`](docs/production_readiness.md).**
+The default `should_flag(threshold=0.5)` under-flags for any production
+deployment (F1-optimal thresholds on the published corpora are 0.07-0.27).
+For full API documentation see [`docs/api-reference.md`](docs/api-reference.md).
+Five working examples are in [`examples/`](examples/) — single document,
+batch triage, holdout calibration, and two-stage cascade with a judge.
+
+---
+
 ## What this is
 
 Touchstone names the practice of measuring AI outputs without invoking an AI model to score the AI output. It is one of two open reference artifacts published by Clarethium:

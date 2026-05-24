@@ -6,6 +6,38 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## v0.1.1 - 2026-05-23: scope-gated Verifier; short-input bug fix; API reference + three new examples
+
+The Phase A refinement pass. Production-user blockers found by adversarial-input probing in v0.1.0 are closed; the API surface gains an explicit scope mechanism; the reference suite gains 11 adversarial-input tests; three new examples cover batch triage, holdout calibration, and the substrate+judge cascade.
+
+**Bug fix — Layer 6 short-input regression (load-bearing).** v0.1.0's `Verifier` returned `prob_hallucinated ≈ 0.78` on trivially faithful short inputs (single sentence, whitespace-only, self-referential). Root cause: when no sentence had scoreable content words, Layer 6 returned `mean_proximity = 0.0` with an empty `per_sentence_proximity` list; the Verifier's feature extractor read `0.0` as "vocabulary is 100% novel," firing `l6_inv = 1.0` against the +3.4 calibration coefficient. The fix gates the `l6_inv` feature on Layer 6 actually having scored at least one sentence, matching the existing precondition gating on Layers 4 and 5. Eleven new adversarial-input tests pin the post-fix behaviour (`test_verifier.py::test_short_faithful_input_does_not_auto_flag` etc).
+
+**API addition — `VerifierResult.scope` and `scope_notes`.** Two new fields make signal quality first-class:
+
+- `scope: "validated" | "limited_signal" | "insufficient_input"` — classifies whether the substrate had enough informative signals to support the calibrated probability.
+- `scope_notes: list[str]` — human-readable diagnostics naming which signals fired, which preconditions failed, and any text-level reasons (e.g. insufficient length).
+
+`should_flag()` gains a `fail_open: bool = False` keyword argument: by default the method returns `False` for `"insufficient_input"` and `"limited_signal"` results, preventing pipeline-bursting false positives on degenerate inputs. Callers that route low-signal traces through human review can opt in via `fail_open=True`.
+
+**API addition — `VERIFIER_MODES`.** A tuple of the four valid mode strings, exported from the top-level package. Useful for argparse `choices=`, dashboards listing supported modes, and runtime validation. Complements the existing `VerifierMode` Literal.
+
+**Documentation additions:**
+
+- `docs/api-reference.md` — single-page lookup reference for the entire public API (Verifier, VerifierResult, UnsupportedSpan, measure, assess_derivation_regime, EXTERNAL_ENTITIES_DEFAULT, VERIFIER_MODES). Cross-references the Standard and production_readiness as the source-of-truth pair.
+- `README.md` — 30-line quickstart block at the top with a verified working snippet (calibrated probability 0.796 on the canonical hallucinated example).
+
+**Three new examples covering production patterns:**
+
+- `examples/batch_triage.py` — score a corpus, sort by prob_hallucinated, surface the top-K for human review, route limited-signal rows to manual review separately from auto-flag.
+- `examples/calibrate_on_holdout.py` — recipe for re-fitting the Verifier's logistic regression on your own labelled holdout data using a stdlib-only gradient-descent loop. Demonstrates the shipped RAGTruth-Summary calibration is suboptimal on adversarial-fabrication corpora; the recalibrated coefficients lift accuracy from 9/12 to 12/12 on the toy holdout.
+- `examples/two_stage_cascade.py` — substrate cheap-screen with LLM-judge fallback on the uncertain band. Judge is stubbed deterministically so the example runs offline.
+
+**Tests:** 452 passing (was 441; +11 adversarial-input regression tests). 97% coverage held. `mypy --strict` clean. `ruff check` clean. Reproducibility audit: 0 drift.
+
+**Backward compatibility.** Existing callers reading the v0.1.0 fields (`prob_hallucinated`, `mode`, `signal_breakdown`, `top_unsupported`, `layer_outputs`) see no behaviour change for inputs that produced `"validated"` scope under the fixed semantics — i.e. for any reasonable production data the bug did not affect. Callers that constructed `VerifierResult` directly (uncommon — the dataclass is intended to be returned by `Verifier.score()`, not built by users) MUST supply the two new fields. Callers relying on the buggy v0.1.0 behaviour where short / empty / non-English inputs returned `prob ≈ 0.78` will see those inputs now classified as `"insufficient_input"` or `"limited_signal"` and not auto-flagged under `should_flag()`; opt in via `should_flag(fail_open=True)` to restore the pre-fix flag-on-probability behaviour for low-signal results.
+
+---
+
 ## 2026-05-19: substrate_plus_judge mode lands on the Verifier; doc-vs-library gap closed; Standard 1.0.0-draft.15
 
 draft.14's stress-test re-review surfaced a structural gap: the §5
