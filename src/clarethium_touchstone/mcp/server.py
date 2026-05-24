@@ -60,11 +60,12 @@ def build_server() -> FastMCP:
     mcp = FastMCP(
         name="touchstone",
         instructions=(
-            "Touchstone: model-independent verification for AI-coupled work. "
-            "Call `verify` to score a (text, source) pair for hallucination "
-            "probability with span-level localization. Call `measure` for the "
-            "raw multi-layer output. Read scope and scope_notes on every "
-            "verify result before acting on the probability."
+            "Touchstone: hallucination detection for LLM outputs without "
+            "calling another LLM. Call `verify` to score a (text, source) "
+            "pair for hallucination probability with span-level localization. "
+            "Call `measure` for the raw multi-layer output. Read scope and "
+            "scope_notes on every verify result before acting on the "
+            "probability."
         ),
     )
 

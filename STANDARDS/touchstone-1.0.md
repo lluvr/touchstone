@@ -10,7 +10,7 @@
 
 ## Abstract
 
-Touchstone Standard defines a model-independent methodology for verifying the structural quality, source grounding, and fabrication characteristics of AI-coupled work outputs. The Standard specifies eleven measurement layers for output profiling, calibration discipline, threshold conventions, and conformance requirements. Of the eleven measurement layers, ten use deterministic regex pattern matching, string analysis, and arithmetic; one uses optional LLM API for baseline generation. The Standard does not depend on AI models judging AI outputs. Specification compliance verification is reserved for Standard 1.1.
+Touchstone Standard defines a methodology for verifying the structural quality, source grounding, and fabrication characteristics of LLM-generated text without calling another LLM to grade it. The Standard specifies eleven measurement layers for output profiling, calibration discipline, threshold conventions, and conformance requirements. Of the eleven measurement layers, ten use deterministic regex pattern matching, string analysis, and arithmetic; one uses an optional LLM API for baseline generation (not for scoring the output). The Standard does not depend on AI models judging AI outputs. Specification compliance verification is reserved for Standard 1.1.
 
 ---
 
@@ -18,7 +18,7 @@ Touchstone Standard defines a model-independent methodology for verifying the st
 
 ### 1.1 Purpose
 
-The Standard provides a verifiable methodology for measuring AI-coupled work. The Standard defines:
+The Standard provides a verifiable methodology for measuring LLM-generated text against its source. The Standard defines:
 
 - **Output measurement** (Section 5): profiling structural quality, claim density, source grounding, fabrication characteristics, presentation features, and grounding decomposition of AI-generated text against optional source material.
 
@@ -51,10 +51,10 @@ The Standard does NOT:
 This Standard targets:
 
 - Software developers building verification tooling
-- Researchers studying AI output quality and methodology
-- Auditors and compliance professionals working with AI-generated work
-- Educational institutions teaching AI methodology
-- Platforms hosting AI-coupled work
+- Researchers studying LLM output quality and methodology
+- Auditors and compliance professionals working with LLM-generated content
+- Educational institutions teaching AI evaluation methodology
+- Platforms hosting LLM-generated content
 
 ### 1.5 Status of this document
 
