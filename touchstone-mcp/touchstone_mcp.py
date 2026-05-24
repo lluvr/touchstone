@@ -80,6 +80,7 @@ def build_server() -> FastMCP:
     """
     mcp = FastMCP(
         name="touchstone",
+        version=__version__,
         instructions=(
             "Touchstone: hallucination detection for LLM outputs without "
             "calling another LLM. Call `verify` to score a (text, source) "

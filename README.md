@@ -104,7 +104,8 @@ This is a reference specification plus reference implementation. The Standard is
 This repository contains:
 
 - **Touchstone Standard** - the canonical specification (CC-BY 4.0) at `STANDARDS/touchstone-1.0.md`
-- **`clarethium-touchstone`** - Python reference implementation (Apache 2.0)
+- **`clarethium-touchstone`** - Python reference implementation (Apache 2.0) under `src/clarethium_touchstone/`
+- **`touchstone-mcp`** - Model Context Protocol server (Apache 2.0) under `touchstone-mcp/`, depends on `clarethium-touchstone` + `fastmcp`
 - **Reference test suite** at `tests/reference/cases/` - language-agnostic JSON cases that second-party implementations MUST pass to claim conformance
 - **Internal regression benchmarks** at `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`
 - **External corpus comparisons** at `benchmarks/external/` against RAGTruth, SummEval, HaluEval with MiniCheck and AlignScore baselines
@@ -114,7 +115,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/). All eleven Section 5 measurement layers are implemented and tested (469 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/) (the reference library) and [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) (the MCP server). All eleven Section 5 measurement layers are implemented and tested (469 tests total: 452 library + 17 MCP server; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 ```bash
 pip install clarethium-touchstone                  # base library
@@ -498,7 +499,7 @@ When citing the reference implementation:
   author  = {Lucic, Lovro},
   title   = {Touchstone: reference implementation},
   year    = {2026},
-  version = {0.1.1},
+  version = {0.2.0},
   url     = {https://github.com/Clarethium/touchstone},
   license = {Apache-2.0}
 }
