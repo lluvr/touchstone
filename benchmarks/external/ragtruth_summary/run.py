@@ -283,7 +283,7 @@ def main() -> None:
     output = {
         "experiment": "RAGTruth Summary external validation",
         "corpus": "wandb/RAGTruth-processed (test split, Summary task_type)",
-        "library": "clarethium-touchstone",
+        "library": "clarethium_touchstone",
         "minicheck_model": args.minicheck_model,
         "n_total": len(summary),
         "n_hallucinated": sum(labels),

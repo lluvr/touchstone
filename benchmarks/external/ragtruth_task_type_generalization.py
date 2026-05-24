@@ -69,7 +69,7 @@ def main() -> None:
     output: dict[str, Any] = {
         "experiment": "RAGTruth task-type generalization (Touchstone only)",
         "corpus": "wandb/RAGTruth-processed (test split)",
-        "library": "clarethium-touchstone",
+        "library": "clarethium_touchstone",
         "task_types_evaluated": ["Summary", "QA", "Data2txt"],
         "minicheck_note": (
             "MiniCheck baselines for QA and Data2Txt task types are not "

@@ -1,7 +1,7 @@
 {
   "experiment": "HaluEval summarization external validation",
   "corpus": "pminervini/HaluEval (summarization subset, data split, stratified sample)",
-  "library": "clarethium-touchstone",
+  "library": "clarethium_touchstone",
   "minicheck_model": "flan-t5-large",
   "n_documents_sampled": 500,
   "n_total_pairs": 1000,
