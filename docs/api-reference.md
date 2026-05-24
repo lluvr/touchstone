@@ -113,12 +113,16 @@ whether `should_flag()` will act on the probability:
 - **`"validated"`** — Layer 6 plus at least one of Layers 4 / 5 / 11
   produced informative readings. Calibrated on this regime; act on
   `prob_hallucinated`.
-- **`"limited_signal"`** — The input was substantive but fewer than two
-  substrate signals had their preconditions met. The probability may be
-  intercept-dominated. Treat as low-confidence; route to human review.
-- **`"insufficient_input"`** — Text is empty, whitespace-only, OR is
-  below `MIN_INPUT_CHARS` non-whitespace characters AND has fewer than
-  two informative signals. Do not act on `prob_hallucinated`.
+- **`"limited_signal"`** — The input was substantive (above the
+  character floor and at least one substrate signal fired) but the
+  validated combination (Layer 6 plus one of L4/L5/L11) did not hold.
+  The probability may be intercept-dominated. Treat as low-confidence;
+  route to human review.
+- **`"insufficient_input"`** — One of: (1) text is empty or
+  whitespace-only after stripping; (2) no substrate signal had its
+  precondition met regardless of length; (3) text is below
+  `MIN_INPUT_CHARS` non-whitespace characters AND fewer than two
+  substrate signals fired. Do not act on `prob_hallucinated`.
 
 Per-signal preconditions:
 
@@ -196,6 +200,7 @@ result = measure(text="...", source="...")
 | `source` | `str \| None` | `None` | Source material. Layers 4, 5, 6, 8, 11 require source; they return `None` in the result dict when source is absent. |
 | `topic` | `str \| None` | `None` | Topic string for Layer 1a heading defaultness. Pair with `baseline_generator`. |
 | `baseline_generator` | `Callable[[str], str \| None] \| None` | `None` | Vendor-neutral LLM callable. Returns generated baseline document or `None` on failure. |
+| `n_baselines` | `int` | `3` | Number of baseline documents Layer 1a samples from `baseline_generator`. Minimum for stable word-union estimation; higher (5-10) gives a more stable baseline word set at the cost of more LLM calls. |
 | `comparisons` | `list[str] \| None` | `None` | Other versions of the output for Layer 3 temporal instability. |
 | `external_entities` | `Iterable[str] \| None` | `EXTERNAL_ENTITIES_DEFAULT` | Layer 11 secondary P-signal regex list. |
 
