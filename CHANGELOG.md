@@ -6,6 +6,30 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## v0.1.2 - 2026-05-24: documentation-only patch release (refreshes PyPI surface)
+
+Documentation, citation, and front-door-copy patch release. No code or test changes; the runtime behaviour and public API are byte-identical to v0.1.1. The point of cutting v0.1.2 is to surface the seven polish PRs merged after v0.1.1 (#2 through #8) on the live PyPI project page, since adopters landing on `pypi.org/project/clarethium-touchstone/` were still seeing the v0.1.1 metadata (old tagline, no MCP keyword, stale status).
+
+**What now appears on the PyPI project page (and everywhere else):**
+
+- **New tagline:** "Hallucination detection for LLM outputs — without calling another LLM." Replaces the previous "Model-independent verification for AI-coupled work" everywhere a first-time visitor lands (README headline, PyPI summary, Standard abstract, MCP server instructions, module docstring, docs site landing).
+- **MCP discoverability:** README now has a dedicated "Touchstone MCP" section after the quickstart with install instructions + canonical host-config JSON. The docs site landing page lists it in "Start here". The API reference cross-references it. The Touchstone MCP brand name is consistent everywhere it's used as a noun.
+- **README intro tightening:** Replaced jargon ("the substrate is", "calibrated probability", "span-level localization", "Layer 11 P-markers") with plain-English descriptions readable by a first-time visitor.
+- **Citation metadata updated:** `CITATION.cff` version → 0.1.2, date-released → 2026-05-24, abstract and preferred-citation title use the new tagline.
+- **Documentation accuracy fixes:** `docs/getting-started.md` no longer says "When the package is published to PyPI". `docs/index.md` status paragraph refreshed to reflect the published state. `docs/HANDOFF.md` refreshed to current test count (469) and resolved-audit-baseline state. `docs/api-reference.md` gains the `n_baselines` parameter row and a tightened `scope` semantics description.
+- **`Standard §3.5` cleanup:** Three falsifier entries dropped the "Status as of `1.0.0-draft.13`" prefix that was carrying no information beyond what the cited snapshot file paths already document.
+
+**Why no minor bump (v0.2)?** The change is documentation-only. Code, public API surface, and test results are byte-identical to v0.1.1. Semantic versioning calls this a patch.
+
+**Verification this release ships the right artifact:**
+
+- `pip install clarethium-touchstone==0.1.2` resolves and installs cleanly in a fresh venv
+- `pip install "clarethium-touchstone[mcp]==0.1.2"` resolves, installs `fastmcp` as expected, registers the `touchstone-mcp` console script
+- The PyPI project page renders the new tagline and lists `mcp` + `model-context-protocol` in the keywords (rendered from the Markdown README via `Description-Content-Type: text/markdown`)
+- 469 tests still pass; `mypy --strict` + `ruff check + format check` + `canon audit` all clean
+
+---
+
 ## v0.1.1 - 2026-05-23: scope-gated Verifier; short-input bug fix; API reference + three new examples
 
 The Phase A refinement pass. Production-user blockers found by adversarial-input probing in v0.1.0 are closed; the API surface gains an explicit scope mechanism; the reference suite gains 11 adversarial-input tests; three new examples cover batch triage, holdout calibration, and the substrate+judge cascade.
