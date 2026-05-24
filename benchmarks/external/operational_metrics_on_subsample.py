@@ -103,9 +103,9 @@ def _load_detector_scores_on_subsample(
     for name, rel in judge_paths.items():
         path = base / rel
         if not path.exists():
-            # Skip judges whose snapshot hasn't been produced yet (e.g.
-            # OpenAI judge pending the vault token fix); the rest still
-            # form a valid cross-detector comparison.
+            # Skip judges whose snapshot hasn't been produced yet
+            # (e.g. OpenAI judge pending a credential fix); the rest
+            # still form a valid cross-detector comparison.
             continue
         arr = json.loads(path.read_text())["per_example_prob_hallucinated"]
         if len(arr) != len(indices):

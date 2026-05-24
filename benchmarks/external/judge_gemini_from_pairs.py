@@ -1,10 +1,11 @@
-"""Gemini judge on pre-extracted pairs, via the LiteLLM proxy.
+"""Gemini judge on pre-extracted pairs, via an OpenAI-compatible proxy.
 
 Sister to ``judge_openai_from_pairs.py`` / ``judge_anthropic_from_pairs.py`` /
-``judge_xai_from_pairs.py``. Routes through the local LiteLLM proxy
-at ``http://127.0.0.1:4000`` using the proxy's virtual key
-(``CLARETHIUM_VAULT_KEY`` in the vault). Same OpenAI-compatible
-interface, just a different model id.
+``judge_xai_from_pairs.py``. Routes through an OpenAI-compatible local
+proxy (default ``http://localhost:4000``, overridable via
+``OPENAI_BASE_URL``). The credential is loaded at invocation time via
+``OPENAI_API_KEY`` and lives only in the child process. Same
+OpenAI-compatible interface, just a different model id.
 
 Available Gemini models via the proxy at the time of writing:
 ``gemini-2.5-flash``, ``gemini-3-flash-preview``,
@@ -23,7 +24,7 @@ confounded by prompt variation.
 
 Usage::
 
-    OPENAI_API_KEY=$(vault decrypt CLARETHIUM_VAULT_KEY) \\
+    OPENAI_API_KEY=... \\
         .venv-external/bin/python benchmarks/external/judge_gemini_from_pairs.py \\
         /tmp/alignscore_corpora/ragtruth_summary_n400.json \\
         --label "RAGTruth Summary (n=400 cued)" \\
@@ -76,11 +77,11 @@ def main() -> None:
     p.add_argument(
         "--model",
         default="gemini-3-flash-preview",
-        help="Gemini model id exposed by the LiteLLM proxy.",
+        help="Gemini model id exposed by the proxy.",
     )
     p.add_argument(
         "--base-url",
-        default=os.environ.get("OPENAI_BASE_URL", "http://127.0.0.1:4000"),
+        default=os.environ.get("OPENAI_BASE_URL", "http://localhost:4000"),
     )
     p.add_argument("--max-retries-per-pair", type=int, default=3)
     p.add_argument("--prompt-variant", choices=sorted(PROMPT_VARIANTS), default="cued")
@@ -95,10 +96,7 @@ def main() -> None:
     system_prompt = PROMPT_VARIANTS[args.prompt_variant]
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise SystemExit(
-            "OPENAI_API_KEY not set. Invoke via: "
-            "OPENAI_API_KEY=$(vault decrypt CLARETHIUM_VAULT_KEY) python ..."
-        )
+        raise SystemExit("OPENAI_API_KEY not set. Export your provider API key before invoking.")
 
     from openai import OpenAI
 
@@ -152,7 +150,7 @@ def main() -> None:
         "experiment": f"Gemini judge baseline on {args.label}",
         "corpus": args.corpus_dir,
         "baseline_model": f"Google {args.model}",
-        "baseline_provider": "Google Gemini (via LiteLLM proxy)",
+        "baseline_provider": "Google Gemini (via local proxy)",
         "proxy_base_url": args.base_url,
         "judge_prompt_variant": args.prompt_variant,
         "judge_prompt_system": system_prompt,
