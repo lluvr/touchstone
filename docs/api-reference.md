@@ -21,7 +21,7 @@ reference once those have been internalised.
 - [Layer-11 regime classifier: `assess_derivation_regime()`](#assess_derivation_regime)
 - [`EXTERNAL_ENTITIES_DEFAULT`](#external_entities_default)
 - [Conventions and scope](#conventions-and-scope)
-- [MCP integration](#mcp-integration)
+- [Touchstone MCP](#touchstone-mcp)
 
 ---
 
@@ -291,10 +291,11 @@ result = measure(
 
 ---
 
-## MCP integration
+## Touchstone MCP
 
-Touchstone ships an optional Model Context Protocol server as the
-`clarethium_touchstone.mcp` subpackage. Install with the `mcp` extra:
+Touchstone MCP is the optional Model Context Protocol server,
+shipped in-repo as the `clarethium_touchstone.mcp` subpackage.
+Install with the `mcp` extra:
 
 ```bash
 pip install "clarethium-touchstone[mcp]"

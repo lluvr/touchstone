@@ -2,12 +2,11 @@
 
 Hallucination detection for LLM outputs — without calling another LLM.
 
-Touchstone scores whether an LLM-generated text is supported by its
-source. The substrate is regex, structural analysis, source matching,
-and arithmetic; no LLM judge is required to grade the output. You get
-a calibrated probability, a scope flag that tells you when the score
-is trustworthy, and span-level highlights of the specific sentences
-that look unsupported.
+Touchstone scores whether LLM-generated text is supported by its
+source using regex, structural analysis, and arithmetic — not another
+LLM. You get a probability that the output is hallucinated, a flag
+for when the input is too short or thin to score reliably, and
+highlights of the specific sentences that look unsupported.
 
 ## Quickstart (60 seconds)
 
@@ -41,14 +40,14 @@ for span in result.top_unsupported:
     print(f"  [{span.layer11_primary}] {span.sentence!r} {span.p_markers}")
 ```
 
-What just happened: the substrate classified three sentences as Layer 11
-P-markers — the unsourced `$185 billion`, the unsourced 47% McKinsey
-forecast, and the unsourced 2027 Tesla year — and produced a calibrated
-0.796 probability. The `scope` field tells you whether the probability is
-trustworthy (`"validated"`) or whether the substrate lacked enough
-informative signals to produce a calibrated reading (`"limited_signal"`
-or `"insufficient_input"`); `should_flag()` refuses to flag low-signal
-results by default. Pass `fail_open=True` to flag on probability alone.
+What just happened: Touchstone flagged three sentences as projected
+(unsupported) — the unsourced `$185 billion`, the unsourced 47%
+McKinsey forecast, and the unsourced 2027 Tesla year — and produced a
+0.796 probability. The `scope` field tells you whether the probability
+is trustworthy (`"validated"`) or whether there wasn't enough signal
+to score reliably (`"limited_signal"` or `"insufficient_input"`).
+`should_flag()` refuses to flag low-signal results by default; pass
+`fail_open=True` to flag on probability alone.
 
 **Before deploying read [`docs/production_readiness.md`](docs/production_readiness.md).**
 The default `should_flag(threshold=0.5)` under-flags for any production
@@ -57,10 +56,11 @@ For full API documentation see [`docs/api-reference.md`](docs/api-reference.md).
 Five working examples are in [`examples/`](examples/) — single document,
 batch triage, holdout calibration, and two-stage cascade with a judge.
 
-## Model Context Protocol (MCP) integration
+## Touchstone MCP
 
-Touchstone ships an optional MCP server so any host (Claude Desktop,
-Claude Code, Cursor, custom) can call the verifier in-context:
+The optional Touchstone MCP server lets any Model Context Protocol
+host (Claude Desktop, Claude Code, Cursor, custom) call Touchstone
+in-context:
 
 ```bash
 pip install "clarethium-touchstone[mcp]"
@@ -79,7 +79,7 @@ runs stdio transport. Drop this into your MCP host config:
 }
 ```
 
-Four tools exposed: `verify` (calibrated probability + scope + spans),
+Four tools exposed: `verify` (probability + scope + flagged sentences),
 `measure` (raw multi-layer output), `assess_derivation_regime` (Layer
 11 regime classifier), `list_modes` (mode enumeration + versions).
 Full host-wiring and tool catalog in [`docs/mcp.md`](docs/mcp.md).
