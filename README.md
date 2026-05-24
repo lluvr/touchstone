@@ -115,7 +115,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) — a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (469 tests total: 452 library + 17 MCP server; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) — a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (500 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 ```bash
 pip install touchstone-mcp                         # reference library + MCP server
@@ -496,7 +496,7 @@ When citing the reference implementation:
   author  = {Lucic, Lovro},
   title   = {Touchstone: reference implementation},
   year    = {2026},
-  version = {0.2.0},
+  version = {0.1.2},
   url     = {https://github.com/Clarethium/touchstone},
   license = {Apache-2.0}
 }

@@ -445,6 +445,23 @@ class Verifier:
     The verifier accepts either or both baseline scores when in the
     appropriate mode; the mode is auto-selected from which baselines
     are provided.
+
+    Calibration (read before production use):
+
+    The default calibration is fit on RAGTruth Summary. Two consequences
+    an adopter must not miss:
+
+    * The ``l4_unsourced`` coefficient is negative on the default
+      calibration, so on this distribution more unsourced numbers slightly
+      *lowers* the score. On a fabrication-heavy corpus that signal can run
+      backwards; recalibrate on your own held-out data (pass ``calibration``)
+      before relying on numeric-fabrication detection.
+    * Baseline scores passed to :meth:`score`
+      (``minicheck_supported_prob``, ``alignscore_supported_prob``,
+      ``judge_hallucinated_prob``) are composed without per-distribution
+      recalibration. Out of distribution they can be miscalibrated (see
+      ``docs/production_readiness.md`` section 4.2.3); recalibrate the blend
+      on held-out data rather than trusting the default weights.
     """
 
     def __init__(
