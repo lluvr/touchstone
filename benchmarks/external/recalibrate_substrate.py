@@ -135,7 +135,9 @@ def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
     labels: list[int] = feat_doc["per_example_label_hallucinated"]
     default_probs: list[float] = default_doc["per_example_prob_hallucinated"]
     if labels != default_doc["per_example_label_hallucinated"]:
-        raise SystemExit(f"{corpus_dir}: label mismatch between features and default-prob snapshots")
+        raise SystemExit(
+            f"{corpus_dir}: label mismatch between features and default-prob snapshots"
+        )
 
     tune_idx, eval_idx = _stratified_interleave_indices(labels)
     tune_x = [features[i] for i in tune_idx]
@@ -187,9 +189,7 @@ def analyse_corpus(corpus_dir: str, label: str) -> dict[str, Any]:
             "eval_recall_at_precision_0.9": refit_eval_ops.get("recall_at_precision_0.9"),
         },
         "refit_gain_eval_auc": round(refit_eval_auc - default_eval_auc, 4),
-        "refit_gain_eval_f1": round(
-            refit_eval_at_tune["f1"] - default_eval_at_tune["f1"], 4
-        ),
+        "refit_gain_eval_f1": round(refit_eval_at_tune["f1"] - default_eval_at_tune["f1"], 4),
     }
 
 

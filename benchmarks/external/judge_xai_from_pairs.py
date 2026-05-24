@@ -3,9 +3,9 @@
 Sister script to ``minicheck_from_pairs.py`` / ``alignscore_from_pairs.py``.
 Uses xAI's OpenAI-compatible API to call a fast Grok model and have it
 return a structured ``{"probability_hallucinated": <0..1>}`` verdict for
-each pair. The credential is decrypted from the vault at invocation
-time and lives only in the child process; never read from a file on
-disk and never written to the snapshot.
+each pair. The credential is loaded at invocation time via
+``XAI_API_KEY`` and lives only in the child process; never read from
+a file on disk and never written to the snapshot.
 
 Two judge prompt variants ship in this module:
 
@@ -36,7 +36,7 @@ text so downstream consumers can tell the variants apart.
 
 Usage::
 
-    XAI_API_KEY=$(vault decrypt XAI_API_KEY) \\
+    XAI_API_KEY=... \\
         .venv-external/bin/python benchmarks/external/judge_xai_from_pairs.py \\
         benchmarks/adversarial_subtle/pairs.json \\
         --label "Adversarial Subtle 16-case" \\
@@ -150,9 +150,7 @@ def main() -> None:
 
     api_key = os.environ.get("XAI_API_KEY")
     if not api_key:
-        raise SystemExit(
-            "XAI_API_KEY not set. Invoke via: XAI_API_KEY=$(vault decrypt XAI_API_KEY) python ..."
-        )
+        raise SystemExit("XAI_API_KEY not set. Export your xAI API key before invoking.")
 
     from openai import OpenAI
 

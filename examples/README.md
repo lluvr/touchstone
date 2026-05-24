@@ -7,6 +7,11 @@ End-to-end usage examples for the `clarethium-touchstone` library. Each example 
 | File | What it shows | Source data |
 |------|----------------|-------------|
 | `verify_a_summary.py` | Profile a short analytical summary against the source it was derived from. Reports Layer 4 (source matching), Layer 10 (quality_profile.gap), and Layer 11 (G/F/P decomposition). Demonstrates the typical adopter call shape, the precision indicators, and how to interpret a low-N scope_assessment. | Inline sample text |
+| `production_verifier.py` | End-to-end `Verifier` demo across substrate-only and substrate+baseline modes; shows calibrated probabilities, signal breakdowns, and span-level localization. | Inline sample text |
+| `batch_triage.py` | Batch-score a corpus, sort by `prob_hallucinated`, surface the top-K for human review, and route `limited_signal` / `insufficient_input` results to manual review separately from the auto-flag queue. Production triage pattern. | Inline 8-row corpus |
+| `calibrate_on_holdout.py` | Re-fit the Verifier's logistic regression on your own labeled holdout data using a stdlib-only gradient-descent loop. Demonstrates that the shipped RAGTruth-Summary calibration is not optimal on adversarial-fabrication corpora, and shows the recalibration recipe. | Inline 12-row holdout |
+| `two_stage_cascade.py` | Substrate cheap-screen + LLM judge on the uncertain band. Production-shape cost optimisation: skip the expensive judge on auto-accept and auto-flag rows, call it only on the ambiguous middle band. Judge is stubbed deterministically so the example runs offline; replace `simulated_judge_call()` with your real LLM client. | Inline 8-row corpus |
+| `mcp_programmatic.py` | Programmatic invocation of the MCP server's four tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`). Requires the `mcp` extra (`pip install -e ".[mcp]"`). Useful for verifying the server works locally and as a starting point for embedding it in a custom transport. | Inline fixtures |
 
 ## Running
 

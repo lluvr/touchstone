@@ -257,3 +257,149 @@ def test_with_calibration_custom_coefficients() -> None:
     assert 0.4 < result.prob_hallucinated < 0.6, (
         f"unexpected prob with custom calibration on self-source: {result.prob_hallucinated}"
     )
+
+
+# -- Adversarial-input regression tests (added 1.0.1) -------------------------
+#
+# Before 1.0.1, Layer 6 returned ``mean_proximity=0.0`` with an empty
+# ``per_sentence_proximity`` list whenever no sentence had scoreable content
+# words. The Verifier's feature extractor read that 0.0 as "vocabulary is
+# completely novel" and fired ``l6_inv = 1.0`` (coefficient +3.4), pushing
+# the calibrated probability above 0.7 on trivially faithful short inputs.
+# These tests pin the post-fix behaviour: short / empty / out-of-scope inputs
+# get a scope classification and do NOT auto-flag.
+
+
+def test_short_faithful_input_does_not_auto_flag() -> None:
+    """A single faithful sentence below the char floor must not produce a
+    hallucination flag. Pre-1.0.1 this regressed to ``prob=0.778``."""
+    v = Verifier()
+    result = v.score("Revenue grew 12%.", source="Revenue grew 12%.")
+    assert result.scope == "insufficient_input"
+    assert result.should_flag() is False
+    assert result.prob_hallucinated < 0.5, (
+        f"short faithful input falsely flagged: p={result.prob_hallucinated}"
+    )
+
+
+def test_self_reference_above_char_floor_is_limited_signal() -> None:
+    """An above-floor self-reference with only one informative substrate
+    signal is classified ``limited_signal``, not ``validated``."""
+    v = Verifier()
+    text = "Q1 revenue was $143 billion in fiscal 2026 quarter one earnings."
+    result = v.score(text, source=text)
+    # Self-reference: Layer 4 fires (numbers exist), Layer 6 either fires or
+    # doesn't depending on content-word count. The scope should NOT auto-flag.
+    assert result.scope in {"validated", "limited_signal"}
+    assert result.should_flag() is False
+
+
+def test_empty_text_is_insufficient_input() -> None:
+    """Empty input is classified ``insufficient_input`` and never flags."""
+    v = Verifier()
+    result = v.score("", source="Some source text with substance.")
+    assert result.scope == "insufficient_input"
+    assert result.should_flag() is False
+    assert result.scope_notes  # non-empty diagnostic
+
+
+def test_whitespace_only_text_is_insufficient_input() -> None:
+    """Whitespace-only input is classified ``insufficient_input``."""
+    v = Verifier()
+    result = v.score("   \n\t  ", source="Some source text with substance.")
+    assert result.scope == "insufficient_input"
+    assert result.should_flag() is False
+
+
+def test_tiny_punctuation_input_is_insufficient_input() -> None:
+    """``"A. B. C."`` is below the char floor and has no substrate signal."""
+    v = Verifier()
+    result = v.score("A. B. C.", source="Some real source text.")
+    assert result.scope == "insufficient_input"
+    assert result.should_flag() is False
+
+
+def test_fail_open_allows_flag_on_limited_signal() -> None:
+    """``should_flag(fail_open=True)`` overrides the scope gate so callers
+    that route low-signal traces through human review can still see the
+    underlying probability decision."""
+    v = Verifier()
+    # Use a calibration that drives probability above 0.5 on limited signal.
+    high_intercept = {
+        "substrate_only": {
+            "intercept": 5.0,
+            "coef": {
+                "l6_inv": 0.0,
+                "l4_unsourced": 0.0,
+                "l4_n_total_norm": 0.0,
+                "l11_p": 0.0,
+                "l5_entity_unsourced": 0.0,
+                "l5_n_entities_norm": 0.0,
+            },
+        }
+    }
+    v = Verifier.with_calibration(high_intercept)
+    result = v.score("", source="Some source.")
+    assert result.scope == "insufficient_input"
+    assert result.prob_hallucinated > 0.9
+    # Default gate refuses to flag.
+    assert result.should_flag() is False
+    # fail_open=True respects the underlying probability.
+    assert result.should_flag(fail_open=True) is True
+
+
+def test_scope_validated_requires_layer6_and_one_other() -> None:
+    """A substantive multi-sentence input with source produces a
+    ``validated`` scope when Layer 6 plus at least one of L4/L5/L11 fires."""
+    v = Verifier()
+    result = v.score(SUPPORTED_TEXT, source=SUPPORTED_SOURCE)
+    assert result.scope == "validated"
+
+
+def test_verifier_modes_constant_is_iterable() -> None:
+    """``VERIFIER_MODES`` exposes the valid modes as a tuple for argparse,
+    dashboards, and runtime validation."""
+    from clarethium_touchstone import VERIFIER_MODES
+
+    assert isinstance(VERIFIER_MODES, tuple)
+    assert "substrate_only" in VERIFIER_MODES
+    assert "substrate_plus_minicheck" in VERIFIER_MODES
+    assert "substrate_plus_minicheck_alignscore" in VERIFIER_MODES
+    assert "substrate_plus_judge" in VERIFIER_MODES
+    assert len(VERIFIER_MODES) == 4
+
+
+def test_scope_notes_explain_classification() -> None:
+    """``scope_notes`` always contains at least one human-readable line."""
+    v = Verifier()
+    # Insufficient input
+    r1 = v.score("", source="Some source.")
+    assert r1.scope_notes
+    assert any("whitespace" in n.lower() or "empty" in n.lower() for n in r1.scope_notes)
+    # Validated multi-sentence
+    r2 = v.score(SUPPORTED_TEXT, source=SUPPORTED_SOURCE)
+    assert r2.scope_notes
+    assert any("informative" in n.lower() for n in r2.scope_notes)
+
+
+def test_l6_uninformative_does_not_inflate_logit() -> None:
+    """When Layer 6 has no scoreable sentences, l6_inv contributes 0 to the
+    logit — not the spurious +3.4 the pre-1.0.1 implementation fired."""
+    v = Verifier()
+    result = v.score("Revenue grew 12%.", source="Revenue grew 12%.")
+    assert result.signal_breakdown["l6_inv"] == 0.0
+
+
+def test_long_self_reference_is_validated_and_low_prob() -> None:
+    """A multi-sentence self-reference produces ``validated`` scope and
+    low hallucination probability — the substantive happy path."""
+    v = Verifier()
+    long_text = (
+        "Revenue grew 12% to $143 million with 25% margins. "
+        "Costs declined 8% across 5000 employees over 18 months. "
+        "Retention improved 7.5% to 94.2% across major segments."
+    )
+    result = v.score(long_text, source=long_text)
+    assert result.scope == "validated"
+    assert result.prob_hallucinated < 0.3
+    assert result.should_flag() is False

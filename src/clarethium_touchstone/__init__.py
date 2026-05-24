@@ -24,6 +24,14 @@ Standard 1.1; the ``align()`` API is not part of v0.1.
 The Standard is the canonical reference. The library is the reference
 implementation. Where library behaviour diverges from the Standard,
 the Standard takes precedence.
+
+For Model Context Protocol (MCP) integration, install with the
+``mcp`` extra and use the ``touchstone-mcp`` console script::
+
+    pip install "clarethium-touchstone[mcp]"
+    touchstone-mcp                         # stdio MCP server
+
+See ``docs/mcp.md`` for host wiring.
 """
 
 from clarethium_touchstone._version import __version__
@@ -33,6 +41,7 @@ from clarethium_touchstone.measure import (
     measure,
 )
 from clarethium_touchstone.verifier import (
+    VERIFIER_MODES,
     UnsupportedSpan,
     Verifier,
     VerifierMode,
@@ -41,6 +50,7 @@ from clarethium_touchstone.verifier import (
 
 __all__ = [
     "EXTERNAL_ENTITIES_DEFAULT",
+    "VERIFIER_MODES",
     "UnsupportedSpan",
     "Verifier",
     "VerifierMode",
