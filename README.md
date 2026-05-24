@@ -263,7 +263,7 @@ The reference implementation covers every layer in Standard Section 5:
 
 The top-level `measure()` orchestrator runs every layer whose preconditions are met. Layers without preconditions return `None` for that key in the `MeasureResult` dict.
 
-Standard Section 6 (Specification Compliance) is **not** part of v0.1. The `align()` and `profile()` APIs are reserved for Standard 1.1. Touchstone v0.1 ships measurement only.
+Standard Section 6 (Specification Compliance) is **not** part of this release. The `align()` and `profile()` APIs are reserved for Standard 1.1. This release ships measurement only.
 
 ## Empirical validation
 
@@ -450,7 +450,7 @@ Batch verification at scale is not a compute blocker: `measure()` is linear in d
 
 ## Why model-independent
 
-LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, structural analysis, source matching, and arithmetic. The substrate does not depend on the model being measured. This matters when the auditor cannot be made of the same material as the audited.
+LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, structural analysis, source matching, and arithmetic. The substrate does not depend on the model being measured. This matters because the scoring substrate does not invoke an LLM on the output being measured.
 
 ## Licensing
 

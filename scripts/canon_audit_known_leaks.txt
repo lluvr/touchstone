@@ -160,3 +160,12 @@ The vault's precision threshold for entities is total < 5.
 This implementation pins vault notes for posterity.
 Outputs live in JSON files in the vault EXP-095 directory.
 This baseline comes from the vault implementation.
+
+## family: RIGID (operator practitioner-term retirement, 2026-05-24)
+The operator methodology section defines the stance.
+This follows operator discipline across model generations.
+The methodology serves operator skill, not model capability.
+Output depends on the operator's disposition toward the work.
+A pilot across multi-operator cohorts validates the annex.
+Frames operator-AI work as a coupled cognitive system.
+Stance is the operator's stance prior to method.
