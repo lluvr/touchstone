@@ -33,11 +33,11 @@ The base library is dependency-free. Layer 1a (heading defaultness)
 accepts a caller-supplied LLM client via a `BaselineGenerator`
 callable, so no provider SDK is required to install.
 
-Optional extras:
+Companion packages and extras:
 
 ```bash
-pip install "clarethium-touchstone[mcp]"        # MCP server (touchstone-mcp script)
-pip install "clarethium-touchstone[external]"   # external-corpus benchmark runners
+pip install touchstone-mcp                       # MCP server (separate PyPI distribution)
+pip install "clarethium-touchstone[external]"    # external-corpus benchmark runners
 ```
 
 See [`docs/mcp.md`](mcp.md) for MCP host wiring (Claude Desktop, Claude
@@ -52,8 +52,10 @@ git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,mcp]"
-pytest -q
+pip install -e ".[dev]"                          # library + dev tooling
+pip install -e ./touchstone-mcp                  # MCP server (in-repo)
+pytest -q                                        # library test suite
+pytest -q touchstone-mcp/tests                   # MCP server test suite
 ```
 
 ## First measurement

@@ -1,24 +1,19 @@
 """Tests for the four Touchstone MCP tools.
 
-These tests require the ``mcp`` extra (``pip install
-'clarethium-touchstone[mcp]'``). When fastmcp is not installed, the
-entire module is skipped so the core test suite remains runnable
-without optional dependencies.
+``touchstone-mcp`` declares ``clarethium-touchstone`` and ``fastmcp``
+as hard runtime dependencies, so this test module imports them
+unconditionally. Install the package with the ``test`` extra to run
+the suite::
+
+    pip install -e ".[test]"
 """
 
 from __future__ import annotations
 
 import pytest
+from fastmcp import FastMCP
 
-# Skip the entire module when fastmcp is not installed. CI installs
-# ``clarethium-touchstone[dev,mcp]`` so the MCP tests run there; a
-# minimal install can still run the 452-test core suite without
-# fastmcp being available.
-pytest.importorskip("fastmcp")
-
-from fastmcp import FastMCP  # noqa: E402
-
-from clarethium_touchstone.mcp import build_server  # noqa: E402
+from touchstone_mcp import build_server
 
 # All tests are async; pytest-asyncio's auto mode picks them up.
 pytestmark = pytest.mark.asyncio

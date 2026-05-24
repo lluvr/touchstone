@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clarethium-touchstone"
-version = "0.1.2"
-description = "Hallucination detection for LLM outputs — without calling another LLM. Reference implementation of Touchstone Standard 1.0."
+version = "0.2.0"
+description = "Hallucination detection for LLM outputs without calling another LLM. Reference implementation of Touchstone Standard 1.0."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -58,13 +58,6 @@ dev = [
     "ruff>=0.6",
     "mypy>=1.10",
 ]
-# MCP server. Installs the FastMCP runtime and registers the
-# ``touchstone-mcp`` console script that any MCP host (Claude
-# Desktop, Claude Code, Cursor, custom) can attach as a stdio MCP
-# server. See ``docs/mcp.md`` for host wiring instructions.
-mcp = [
-    "fastmcp>=2.0",
-]
 # External-corpus benchmark dependencies. NOT part of the base library
 # install. The ``benchmarks/external/*`` runners load third-party corpora
 # from the HuggingFace Hub and compare Touchstone against MiniCheck
@@ -84,13 +77,6 @@ external = [
     "accelerate>=0.30",
 ]
 
-[project.scripts]
-# Console script for the MCP server. Available only when the ``mcp``
-# extra is installed (pip install ``clarethium-touchstone[mcp]``);
-# invocation will fail with an ImportError pointing the user to the
-# extra otherwise.
-touchstone-mcp = "clarethium_touchstone.mcp.server:main"
-
 [project.urls]
 Homepage = "https://touchstone.clarethium.com"
 Documentation = "https://touchstone.clarethium.com"
@@ -100,7 +86,7 @@ Changelog = "https://github.com/Clarethium/touchstone/blob/main/CHANGELOG.md"
 Issues = "https://github.com/Clarethium/touchstone/issues"
 
 [tool.setuptools]
-packages = ["clarethium_touchstone", "clarethium_touchstone.mcp"]
+packages = ["clarethium_touchstone"]
 package-dir = { "" = "src" }
 
 [tool.setuptools.package-data]

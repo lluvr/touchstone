@@ -1,6 +1,17 @@
 # Releasing
 
-How to cut a `clarethium-touchstone` release. This document is for the project maintainers.
+How to cut a `clarethium-touchstone` (library) or `touchstone-mcp` (MCP server) release. The two distributions live in the same monorepo and version independently. This document is for the project maintainers.
+
+## Two distributions
+
+This repository ships two PyPI distributions:
+
+| Distribution | Subdir | Version source | Wheel content |
+|---|---|---|---|
+| `clarethium-touchstone` | `./` (root) | `src/clarethium_touchstone/_version.py` + `pyproject.toml` | `clarethium_touchstone/` package |
+| `touchstone-mcp` | `./touchstone-mcp/` | `touchstone-mcp/touchstone_mcp.py::__version__` + `touchstone-mcp/pyproject.toml` | `touchstone_mcp.py` flat module |
+
+`touchstone-mcp` declares `clarethium-touchstone >= 0.2.0` and `fastmcp >= 2.0` as runtime dependencies. When the library bumps in a way the MCP wrapper consumes (e.g. a new Verifier mode), the MCP pin should bump too; otherwise the two versions evolve independently.
 
 ## Cadence
 
@@ -12,7 +23,7 @@ Library releases follow semantic versioning per Standard §10:
 
 Pre-1.0 (0.x): the library may include intentional breaking changes between minor versions. CHANGELOG entries flag those explicitly.
 
-## Pre-release checklist
+## Pre-release checklist (library: `clarethium-touchstone`)
 
 Run every step. Each one is a gate; a failure blocks the release.
 
@@ -120,14 +131,78 @@ Run every step. Each one is a gate; a failure blocks the release.
     gh release create vX.Y.Z --title "vX.Y.Z" --notes-from-tag
     ```
 
+## Pre-release checklist (MCP server: `touchstone-mcp`)
+
+The same gate discipline applies to the MCP-server distribution, scoped to `touchstone-mcp/`.
+
+1. **Working tree is clean.** As above.
+
+2. **Version bumped consistently.** Both files MUST match.
+   ```bash
+   grep '^version' touchstone-mcp/pyproject.toml
+   grep '__version__' touchstone-mcp/touchstone_mcp.py
+   ```
+
+3. **CHANGELOG.md has the dated entry.** New section at the top of `touchstone-mcp/CHANGELOG.md`.
+
+4. **Library dependency pin is current.** If `touchstone-mcp` consumes a new public-API surface from `clarethium-touchstone`, bump the floor in `touchstone-mcp/pyproject.toml`:
+   ```toml
+   dependencies = ["clarethium-touchstone>=X.Y.Z", "fastmcp>=2.0"]
+   ```
+   The pinned library version MUST already be live on PyPI.
+
+5. **Tests, lint, type-check, format pass.**
+   ```bash
+   cd touchstone-mcp
+   ruff check . && ruff format --check . && mypy touchstone_mcp.py && pytest -q
+   ```
+
+6. **Canon audit passes.** Run from repo root (the audit scans the working tree):
+   ```bash
+   bash scripts/canon_audit.sh --self-test && bash scripts/canon_audit.sh
+   ```
+
+7. **Build artifacts produce cleanly.**
+   ```bash
+   cd touchstone-mcp
+   rm -rf dist/ build/ *.egg-info/
+   python -m build
+   ls dist/
+   ```
+
+8. **Wheel content check.** The wheel MUST contain only `touchstone_mcp.py` and license/metadata:
+   ```bash
+   unzip -l touchstone-mcp/dist/touchstone_mcp-*.whl | head -20
+   ```
+
+### Cutting the MCP-server release
+
+9. **Commit, tag (`touchstone-mcp-vX.Y.Z`), push.** Use a distribution-prefixed tag so the two distributions' release histories don't collide on the same `vX.Y.Z` tag namespace:
+   ```bash
+   git commit -m "Cut touchstone-mcp vX.Y.Z: <one-line summary>"
+   git tag -a touchstone-mcp-vX.Y.Z -m "touchstone-mcp vX.Y.Z"
+   git push origin main && git push origin touchstone-mcp-vX.Y.Z
+   ```
+
+10. **Publish to PyPI.** Same token-handling rules as above:
+    ```bash
+    cd touchstone-mcp
+    TWINE_USERNAME=__token__ TWINE_PASSWORD=<token> python -m twine upload dist/*
+    ```
+
+11. **GitHub release.** Create the release pointing at the prefixed tag with the `touchstone-mcp/CHANGELOG.md` entry as the body:
+    ```bash
+    gh release create touchstone-mcp-vX.Y.Z --title "touchstone-mcp vX.Y.Z" --notes-file <(...)
+    ```
+
 ## Post-release
 
-15. **Bump to next dev version.** Avoid the risk of the next pre-release commit being mistaken for the released version:
+15. **Bump to next dev version.** Avoid the risk of the next pre-release commit being mistaken for the released version. For the library:
     ```python
     # src/clarethium_touchstone/_version.py
-    __version__ = "0.1.1.dev0"
+    __version__ = "0.2.1.dev0"
     ```
-    Mirror in `pyproject.toml`.
+    Mirror in `pyproject.toml`. For the MCP server, mirror in `touchstone-mcp/touchstone_mcp.py::__version__` and `touchstone-mcp/pyproject.toml`.
 
 16. **Announce.** Once announce channels exist (mailing list, blog, social), share the release notes.
 

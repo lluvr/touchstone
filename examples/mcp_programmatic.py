@@ -6,7 +6,12 @@ a starting point for embedding the server in a custom transport.
 
 Run from the repository root::
 
-    pip install -e ".[mcp]"
+    pip install -e ./touchstone-mcp
+    python examples/mcp_programmatic.py
+
+Or, for the already-published artifact::
+
+    pip install touchstone-mcp
     python examples/mcp_programmatic.py
 """
 
@@ -14,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 
-from clarethium_touchstone.mcp import build_server
+from touchstone_mcp import build_server
 
 
 async def main() -> None:
