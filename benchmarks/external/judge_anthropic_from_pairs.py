@@ -3,15 +3,16 @@
 Sister to ``judge_xai_from_pairs.py``. Uses the same two prompt
 variants (``cued`` enumerating the §4 wall-claim categories,
 ``blind`` not enumerating). Calls Anthropic's Messages API directly
-via the official ``anthropic`` SDK. The credential is decrypted from
-the vault at invocation time and lives only in the child process.
+via the official ``anthropic`` SDK. The credential is loaded from
+the environment at invocation time and lives only in the child
+process.
 
 The cued / blind text is byte-identical to ``judge_xai_from_pairs.py``
 so cross-vendor comparisons are not confounded by prompt variation.
 
 Usage::
 
-    ANTHROPIC_API_KEY=$(vault decrypt ANTHROPIC_API_KEY) \\
+    ANTHROPIC_API_KEY=... \\
         .venv-external/bin/python benchmarks/external/judge_anthropic_from_pairs.py \\
         benchmarks/adversarial_subtle/pairs.json \\
         --label "Adversarial Subtle 16-case" \\
@@ -132,7 +133,7 @@ def main() -> None:
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         raise SystemExit(
-            "ANTHROPIC_API_KEY not set. Invoke via: ANTHROPIC_API_KEY=$(vault decrypt ANTHROPIC_API_KEY) python ..."
+            "ANTHROPIC_API_KEY not set. Export your Anthropic API key before invoking."
         )
 
     from anthropic import Anthropic

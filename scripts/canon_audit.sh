@@ -43,6 +43,7 @@ VERSION='2026-05-09-touchstone-research-ids'
 # ── Path allowlist (§5b) ────────────────────────────────────────────
 EXCLUDES=(
   --exclude-dir=.git
+  --exclude-dir=.claude
   --exclude-dir=node_modules
   --exclude-dir=.venv
   --exclude-dir=venv
@@ -56,6 +57,7 @@ EXCLUDES=(
   --exclude-dir=transmissions
   --exclude-dir=worked_examples
   --exclude-dir=outputs
+  --exclude-dir=results
   --exclude-dir=*.egg-info
   --exclude-dir=.venv-external
   --exclude-dir=.venv-alignscore

@@ -96,12 +96,29 @@ Run every step. Each one is a gate; a failure blocks the release.
     git push origin vX.Y.Z
     ```
 
-13. **Publish to PyPI** (once PyPI organization approval is granted; pre-launch status until then).
+13. **Publish to PyPI.** Inject the PyPI API token at child-process scope only; never write it to `~/.pypirc`, never export it into the shell environment, never paste it into chat or logs:
+
     ```bash
-    python -m twine upload dist/*
+    TWINE_USERNAME=__token__ \
+        TWINE_PASSWORD=<your PyPI token> \
+        python -m twine upload dist/*
     ```
 
-14. **GitHub release.** Create a GitHub Release linked to the tag with the CHANGELOG entry as the release notes.
+    TestPyPI smoke run first (recommended for any release):
+
+    ```bash
+    TWINE_USERNAME=__token__ \
+        TWINE_PASSWORD=<your TestPyPI token> \
+        python -m twine upload --repository testpypi dist/*
+    ```
+
+    Maintainer-specific credential-loading invocation is documented in `AGENTS.md` under the Credentials and tokens section. Future agents working in this repository: read AGENTS.md before asking for tokens; the canonical token source for the maintainer is documented there.
+
+14. **GitHub release.** Create a GitHub Release linked to the tag with the CHANGELOG entry as the release notes:
+
+    ```bash
+    gh release create vX.Y.Z --title "vX.Y.Z" --notes-from-tag
+    ```
 
 ## Post-release
 

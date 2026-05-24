@@ -20,7 +20,7 @@ decomposition + per-claim verification" baselines. For each pair:
 
 The LLM backend is xAI Grok via the OpenAI-compatible API, matching
 the pattern in ``judge_xai_from_pairs.py``. ``XAI_API_KEY`` is
-decrypted from the vault at invocation time and lives only in the
+loaded from the environment at invocation time and lives only in the
 child process.
 
 This script makes ~1 + min(n_claims, max_claims) calls per pair,
@@ -31,7 +31,7 @@ calls. The ``--checkpoint-every`` and ``--resume`` mechanics mirror
 
 Usage::
 
-    XAI_API_KEY=$(vault decrypt XAI_API_KEY) \\
+    XAI_API_KEY=... \\
         .venv-external/bin/python benchmarks/external/factscore_baseline.py \\
         /tmp/alignscore_corpora/summeval_n400.json \\
         --label "SummEval (n=400)" \\
@@ -264,9 +264,7 @@ def main() -> None:
 
     api_key = os.environ.get("XAI_API_KEY")
     if not api_key:
-        raise SystemExit(
-            "XAI_API_KEY not set. Invoke via: XAI_API_KEY=$(vault decrypt XAI_API_KEY) python ..."
-        )
+        raise SystemExit("XAI_API_KEY not set. Export your xAI API key before invoking.")
 
     from openai import OpenAI
 

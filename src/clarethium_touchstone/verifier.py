@@ -76,6 +76,21 @@ VerifierMode = Literal[
     "substrate_plus_judge",
 ]
 
+#: The full enumeration of valid :data:`VerifierMode` strings, exposed as a
+#: tuple so callers can iterate without parsing the ``Literal`` type. Useful
+#: in argparse choices, validation, and dashboards listing supported modes.
+#:
+#: Example::
+#:
+#:     from clarethium_touchstone import VERIFIER_MODES
+#:     parser.add_argument("--mode", choices=VERIFIER_MODES)
+VERIFIER_MODES: tuple[VerifierMode, ...] = (
+    "substrate_only",
+    "substrate_plus_minicheck",
+    "substrate_plus_minicheck_alignscore",
+    "substrate_plus_judge",
+)
+
 # Default substrate weight for the substrate_plus_judge linear blend.
 # Source: docs/production_readiness.md §4.3.1 holdout-validated blend table.
 # Across 12 (corpus × judge-variant) cells with α picked on tune-AUC, the
@@ -121,6 +136,12 @@ class VerifierResult:
     decision signal and :attr:`signal_breakdown` as the explanation.
     :attr:`top_unsupported` provides span-level localization sourced
     from Layer 11's per-sentence classifications.
+
+    Consult :attr:`scope` before acting on :attr:`prob_hallucinated`: a
+    ``"limited_signal"`` or ``"insufficient_input"`` result means the
+    probability was computed on a substrate state that could not produce
+    a calibrated reading, and :meth:`should_flag` will refuse to flag it
+    unless the caller opts in via ``fail_open=True``.
     """
 
     prob_hallucinated: float
@@ -128,6 +149,24 @@ class VerifierResult:
 
     mode: VerifierMode
     """Which calibration mode produced this score."""
+
+    scope: Literal["validated", "limited_signal", "insufficient_input"]
+    """Signal-quality classification for this result.
+
+    * ``"validated"`` — Layer 6 plus at least one of Layers 4 / 5 / 11
+      produced informative readings. ``prob_hallucinated`` is calibrated
+      on this regime; act on it.
+    * ``"limited_signal"`` — the input was substantive but fewer than two
+      substrate signals had their preconditions met. The probability may
+      be intercept-dominated; treat as low-confidence.
+    * ``"insufficient_input"`` — text is empty, whitespace-only, or
+      shorter than :data:`MIN_INPUT_CHARS`. Do not act on the probability.
+    """
+
+    scope_notes: list[str]
+    """Human-readable notes explaining the scope classification: which
+    substrate signals were informative, which preconditions failed, and any
+    text-level reasons (e.g., insufficient length)."""
 
     signal_breakdown: dict[str, float]
     """Per-feature contribution to the calibrated probability. Keys match
@@ -146,8 +185,25 @@ class VerifierResult:
     pair, included so adopters can drill into any specific layer if needed
     without re-running the measurement."""
 
-    def should_flag(self, threshold: float = 0.5) -> bool:
-        """Convenience method: True iff :attr:`prob_hallucinated` exceeds the threshold."""
+    def should_flag(self, threshold: float = 0.5, *, fail_open: bool = False) -> bool:
+        """True iff :attr:`prob_hallucinated` exceeds the threshold AND the
+        result is in :attr:`scope` ``"validated"``.
+
+        Args:
+            threshold: Probability cut-off. ``docs/production_readiness.md``
+                §2 reports F1-optimal thresholds of 0.07-0.27 on the three
+                external corpora; the default 0.5 under-flags for any
+                production deployment and is provided as a safety-tilted
+                default. Adopters MUST tune on held-out data.
+            fail_open: If True, ignore :attr:`scope` and flag purely on the
+                probability. Use this only when the surrounding pipeline
+                will independently inspect ``scope_notes`` for low-signal
+                results (e.g., to route them to human review rather than
+                trust the verifier's silence). Defaults to False so that
+                ``"insufficient_input"`` results never auto-flag.
+        """
+        if not fail_open and self.scope != "validated":
+            return False
         return self.prob_hallucinated >= threshold
 
 
@@ -160,6 +216,40 @@ _FEATURE_NAMES = [
     "l5_n_entities_norm",
 ]
 
+# Minimum number of non-whitespace characters in ``text`` for the input
+# to be treated as substantive enough to score. Inputs shorter than this
+# floor are classified ``insufficient_input`` by :func:`_compute_scope`.
+# Calibrated empirically: single sentences ≥ ~20 chars carry enough lexical
+# content for at least one of Layers 4, 5, 6, or 11 to produce a signal.
+MIN_INPUT_CHARS = 20
+
+
+def _signal_informativeness(measure_result: MeasureResult) -> dict[str, bool]:
+    """Return per-substrate-signal informativeness flags.
+
+    Each substrate feature has a precondition; this function names which
+    preconditions are met on the given measure result. The flags drive
+    feature gating (no signal ⇒ feature contributes 0 to the logit, matching
+    the existing Layers 4 and 5 behaviour) and the scope classification in
+    :func:`_compute_scope`.
+    """
+    sm = measure_result["source_matching"]
+    ep = measure_result["entity_provenance"]
+    vp = measure_result["vocabulary_proximity"]
+    gd = measure_result["grounding_decomposition"]
+    assert sm is not None and ep is not None and vp is not None and gd is not None
+    return {
+        # Layer 6 informative iff at least one sentence had content words to score.
+        "l6": len(vp["per_sentence_proximity"]) > 0,
+        # Layer 4 informative iff at least one digit-formatted number was extracted.
+        "l4": sm["n_total"] > 0,
+        # Layer 5 informative iff at least five entities were extracted
+        # (matches the existing precision floor used elsewhere in the Verifier).
+        "l5": ep["n_entities"] >= 5,
+        # Layer 11 informative iff at least one sentence was classified.
+        "l11": len(gd["sentence_classifications"]) > 0,
+    }
+
 
 def _extract_substrate_features(measure_result: MeasureResult) -> dict[str, float]:
     """Pull the six substrate features out of a :func:`measure` result.
@@ -168,6 +258,11 @@ def _extract_substrate_features(measure_result: MeasureResult) -> dict[str, floa
     so the calibration coefficients are scale-invariant. Requires that the
     measure result was produced with ``source`` provided; the source-
     dependent layers (4, 5, 6, 11) must be present and non-None.
+
+    Features whose precondition is not met (see :func:`_signal_informativeness`)
+    are set to 0.0 so they contribute nothing to the logit. This keeps the
+    behaviour consistent across Layers 4, 5, and 6: a signal with no
+    precondition met is treated as neutral, not as evidence of hallucination.
     """
     sm = measure_result["source_matching"]
     ep = measure_result["entity_provenance"]
@@ -180,18 +275,95 @@ def _extract_substrate_features(measure_result: MeasureResult) -> dict[str, floa
             "grounding_decomposition must all be present."
         )
 
-    mean_prox = vp["mean_proximity"] if vp["mean_proximity"] is not None else 1.0
+    informative = _signal_informativeness(measure_result)
+    mean_prox = vp["mean_proximity"]
     n_total = sm["n_total"]
     n_entities = ep["n_entities"]
 
     return {
-        "l6_inv": 1.0 - mean_prox,
-        "l4_unsourced": sm["unsourced_rate"] if n_total > 0 else 0.0,
+        # Layer 6 contributes only when at least one sentence was scored.
+        # Pre-1.0.1: short / single-sentence text could produce
+        # ``mean_proximity = 0.0`` with an empty ``per_sentence_proximity``,
+        # which the Verifier interpreted as 100% inverse proximity and which
+        # falsely fired the l6_inv coefficient. The informativeness gate
+        # eliminates that false positive.
+        "l6_inv": (1.0 - mean_prox) if informative["l6"] else 0.0,
+        "l4_unsourced": sm["unsourced_rate"] if informative["l4"] else 0.0,
         "l4_n_total_norm": min(n_total / 10.0, 1.0),
-        "l11_p": gd["proportions"]["P"],
-        "l5_entity_unsourced": ep["entity_unsourced_rate"] if n_entities >= 5 else 0.0,
+        "l11_p": gd["proportions"]["P"] if informative["l11"] else 0.0,
+        "l5_entity_unsourced": ep["entity_unsourced_rate"] if informative["l5"] else 0.0,
         "l5_n_entities_norm": min(n_entities / 10.0, 1.0),
     }
+
+
+def _compute_scope(
+    text: str, measure_result: MeasureResult
+) -> tuple[Literal["validated", "limited_signal", "insufficient_input"], list[str]]:
+    """Classify the signal quality of a :class:`VerifierResult`.
+
+    Returns ``(scope, notes)`` where ``scope`` is one of:
+
+    * ``"validated"`` — the substrate produced informative readings from at
+      least Layer 6 and one other source-dependent layer (Layers 4, 5, or
+      11). The probability is calibrated on this regime; act on it.
+    * ``"limited_signal"`` — the input was substantive but the substrate
+      produced fewer than two informative signals. The probability may be
+      dominated by the intercept; treat it as a low-confidence read.
+    * ``"insufficient_input"`` — the input is empty / whitespace-only, OR
+      the input is below :data:`MIN_INPUT_CHARS` non-whitespace characters
+      AND no substrate signal had its precondition met. Do not act on the
+      probability for this case.
+
+    The ``notes`` list explains the classification in human-readable
+    English: which signals fired, which preconditions failed.
+
+    Design choice: a short input that still produces at least one
+    informative substrate signal is NOT downgraded to insufficient_input.
+    Layer 4 catching a fabricated number in an 18-character sentence is
+    real signal; the char floor protects against the all-signals-empty
+    regime, not against signal-bearing short inputs.
+    """
+    notes: list[str] = []
+    stripped = text.strip()
+
+    if not stripped:
+        return (
+            "insufficient_input",
+            ["text is empty or whitespace-only"],
+        )
+
+    informative = _signal_informativeness(measure_result)
+    fired = sorted(name for name, flag in informative.items() if flag)
+    missing = sorted(name for name, flag in informative.items() if not flag)
+    n_fired = len(fired)
+
+    if n_fired == 0:
+        notes.append("no substrate signal had its precondition met")
+        notes.append(f"text length: {len(stripped)} non-whitespace chars")
+        return "insufficient_input", notes
+
+    if len(stripped) < MIN_INPUT_CHARS and n_fired < 2:
+        # Below the char floor AND only one signal fired: treat as
+        # insufficient. A single signal on a tiny input is too thin to
+        # support a calibrated probability; the calibration was trained
+        # on multi-sentence summarization outputs.
+        notes.append(
+            f"text has only {len(stripped)} non-whitespace chars (floor: {MIN_INPUT_CHARS})"
+        )
+        notes.append(f"only {n_fired} substrate signal informative: {fired}")
+        return "insufficient_input", notes
+
+    notes.append(f"informative signals: {fired}")
+    if missing:
+        notes.append(f"uninformative signals: {missing}")
+
+    # "Validated" requires Layer 6 plus at least one of Layers 4 / 5 / 11.
+    # Layer 6 alone tends to mirror raw word-overlap (see methodology.md
+    # §3.4); a second signal is required for the result to be more than
+    # a lexical-proximity proxy.
+    if informative["l6"] and sum(1 for k in ("l4", "l5", "l11") if informative[k]) >= 1:
+        return "validated", notes
+    return "limited_signal", notes
 
 
 def _sigmoid(x: float) -> float:
@@ -425,9 +597,13 @@ class Verifier:
         # Per-sentence localization from Layer 11 classifications.
         unsupported = _identify_unsupported_spans(measure_result, top_k_unsupported)
 
+        scope, scope_notes = _compute_scope(text, measure_result)
+
         return VerifierResult(
             prob_hallucinated=round(prob, 6),
             mode=mode,
+            scope=scope,
+            scope_notes=scope_notes,
             signal_breakdown=breakdown,
             top_unsupported=unsupported,
             layer_outputs=measure_result,
@@ -445,6 +621,7 @@ class Verifier:
 
 
 __all__ = [
+    "VERIFIER_MODES",
     "UnsupportedSpan",
     "Verifier",
     "VerifierMode",
