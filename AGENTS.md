@@ -93,6 +93,24 @@ Both must exit 0. The self-test runs the audit against `scripts/canon_audit_know
 
 False positives can be tagged with an inline comment: `# canon-exempt: <reason>`. The reason is mandatory; bare `# canon-exempt:` without a reason is rejected.
 
+## Credentials and tokens
+
+Any token the maintainer's tooling needs is stored in the secrets-vault
+at `~/secrets-vault/`. Discover the key with `vault inventory`; load it
+at the child-process scope with `VAR=$(vault decrypt KEY)` and never:
+
+- export the token into the shell environment (it leaks into history and
+  child processes you did not intend);
+- write the token to `~/.pypirc`, `~/.npmrc`, `.env`, or any other file
+  on disk;
+- ask the maintainer to paste the token into chat (the vault is the
+  canonical source; if the key is missing, create it with `vault put`).
+
+`PYPI_API_TOKEN` is the canonical PyPI publishing key; `RELEASING.md`
+step 13 documents the exact `twine upload` invocation. The same
+discipline applies to any provider API key the benchmarks need
+(`XAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
+
 ## Build artifacts
 
 `build/`, `dist/`, `*.egg-info/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, `venv/`, `.tox/`, `.coverage`, `htmlcov/` MUST NOT be committed. They re-import previously-sanitized text from prior pipeline runs and have leaked operator-side content in past releases. The repository `.gitignore` covers these patterns; do not bypass.
