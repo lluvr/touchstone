@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-If you discover a security vulnerability in the `clarethium-touchstone` library, please do NOT open a public GitHub issue. Instead, file a GitHub Security Advisory so the maintainers can triage privately:
+If you discover a security vulnerability in the `clarethium_touchstone` library, please do NOT open a public GitHub issue. Instead, file a GitHub Security Advisory so the maintainers can triage privately:
 
 **Contact:** <https://github.com/Clarethium/touchstone/security/advisories/new>
 
@@ -16,7 +16,7 @@ You can expect:
 
 In scope:
 
-- The `clarethium-touchstone` library code
+- The `clarethium_touchstone` library code
 - The library's dependency declarations (`pyproject.toml`)
 - The CI/CD workflows that build and (eventually) publish releases
 - The Touchstone Standard's threshold values and reference test cases (a security issue here would be: a threshold or test case that would allow malicious content to evade detection)

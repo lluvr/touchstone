@@ -18,8 +18,7 @@ A Clarethium project. Standard and reference implementation for measuring LLM-ge
 ## Install
 
 ```bash
-pip install clarethium-touchstone                  # base library
-pip install touchstone-mcp                         # MCP server (separate distribution)
+pip install touchstone-mcp                         # library + MCP server (one package)
 ```
 
 ## Why model-independent
@@ -82,9 +81,9 @@ NOT yet a production claim (see README §Limitations):
 - [Clarethium](https://clarethium.com) - methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
 
-Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/)
-(library) and [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/)
-(MCP server). All eleven Section 5 measurement layers are implemented
+Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/),
+a single self-contained package that bundles the `clarethium_touchstone`
+reference library and the MCP server. All eleven Section 5 measurement layers are implemented
 and tested (469 tests total: 452 library + 17 MCP server; CI green on
 ruff lint + format, mypy strict, and the pytest matrix across Python
 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three

@@ -1,9 +1,9 @@
 """Tests for the four Touchstone MCP tools.
 
-``touchstone-mcp`` declares ``clarethium-touchstone`` and ``fastmcp``
-as hard runtime dependencies, so this test module imports them
-unconditionally. Install the package with the ``test`` extra to run
-the suite::
+``touchstone-mcp`` bundles ``clarethium_touchstone`` and declares
+``fastmcp`` as a hard runtime dependency, so this test module imports
+them unconditionally. Install the package with the ``test`` extra to
+run the suite::
 
     pip install -e ".[test]"
 """

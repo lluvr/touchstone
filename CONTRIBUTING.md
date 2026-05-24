@@ -5,7 +5,7 @@ Thanks for your interest in contributing.
 Touchstone has two parts that evolve through different processes:
 
 - **The Touchstone Standard** (in `STANDARDS/`) is the canonical specification. Changes are deliberate and versioned per Section 10 of the Standard.
-- **The `clarethium-touchstone` library** is the reference implementation of the Standard.
+- **The `clarethium_touchstone` library** is the reference implementation of the Standard.
 
 ## Quick start for code contributions
 

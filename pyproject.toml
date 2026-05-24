@@ -3,13 +3,13 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "clarethium-touchstone"
-version = "0.2.1"
-description = "Hallucination detection for LLM outputs without calling another LLM. Reference implementation of Touchstone Standard 1.0."
+name = "touchstone-mcp"
+version = "0.1.2"
+description = "Hallucination detection for LLM outputs without calling another LLM. Model Context Protocol server plus the reference implementation of Touchstone Standard 1.0."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 authors = [
     { name = "Lovro Lucic", email = "11740211+lluvr@users.noreply.github.com" },
 ]
@@ -41,13 +41,13 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-# Core implementation is dependency-free. All eleven measurement layers
-# operate on regex, structural analysis, source matching, and arithmetic.
-# Layer 1a (heading defaultness) accepts a vendor-neutral
-# ``BaselineGenerator`` callable so the user supplies their own LLM
-# client (Gemini, Claude, OpenAI, etc.) - the library imports no
-# specific provider SDK.
-dependencies = []
+# The measurement library (clarethium_touchstone) is dependency-free:
+# all eleven layers are regex, structural analysis, source matching, and
+# arithmetic, and Layer 1a takes a vendor-neutral ``BaselineGenerator``
+# callable so the caller supplies their own LLM client. The MCP server
+# (touchstone_mcp) adds fastmcp to expose the library over the Model
+# Context Protocol.
+dependencies = ["fastmcp>=2.0"]
 
 [project.optional-dependencies]
 # Development tooling
@@ -85,8 +85,12 @@ Standard = "https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchst
 Changelog = "https://github.com/Clarethium/touchstone/blob/main/CHANGELOG.md"
 Issues = "https://github.com/Clarethium/touchstone/issues"
 
+[project.scripts]
+touchstone-mcp = "touchstone_mcp:main"
+
 [tool.setuptools]
 packages = ["clarethium_touchstone"]
+py-modules = ["touchstone_mcp"]
 package-dir = { "" = "src" }
 
 [tool.setuptools.package-data]

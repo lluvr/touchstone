@@ -1,7 +1,7 @@
 # Getting started
 
 This guide covers installation, basic usage, and first measurements with the
-`clarethium-touchstone` library.
+`clarethium_touchstone` library.
 
 > **Status:** v0.1 ships Section 5 measurement only. All eleven Section 5
 > layers are implemented and tested; two internal regression benchmarks
@@ -26,18 +26,20 @@ all-zero metrics with the corresponding precision indicator set to
 ## Installation
 
 ```bash
-pip install clarethium-touchstone
+pip install touchstone-mcp
 ```
 
-The base library is dependency-free. Layer 1a (heading defaultness)
+This single package bundles the `clarethium_touchstone` reference
+library and the MCP server. `from clarethium_touchstone import measure`
+works after install. The library is dependency-free; `fastmcp` (used by
+the MCP server) is the package's only third-party dependency. Layer 1a (heading defaultness)
 accepts a caller-supplied LLM client via a `BaselineGenerator`
 callable, so no provider SDK is required to install.
 
-Companion packages and extras:
+Optional extras:
 
 ```bash
-pip install touchstone-mcp                       # MCP server (separate PyPI distribution)
-pip install "clarethium-touchstone[external]"    # external-corpus benchmark runners
+pip install "touchstone-mcp[external]"           # external-corpus benchmark runners
 ```
 
 See [`docs/mcp.md`](mcp.md) for MCP host wiring (Claude Desktop, Claude
@@ -52,10 +54,8 @@ git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"                          # library + dev tooling
-pip install -e ./touchstone-mcp                  # MCP server (in-repo)
-pytest -q                                        # library test suite
-pytest -q touchstone-mcp/tests                   # MCP server test suite
+pip install -e ".[dev]"                          # package + dev tooling
+pytest -q                                        # full test suite (library + MCP server)
 ```
 
 ## First measurement

@@ -1,4 +1,4 @@
-touchstone project (clarethium-touchstone + touchstone-mcp)
+touchstone project (touchstone-mcp)
 Copyright 2026 Lovro Lucic
 
 Published under Clarethium (https://github.com/Clarethium).
@@ -8,10 +8,10 @@ This product includes software developed by Lovro Lucic.
 Components
 ----------
 
-This repository ships two PyPI distributions, both Apache-2.0
-licensed:
+This repository builds one PyPI distribution, touchstone-mcp,
+Apache-2.0 licensed. It contains two components:
 
-- **clarethium-touchstone** (repository root, src/clarethium_touchstone/):
+- **clarethium_touchstone** (src/clarethium_touchstone/):
   the reference Python implementation of the Touchstone Standard.
   Eleven measurement layers (structural profile, claim density,
   temporal instability, source matching, entity provenance,
@@ -22,28 +22,27 @@ licensed:
   substrate signals into a hallucination probability with scope
   classification and span-level localization.
 
-- **touchstone-mcp** (touchstone-mcp/ subdirectory): the Python
-  Model Context Protocol server that wraps the Verifier and the
-  raw measurement orchestrator as MCP tools (verify, measure,
+- **touchstone_mcp** (src/touchstone_mcp.py): the Model Context
+  Protocol server that wraps the Verifier and the raw measurement
+  orchestrator as MCP tools (verify, measure,
   assess_derivation_regime, list_modes) for MCP-compatible AI
-  clients (Claude Desktop, Claude Code, Cursor). Depends on
-  clarethium-touchstone and fastmcp; no measurement logic of its
-  own.
+  clients (Claude Desktop, Claude Code, Cursor). Adds fastmcp; no
+  measurement logic of its own.
 
 Licensing
 ---------
 
 Code in this repository is licensed under Apache 2.0; see LICENSE
 at repository root. The Touchstone Standard text under STANDARDS/
-is licensed CC-BY 4.0 and is not part of either PyPI distribution.
+is licensed CC-BY 4.0 and is not part of the PyPI distribution.
 
 External works referenced
 -------------------------
 
 Touchstone Standard (STANDARDS/touchstone-1.0.md) is licensed
-CC-BY 4.0. Neither clarethium-touchstone nor touchstone-mcp bundles
-the Standard text in its PyPI wheel; the Standard is the canonical
-specification and is referenced by URL.
+CC-BY 4.0. touchstone-mcp does not bundle the Standard text in its
+PyPI wheel; the Standard is the canonical specification and is
+referenced by URL.
 
 The fastmcp runtime that touchstone-mcp depends on is published
 separately at https://github.com/jlowin/fastmcp and is not
@@ -62,7 +61,6 @@ Companion projects in the Clarethium body
 Sibling-MCP pattern conformance
 -------------------------------
 
-touchstone-mcp's flat single-module layout, license-expression
-metadata shape, and tag-prefixed release discipline
-(touchstone-mcp-vX.Y.Z) follow the conventions established by
-cma-mcp and frame-check-mcp.
+touchstone-mcp's license-expression metadata shape and
+tag-prefixed release discipline (touchstone-mcp-vX.Y.Z) follow the
+conventions established by cma-mcp and frame-check-mcp.

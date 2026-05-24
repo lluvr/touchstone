@@ -9,7 +9,7 @@ assignees: ''
 ## Suggestion type
 
 - [ ] Standard Track (changes to the Touchstone Standard)
-- [ ] Library Track (changes to the `clarethium-touchstone` library that conform to the Standard)
+- [ ] Library Track (changes to the `clarethium_touchstone` library that conform to the Standard)
 - [ ] Process Track (changes to project processes or governance)
 - [ ] Informational (best practices, integration guides)
 

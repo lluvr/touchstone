@@ -12,7 +12,7 @@
 
 One paragraph describing the proposed library change.
 
-Library Track Suggestions are for changes to `clarethium-touchstone` that conform to the existing Standard. If your change requires a Standard update, use the Standard Track template instead.
+Library Track Suggestions are for changes to `clarethium_touchstone` that conform to the existing Standard. If your change requires a Standard update, use the Standard Track template instead.
 
 ## Motivation
 

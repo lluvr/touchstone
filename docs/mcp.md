@@ -3,9 +3,9 @@
 Touchstone MCP is the Model Context Protocol server that exposes the
 `Verifier` and the `measure()` orchestrator as MCP tools. Any MCP host
 (Claude Desktop, Claude Code, Cursor, custom) can attach the server
-and call Touchstone in-context. The server ships as its own PyPI
-distribution, [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/),
-and lives in this repo under `touchstone-mcp/`.
+and call Touchstone in-context. The server ships inside the
+[`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) package
+as `src/touchstone_mcp.py`.
 
 ## Install
 
@@ -13,9 +13,10 @@ and lives in this repo under `touchstone-mcp/`.
 pip install touchstone-mcp
 ```
 
-`clarethium-touchstone` (the reference implementation library) and
-`fastmcp` (the MCP runtime) install transitively. The console script
-`touchstone-mcp` is registered alongside.
+The package bundles the `clarethium_touchstone` reference implementation
+library and installs with `fastmcp` (the MCP runtime) as its only
+third-party dependency. The console script `touchstone-mcp` is
+registered alongside.
 
 ## Tools exposed
 

@@ -1,6 +1,6 @@
 # Examples
 
-End-to-end usage examples for the `clarethium-touchstone` library. Each example is a standalone script that runs against `clarethium_touchstone` installed from the repo (`pip install -e .`).
+End-to-end usage examples for the `clarethium_touchstone` library. Each example is a standalone script that runs against `clarethium_touchstone` installed from the repo (`pip install -e .`).
 
 ## Available examples
 
@@ -11,7 +11,7 @@ End-to-end usage examples for the `clarethium-touchstone` library. Each example 
 | `batch_triage.py` | Batch-score a corpus, sort by `prob_hallucinated`, surface the top-K for human review, and route `limited_signal` / `insufficient_input` results to manual review separately from the auto-flag queue. Production triage pattern. | Inline 8-row corpus |
 | `calibrate_on_holdout.py` | Re-fit the Verifier's logistic regression on your own labeled holdout data using a stdlib-only gradient-descent loop. Demonstrates that the shipped RAGTruth-Summary calibration is not optimal on adversarial-fabrication corpora, and shows the recalibration recipe. | Inline 12-row holdout |
 | `two_stage_cascade.py` | Substrate cheap-screen + LLM judge on the uncertain band. Production-shape cost optimisation: skip the expensive judge on auto-accept and auto-flag rows, call it only on the ambiguous middle band. Judge is stubbed deterministically so the example runs offline; replace `simulated_judge_call()` with your real LLM client. | Inline 8-row corpus |
-| `mcp_programmatic.py` | Programmatic invocation of the Touchstone MCP server's four tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`). Requires the `touchstone-mcp` distribution (`pip install touchstone-mcp` or `pip install -e ./touchstone-mcp`). Useful for verifying the server works locally and as a starting point for embedding it in a custom transport. | Inline fixtures |
+| `mcp_programmatic.py` | Programmatic invocation of the Touchstone MCP server's four tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`). Requires the `touchstone-mcp` package (`pip install touchstone-mcp` or `pip install -e .` from the repo). Useful for verifying the server works locally and as a starting point for embedding it in a custom transport. | Inline fixtures |
 
 ## Running
 

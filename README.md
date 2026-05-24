@@ -60,16 +60,17 @@ batch triage, holdout calibration, and two-stage cascade with a judge.
 
 The Touchstone MCP server lets any Model Context Protocol host
 (Claude Desktop, Claude Code, Cursor, custom) call Touchstone
-in-context. It ships as its own PyPI distribution
-([`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/)):
+in-context. It ships in the
+[`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) package:
 
 ```bash
 pip install touchstone-mcp
 ```
 
-`clarethium-touchstone` and `fastmcp` install transitively. The
-console script `touchstone-mcp` is registered automatically and runs
-stdio transport. Drop this into your MCP host config:
+This installs the verifier library and the MCP server together;
+`fastmcp` is the only third-party dependency. The console script
+`touchstone-mcp` is registered automatically and runs stdio
+transport. Drop this into your MCP host config:
 
 ```json
 {
@@ -97,15 +98,14 @@ Touchstone names the practice of measuring AI outputs without invoking an AI mod
 
 The Touchstone Standard specifies eleven measurement layers for output profiling: structural composition, claim density, source matching, grounding decomposition, and others. Ten of the eleven are deterministic regex, structural analysis, string search, and arithmetic; one (Layer 1a, optional) calls an LLM to generate baseline documents on the same topic, not to score the output. The scoring substrate is independent of the model under measurement.
 
-This is a reference specification plus reference implementation. The Standard is the canonical text. The `clarethium-touchstone` library is the reference Python implementation.
+This is a reference specification plus reference implementation. The Standard is the canonical text. The `clarethium_touchstone` library (shipped in the `touchstone-mcp` package) is the reference Python implementation.
 
 ## What's here
 
 This repository contains:
 
 - **Touchstone Standard** - the canonical specification (CC-BY 4.0) at `STANDARDS/touchstone-1.0.md`
-- **`clarethium-touchstone`** - Python reference implementation (Apache 2.0) under `src/clarethium_touchstone/`
-- **`touchstone-mcp`** - Model Context Protocol server (Apache 2.0) under `touchstone-mcp/`, depends on `clarethium-touchstone` + `fastmcp`
+- **`touchstone-mcp`** - the published package (Apache 2.0): the `clarethium_touchstone` reference implementation under `src/clarethium_touchstone/` plus the Model Context Protocol server (`src/touchstone_mcp.py`), `fastmcp`-backed
 - **Reference test suite** at `tests/reference/cases/` - language-agnostic JSON cases that second-party implementations MUST pass to claim conformance
 - **Internal regression benchmarks** at `benchmarks/exp_081_discrimination/` and `benchmarks/exp_095_grounding/`
 - **External corpus comparisons** at `benchmarks/external/` against RAGTruth, SummEval, HaluEval with MiniCheck and AlignScore baselines
@@ -115,11 +115,10 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/) (the reference library) and [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) (the MCP server). All eleven Section 5 measurement layers are implemented and tested (469 tests total: 452 library + 17 MCP server; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) — a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (469 tests total: 452 library + 17 MCP server; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 ```bash
-pip install clarethium-touchstone                  # base library
-pip install touchstone-mcp                         # MCP server (separate distribution)
+pip install touchstone-mcp                         # reference library + MCP server
 ```
 
 Alternative: install from source if you need an unreleased commit. On modern Debian/Ubuntu/Mac-homebrew Pythons, install into a virtual environment so PEP-668 does not block the editable install:
@@ -129,10 +128,8 @@ git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"                            # library + dev tooling
-pip install -e ./touchstone-mcp                    # MCP server (in-repo)
-pytest -q                                          # library test suite
-pytest -q touchstone-mcp/tests                     # MCP server test suite
+pip install -e ".[dev]"                            # package + dev tooling
+pytest -q                                          # full test suite (library + MCP server)
 ```
 
 ## Read before deploying: `docs/production_readiness.md`
