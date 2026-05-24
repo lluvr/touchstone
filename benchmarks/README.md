@@ -142,5 +142,5 @@ trials). Released under CC-BY 4.0 alongside the Touchstone Standard.
 
 Model outputs in `*/outputs/` are responses produced by third-party
 LLM APIs to specific prompts; per provider terms of service, the
-prompting party (the Clarethium operator) owns the outputs and has
+prompting party owns the outputs and has
 released them for benchmarking under CC-BY 4.0.

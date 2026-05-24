@@ -1,11 +1,12 @@
 # Touchstone HANDOFF (fresh-agent context)
 
-**Status as of 2026-05-21:** Touchstone is finalized at Standard 1.0.0-draft.15 + reference implementation 0.1.0. The artifact is published-ready and the README does the ruthless self-assessment in `§Empirical validation` and `Limitations`. This handoff doc tells a fresh agent picking up the project what is done, what is explicitly out of scope, and where to push if you continue.
+**Status as of 2026-05-24:** Touchstone is shipped at Standard 1.0.0-draft.15 + reference implementation 0.1.1, [published on PyPI](https://pypi.org/project/clarethium-touchstone/) as `clarethium-touchstone`. The artifact does the ruthless self-assessment in README `§Empirical validation` and `Limitations`. This handoff doc tells a fresh agent picking up the project what is done, what is explicitly out of scope, and where to push if you continue.
 
 ## What is done
 
 - **Standard text** at `STANDARDS/touchstone-1.0.md` — CC-BY 4.0. Eleven measurement layers specified with falsification criteria per layer.
-- **Reference implementation** under `src/clarethium_touchstone/` (Apache 2.0). 441 pytest tests pass; coverage at 97%; ruff + mypy strict + Python 3.10 / 3.11 / 3.12 CI matrix green.
+- **Reference implementation** under `src/clarethium_touchstone/` (Apache 2.0), published as `clarethium-touchstone` v0.1.1 on PyPI. 469 pytest tests pass; coverage at 97%; ruff + mypy strict + Python 3.10 / 3.11 / 3.12 CI matrix green.
+- **Touchstone MCP server** under `src/clarethium_touchstone/mcp/` (optional `[mcp]` extra; pulls in `fastmcp`). Four MCP tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`) exposed via the `touchstone-mcp` console script for any Model Context Protocol host (Claude Desktop, Claude Code, Cursor, custom). Host-wiring docs at `docs/mcp.md`.
 - **Two internal regression benchmarks** (`benchmarks/exp_081_discrimination/`, `benchmarks/exp_095_grounding/`) with byte-pinned snapshots.
 - **Three external corpus comparisons** (`benchmarks/external/{ragtruth_summary, summeval, halueval_summarization}/`) against MiniCheck Flan-T5-Large, AlignScore-base, and three trivial lexical baselines. All numbers with 95% bootstrap CIs.
 - **Cross-task generalization analysis** within RAGTruth (Summary / QA / Data2Txt) at `benchmarks/external/ragtruth_task_type_generalization.py`.
@@ -86,11 +87,9 @@ These are the patterns that wasted iteration cycles in prior sessions; surfaced 
 ## Operating notes for the fresh agent
 
 ### Local-machine reproducibility
-- Clone, install dev extras, run `pytest -q`. All 441 tests should pass.
-- `bash scripts/canon_audit.sh --self-test` runs the audit's own self-test. After it passes, `bash scripts/canon_audit.sh` runs the audit on the working tree. Several benign hits exist as of 2026-05-21:
-  - **Corpus-content false positives** in the `benchmarks/external/ragtruth_summary/results/factscore_grok_n400_2026-05-19.json` snapshot, where news-article sentences contain English words that happen to overlap a regex authored for a different shape. Corpus content, not a content leak; allowlist refinement is on the canonical canon_audit.sh roadmap.
-  - **Pre-existing infrastructure mentions** in shipped benchmark scripts (`benchmarks/external/judge_*_from_pairs.py`, `factscore_baseline.py`) and snapshot metadata (`benchmarks/external/*/results/judge_openai_*_n400_2026-05-19.json`, `judge_gemini_*_n200_2026-05-19.json`) referencing the local proxy URL and provider routing. These reflect the methodology choice for the baselines (the public benchmark runs were routed through a locally-managed proxy for cost / quota reasons) and were shipped in the original v0.1 publication. Removing them now would break byte-pinned snapshot reproducibility; the cleaner future move is regenerating those snapshots with generic provider naming + standard public API URLs as a v0.2 maintenance pass. The audit hits are in surface metadata, not in the Standard text, the methodology doc, the README, or `docs/methodology.md`.
-  - **`.claude/` working-directory artifacts**, never tracked in git (since the 2026-05-21 `.gitignore` extension) but present on a developer's local working tree if Claude Code has been run against the repo. Audit-on-WD surfaces them; CI does not (a clean clone has no `.claude/` directory).
+- Install with `pip install clarethium-touchstone` (base library, 71 KB wheel, no runtime dependencies). Add `[mcp]` for the Touchstone MCP server, `[dev]` for the lint/type/test tooling, or `[external]` for the benchmark runners.
+- Working-tree development: clone, `pip install -e ".[dev,mcp]"`, then `pytest -q`. All 469 tests should pass.
+- `bash scripts/canon_audit.sh --self-test` runs the audit's own self-test. `bash scripts/canon_audit.sh` runs the audit on the working tree. The v0.1.1 release (PR #1 + the polish PRs #2-#6) cleaned up the v0.1 audit-baseline hits: the audit's `--exclude-dir=results` and `--exclude-dir=.claude` additions handle the byte-pinned benchmark snapshots and the local Claude Code artifacts; the benchmark Python scripts and `docs/production_readiness.md` reproduction commands now use generic environment-variable loading instructions rather than naming specific proxy URLs or maintainer credential tools. A clean clone (no `.claude/`) audits with zero hits.
 - Internal benchmarks (`exp_081_discrimination`, `exp_095_grounding`) reproduce exactly from clone via pytest snapshot assertions.
 - External benchmarks stream from HuggingFace at runtime; require network. Per-corpus runtimes are recorded in the README (Touchstone CPU 2-3 seconds; MiniCheck CPU 69-100 minutes per 900-1600 pair corpus).
 
@@ -98,7 +97,7 @@ These are the patterns that wasted iteration cycles in prior sessions; surfaced 
 - `~/.claude/clarethium-internal/PUBLIC_CANON_DISCIPLINE.md` is the load-bearing reference. Read before any commit touching public-facing prose.
 - `scripts/canon_audit.sh` is a byte-identical copy of `~/.claude/clarethium-internal/canon_audit.sh`. Drift is a process bug; sync per §5e.
 - Pre-commit hooks (`pre-commit install`) run gitleaks + canon audit on staged content.
-- CI (`.github/workflows/canon-audit.yml`) runs the audit on every PR + push; zero non-allowlisted hits is the green-build threshold (excepting the three corpus-content hits above, which are allowlist-extension TODO).
+- CI (`.github/workflows/canon-audit.yml`) runs the audit on every PR + push; zero non-allowlisted hits is the green-build threshold.
 
 ### Cited companions
 - **Lodestone** (`Clarethium/lodestone`) — methodology canon; first-person practice pair.
