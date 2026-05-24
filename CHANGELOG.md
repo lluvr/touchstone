@@ -918,7 +918,7 @@ Honest-framing and defensive-contract cleanup driven by an external-perspective 
 
 - `CODE_OF_CONDUCT.md`, `SECURITY.md`, `CONTRIBUTING.md`, and `SUGGESTIONS/PROCESS.md` no longer route enforcement, disclosure, or review through "the editor body" as if that body operates today. The Standard reserves formal certification by an editor body to a future version once one is constituted (§11); until then, all responsibilities sit with the project maintainers. Security disclosure and code-of-conduct reports route through GitHub Security Advisory.
 - Standard §11 adds a transitional clause naming the current state honestly: until an editor body is constituted, the reference test suite at (1) is authored by the same maintainers who author the Standard, so self-certification against it is consistency with the reference implementation, not independent verification.
-- Other public-canon leak shapes ("operator-authored," "Operator finalization required," "operator's research corpus") rewritten or removed per the AGENTS.md discipline. Subtraction was preferred over substitution where the surrounding paragraph stood without the offending clause.
+- Other public-canon leak shapes were rewritten or removed per the AGENTS.md discipline. Subtraction was preferred over substitution where the surrounding paragraph stood without the offending clause.
 
 **What this pass did not do (named, deferred):**
 

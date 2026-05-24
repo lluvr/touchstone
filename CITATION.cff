@@ -3,18 +3,18 @@ message: "If you use Touchstone (Standard or library), please cite both the Stan
 title: "Touchstone"
 abstract: >
   Touchstone is a verification methodology and reference implementation
-  for AI-coupled work whose scoring functions do not invoke an AI model
-  on the output being measured. Standard 1.0 defines eleven measurement
-  layers for output profiling (Section 5); Section 6 (Specification
-  Compliance) is reserved for Standard 1.1. The library is the canonical
-  reference implementation. v0.1 ships Section 5 measurement only, with
-  two internal regression benchmarks: EXP-081 (12-document single-vendor
-  corpus; Cohen's d=-5.238 tracking the recorded detector_v031 baseline
-  of -5.43; 100% per-output gap-direction agreement; MAE 0.014 on
-  unsourced rate) and EXP-095 (13 outputs, three model families;
-  P-existence direction agreement 100%). Both benchmarks are
-  project-authored regression baselines, not external replications;
-  external-corpus validation is open work.
+  for hallucination detection on LLM outputs, whose scoring functions
+  do not invoke another LLM on the output being measured. Standard 1.0
+  defines eleven measurement layers for output profiling (Section 5);
+  Section 6 (Specification Compliance) is reserved for Standard 1.1.
+  The library is the canonical reference implementation. v0.1 ships
+  Section 5 measurement only, with two internal regression benchmarks:
+  EXP-081 (12-document single-vendor corpus; Cohen's d=-5.238 tracking
+  the recorded detector_v031 baseline of -5.43; 100% per-output
+  gap-direction agreement; MAE 0.014 on unsourced rate) and EXP-095
+  (13 outputs, three model families; P-existence direction agreement
+  100%). Both benchmarks are project-authored regression baselines,
+  not external replications; external-corpus validation is open work.
 type: software
 authors:
   - family-names: Lucic
@@ -22,8 +22,8 @@ authors:
     orcid: "https://orcid.org/0009-0008-9976-6933"
     website: "https://blog.clarethium.com"
 license: Apache-2.0
-version: "0.1.0"
-date-released: "2026-05-09"
+version: "0.1.1"
+date-released: "2026-05-24"
 url: "https://touchstone.clarethium.com"
 repository-code: "https://github.com/Clarethium/touchstone"
 keywords:
@@ -47,7 +47,7 @@ references:
       Independent editor review is pending.
 preferred-citation:
   type: software
-  title: "Touchstone: model-independent verification for AI-coupled work"
+  title: "Touchstone: hallucination detection for LLM outputs without calling another LLM"
   authors:
     - family-names: Lucic
       given-names: Lovro

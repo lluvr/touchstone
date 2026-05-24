@@ -92,7 +92,7 @@ Frozen dataclass returned from `Verifier.score()`.
 | `prob_hallucinated` | `float` in [0, 1] | Calibrated probability that the output is hallucinated. |
 | `mode` | `VerifierMode` | Which calibration mode produced this score. |
 | `scope` | `"validated" \| "limited_signal" \| "insufficient_input"` | Signal-quality classification. See [Scope](#scope) below. |
-| `scope_notes` | `list[str]` | Operator-readable diagnostics naming which substrate signals fired, which preconditions failed, and any text-level reasons (e.g. insufficient length). |
+| `scope_notes` | `list[str]` | Diagnostics naming which substrate signals fired, which preconditions failed, and any text-level reasons (e.g. insufficient length). |
 | `signal_breakdown` | `dict[str, float]` | Per-feature contribution to the logit (intercept + coefficient×feature terms). Sums to `logit(prob_hallucinated)` for substrate-only mode; for `substrate_plus_judge` the breakdown additionally exposes `substrate_prob`, `judge_hallucinated_prob`, and `judge_alpha`. |
 | `top_unsupported` | `list[UnsupportedSpan]` | Span-level localization; P-classified sentences first, then F-classified ranked by ascending grounding_score, capped by `top_k_unsupported`. |
 | `layer_outputs` | `MeasureResult` | Raw `measure()` output for drill-down. Same shape as `clarethium_touchstone.measure()` returns. |

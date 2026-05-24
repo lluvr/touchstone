@@ -82,12 +82,14 @@ NOT yet a production claim (see README §Limitations):
 - [Clarethium](https://clarethium.com) - methodology umbrella, mothership
 - [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
 
-Pre-launch on PyPI. All eleven Section 5 measurement layers are
-implemented and tested (385 tests; CI green on lint, mypy strict, and
-test matrix Python 3.10/3.11/3.12). Two internal regression benchmarks
-plus three external corpus comparisons ship in `benchmarks/`. Internal:
-EXP-081 (Cohen's d = -5.238 on a 12-document single-vendor corpus, vs
-the recorded `detector_v031` baseline of -5.43) and EXP-095 (P-existence
+Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/).
+All eleven Section 5 measurement layers are implemented and tested
+(469 tests; CI green on ruff lint + format, mypy strict, and the
+pytest matrix across Python 3.10/3.11/3.12). Test coverage is at 97%
+with a 95% CI gate. Two internal regression benchmarks plus three
+external corpus comparisons ship in `benchmarks/`. Internal: EXP-081
+(Cohen's d = -5.238 on a 12-document single-vendor corpus, vs the
+recorded `detector_v031` baseline of -5.43) and EXP-095 (P-existence
 direction agreement 100% on 13 outputs). External: RAGTruth Summary,
 SummEval, HaluEval summarization (n totals 900 / 1600 / 1000;
 permissively licensed; the runners stream from HuggingFace Hub at
@@ -98,9 +100,7 @@ percentile bootstrap CIs reported per signal; see the main README
 and HaluBench remains open work.
 
 Section 6 (Specification Compliance) is reserved for Standard 1.1.
-
-Published on PyPI as [`clarethium-touchstone`](https://pypi.org/project/clarethium-touchstone/);
-see [Getting started](getting-started.md) for install and first usage.
+See [Getting started](getting-started.md) for install and first usage.
 
 ## License
 
