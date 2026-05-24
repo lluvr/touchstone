@@ -494,7 +494,7 @@ When citing the reference implementation:
   author  = {Lucic, Lovro},
   title   = {Touchstone: reference implementation},
   year    = {2026},
-  version = {0.1.0},
+  version = {0.1.1},
   url     = {https://github.com/Clarethium/touchstone},
   license = {Apache-2.0}
 }
