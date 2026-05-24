@@ -11,7 +11,7 @@ This process is modeled on Python Enhancement Proposals (PEP-1) and Bitcoin Impr
 A Suggestion is a proposed change to Touchstone. It can be:
 
 - A change to the Touchstone Standard (specification)
-- A change to the `clarethium-touchstone` library (implementation)
+- A change to the `clarethium_touchstone` library (implementation)
 - A change to the project's processes or governance
 - A new informational document (best practices, integration guide, etc.)
 
@@ -42,7 +42,7 @@ Standard Track suggestions follow semantic versioning per Standard Section 10. M
 
 ### Library Track
 
-Suggestions that propose changes to the `clarethium-touchstone` library that do not require Standard changes.
+Suggestions that propose changes to the `clarethium_touchstone` library that do not require Standard changes.
 
 **Examples:**
 - Performance improvements

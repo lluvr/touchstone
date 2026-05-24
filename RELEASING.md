@@ -1,31 +1,38 @@
 # Releasing
 
-How to cut a `clarethium-touchstone` (library) or `touchstone-mcp` (MCP server) release. The two distributions live in the same monorepo and version independently. This document is for the project maintainers.
+How to cut a `touchstone-mcp` release. This document is for the project maintainers.
 
-## Two distributions
+## The package
 
-This repository ships two PyPI distributions:
+This repository builds one PyPI distribution, `touchstone-mcp`, from the repository root. It bundles two components:
 
-| Distribution | Subdir | Version source | Wheel content |
-|---|---|---|---|
-| `clarethium-touchstone` | `./` (root) | `src/clarethium_touchstone/_version.py` + `pyproject.toml` | `clarethium_touchstone/` package |
-| `touchstone-mcp` | `./touchstone-mcp/` | `touchstone-mcp/touchstone_mcp.py::__version__` + `touchstone-mcp/pyproject.toml` | `touchstone_mcp.py` flat module |
+| Component | Source | Role |
+|---|---|---|
+| `clarethium_touchstone` (reference library) | `src/clarethium_touchstone/` | the eleven measurement layers + the calibrated Verifier |
+| `touchstone_mcp` (MCP server) | `src/touchstone_mcp.py` | wraps the library as MCP tools |
 
-`touchstone-mcp` declares `clarethium-touchstone >= 0.2.0` and `fastmcp >= 2.0` as runtime dependencies. When the library bumps in a way the MCP wrapper consumes (e.g. a new Verifier mode), the MCP pin should bump too; otherwise the two versions evolve independently.
+`fastmcp >= 2.0` is the only runtime dependency. `from clarethium_touchstone import ...` works for anyone who installs the package; the library is not published separately.
+
+### Version strings
+
+Three version strings, two of which must match:
+
+- **`pyproject.toml` `version`** and **`src/touchstone_mcp.py::__version__`** are the published package version. They MUST be equal; the MCP server reports `__version__` as `serverInfo.version` to host UIs, so a mismatch shows the wrong version.
+- **`src/clarethium_touchstone/_version.py::__version__`** is the library/measurement version. It moves independently and only changes when the measurement implementation changes. It is reported as `touchstone_library` in the `list_modes` versions block.
 
 ## Cadence
 
-Library releases follow semantic versioning per Standard §10:
+Package releases follow semantic versioning:
 
 - **Patch (0.1.x → 0.1.y):** bug fixes, documentation, internal cleanup. No API changes.
-- **Minor (0.x → 0.y):** additive API changes, new layers exposed, new optional parameters. No breaking changes.
-- **Major (0.x → 1.0, 1.x → 2.x):** breaking API or measurement-output changes. Coordinates with a Standard version bump per §10.
+- **Minor (0.x → 0.y):** additive API changes, new layers/tools exposed, new optional parameters. No breaking changes.
+- **Major (0.x → 1.0, 1.x → 2.x):** breaking API or measurement-output changes. Coordinates with a Standard version bump.
 
-Pre-1.0 (0.x): the library may include intentional breaking changes between minor versions. CHANGELOG entries flag those explicitly.
+Pre-1.0 (0.x): intentional breaking changes may occur between minor versions; CHANGELOG entries flag them.
 
-## Pre-release checklist (library: `clarethium-touchstone`)
+## Pre-release checklist
 
-Run every step. Each one is a gate; a failure blocks the release.
+Run every step. Each is a gate; a failure blocks the release.
 
 1. **Working tree is clean.**
    ```bash
@@ -33,19 +40,14 @@ Run every step. Each one is a gate; a failure blocks the release.
    git diff main..HEAD       # only the changes you intend to release
    ```
 
-2. **Version bumped consistently.** Both files MUST match.
+2. **Package version bumped, and the two package-version strings match.**
    ```bash
    grep '^version' pyproject.toml
-   grep '__version__' src/clarethium_touchstone/_version.py
+   grep '__version__' src/touchstone_mcp.py
    ```
-   If the Standard advances too, update `__standard_version__` in the same file and `CITATION.cff`'s standard reference.
+   If the measurement code changed, bump `src/clarethium_touchstone/_version.py::__version__` too. If the Standard advanced, update `__standard_version__` in that file and the `CITATION.cff` Standard reference.
 
-3. **CHANGELOG.md has the dated entry.** New section at the top of the file:
-   ```
-   ## vX.Y.Z - YYYY-MM-DD
-
-   <bullet list of changes; see prior entries for style>
-   ```
+3. **CHANGELOG.md has the dated entry** at the top of the file.
 
 4. **Tests, lint, type-check, format pass.**
    ```bash
@@ -55,166 +57,94 @@ Run every step. Each one is a gate; a failure blocks the release.
    pytest -q
    ```
 
-5. **Canon audit passes.**
+5. **Coverage threshold met** (CI gate is `--cov-fail-under=95`).
+   ```bash
+   pytest --cov=clarethium_touchstone --cov-fail-under=95 -q
+   ```
+
+6. **Canon audit passes.** Both MUST exit 0; any hit is a blocker.
    ```bash
    bash scripts/canon_audit.sh --self-test
    bash scripts/canon_audit.sh
    ```
-   Both MUST exit 0. Any hit is a release blocker.
 
-6. **Benchmark snapshots stable.** Either:
-   - Existing snapshots match (no measurement-output drift); or
-   - The drift is intentional, captured in a new dated snapshot file, and the test path updated to point at it. Document the drift in CHANGELOG.
-
+7. **Benchmark snapshots stable.** Either existing snapshots match, or the drift is intentional, captured in a new dated snapshot, and documented in the CHANGELOG.
    ```bash
    pytest tests/test_benchmarks.py -q
-   ```
-
-7. **Coverage threshold met.** The CI gate requires `--cov-fail-under=95`. Run locally to verify:
-   ```bash
-   pytest --cov=clarethium_touchstone --cov-fail-under=95 -q
    ```
 
 8. **Build artifacts produce cleanly.**
    ```bash
    rm -rf dist/ build/ src/*.egg-info/
    python -m build
-   ls dist/                  # should contain sdist + wheel
+   ls dist/                  # sdist + wheel
    ```
 
-9. **Wheel content check.** The wheel MUST contain only the public-canon surface. Verify no out-of-scope files slipped in:
+9. **Wheel content check.** The wheel MUST contain only the `clarethium_touchstone/` package, `touchstone_mcp.py`, and license/metadata. Any other path is a blocker.
    ```bash
-   unzip -l dist/clarethium_touchstone-*.whl | head -30
+   unzip -l dist/touchstone_mcp-*.whl | head -30
    ```
-   Only `clarethium_touchstone/` package files and license/metadata should appear. Any other path is a release blocker.
+
+10. **Self-contained install check.** This is the regression that prompted the single-package consolidation: confirm the wheel installs and imports with no separate `clarethium-touchstone` package.
+    ```bash
+    python -m venv /tmp/ts-rel
+    /tmp/ts-rel/bin/pip install dist/touchstone_mcp-*.whl
+    /tmp/ts-rel/bin/python -c "import touchstone_mcp, clarethium_touchstone; from touchstone_mcp import build_server; build_server()"
+    ```
 
 ## Cutting the release
 
-10. **Commit the release prep.**
+11. **Commit the release prep** (DCO sign-off).
     ```bash
     git add -A
-    git commit -m "Cut vX.Y.Z release: <one-line summary>"
+    git commit -s -m "Cut touchstone-mcp vX.Y.Z: <one-line summary>"
     ```
 
-11. **Tag.**
+12. **Tag** with the distribution-prefixed tag (the cma-mcp / frame-check-mcp sibling convention).
     ```bash
-    git tag -a vX.Y.Z -m "vX.Y.Z"
+    git tag -a touchstone-mcp-vX.Y.Z -m "touchstone-mcp vX.Y.Z"
     ```
 
-12. **Push.**
+13. **Push.**
     ```bash
     git push origin main
-    git push origin vX.Y.Z
+    git push origin touchstone-mcp-vX.Y.Z
     ```
 
-13. **Publish to PyPI.** Inject the PyPI API token at child-process scope only; never write it to `~/.pypirc`, never export it into the shell environment, never paste it into chat or logs:
-
+14. **Publish to PyPI.** Inject the token at child-process scope only; never write it to `~/.pypirc`, never export it into the shell environment, never paste it into chat or logs.
     ```bash
     TWINE_USERNAME=__token__ \
         TWINE_PASSWORD=<your PyPI token> \
         python -m twine upload dist/*
     ```
-
-    TestPyPI smoke run first (recommended for any release):
-
+    TestPyPI smoke run first (recommended):
     ```bash
     TWINE_USERNAME=__token__ \
         TWINE_PASSWORD=<your TestPyPI token> \
         python -m twine upload --repository testpypi dist/*
     ```
+    Maintainer credential-loading is documented in `AGENTS.md` under the Credentials and tokens section; read it before asking for tokens.
 
-    Maintainer-specific credential-loading invocation is documented in `AGENTS.md` under the Credentials and tokens section. Future agents working in this repository: read AGENTS.md before asking for tokens; the canonical token source for the maintainer is documented there.
-
-14. **GitHub release.** Create a GitHub Release linked to the tag with the CHANGELOG entry as the release notes:
-
+15. **GitHub release.** Create a release linked to the tag with the CHANGELOG entry as the notes.
     ```bash
-    gh release create vX.Y.Z --title "vX.Y.Z" --notes-from-tag
-    ```
-
-## Pre-release checklist (MCP server: `touchstone-mcp`)
-
-The same gate discipline applies to the MCP-server distribution, scoped to `touchstone-mcp/`.
-
-1. **Working tree is clean.** As above.
-
-2. **Version bumped consistently.** Both files MUST match.
-   ```bash
-   grep '^version' touchstone-mcp/pyproject.toml
-   grep '__version__' touchstone-mcp/touchstone_mcp.py
-   ```
-
-3. **CHANGELOG.md has the dated entry.** New section at the top of `touchstone-mcp/CHANGELOG.md`.
-
-4. **Library dependency pin is current.** If `touchstone-mcp` consumes a new public-API surface from `clarethium-touchstone`, bump the floor in `touchstone-mcp/pyproject.toml`:
-   ```toml
-   dependencies = ["clarethium-touchstone>=X.Y.Z", "fastmcp>=2.0"]
-   ```
-   The pinned library version MUST already be live on PyPI.
-
-5. **Tests, lint, type-check, format pass.**
-   ```bash
-   cd touchstone-mcp
-   ruff check . && ruff format --check . && mypy touchstone_mcp.py && pytest -q
-   ```
-
-6. **Canon audit passes.** Run from repo root (the audit scans the working tree):
-   ```bash
-   bash scripts/canon_audit.sh --self-test && bash scripts/canon_audit.sh
-   ```
-
-7. **Build artifacts produce cleanly.**
-   ```bash
-   cd touchstone-mcp
-   rm -rf dist/ build/ *.egg-info/
-   python -m build
-   ls dist/
-   ```
-
-8. **Wheel content check.** The wheel MUST contain only `touchstone_mcp.py` and license/metadata:
-   ```bash
-   unzip -l touchstone-mcp/dist/touchstone_mcp-*.whl | head -20
-   ```
-
-### Cutting the MCP-server release
-
-9. **Commit, tag (`touchstone-mcp-vX.Y.Z`), push.** Use a distribution-prefixed tag so the two distributions' release histories don't collide on the same `vX.Y.Z` tag namespace:
-   ```bash
-   git commit -m "Cut touchstone-mcp vX.Y.Z: <one-line summary>"
-   git tag -a touchstone-mcp-vX.Y.Z -m "touchstone-mcp vX.Y.Z"
-   git push origin main && git push origin touchstone-mcp-vX.Y.Z
-   ```
-
-10. **Publish to PyPI.** Same token-handling rules as above:
-    ```bash
-    cd touchstone-mcp
-    TWINE_USERNAME=__token__ TWINE_PASSWORD=<token> python -m twine upload dist/*
-    ```
-
-11. **GitHub release.** Create the release pointing at the prefixed tag with the `touchstone-mcp/CHANGELOG.md` entry as the body:
-    ```bash
-    gh release create touchstone-mcp-vX.Y.Z --title "touchstone-mcp vX.Y.Z" --notes-file <(...)
+    gh release create touchstone-mcp-vX.Y.Z --title "touchstone-mcp vX.Y.Z" --notes-from-tag
     ```
 
 ## Post-release
 
-15. **Bump to next dev version.** Avoid the risk of the next pre-release commit being mistaken for the released version. For the library:
-    ```python
-    # src/clarethium_touchstone/_version.py
-    __version__ = "0.2.1.dev0"
-    ```
-    Mirror in `pyproject.toml`. For the MCP server, mirror in `touchstone-mcp/touchstone_mcp.py::__version__` and `touchstone-mcp/pyproject.toml`.
+16. **Bump to next dev version** so the next pre-release commit is not mistaken for the released version. Update `pyproject.toml` `version` and `src/touchstone_mcp.py::__version__` together (e.g. `0.1.3.dev0`).
 
-16. **Announce.** Once announce channels exist (mailing list, blog, social), share the release notes.
+17. **Announce** once announce channels exist (mailing list, blog, social).
 
 ## Hotfix releases
 
-A hotfix release (0.1.0 → 0.1.1) skips the new-feature scope of a normal minor release. The pre-release checklist is unchanged; the CHANGELOG entry MUST name the specific bug fixed and the regression test that prevents recurrence.
+A hotfix (0.1.x → 0.1.y) skips the new-feature scope of a normal minor release. The pre-release checklist is unchanged; the CHANGELOG entry MUST name the specific bug fixed and the regression test that prevents recurrence.
 
 ## Coordinating Standard and library bumps
 
 When the Standard advances:
 
-- A Standard minor bump (1.0 → 1.1) is additive; existing library versions remain conformant against the prior Standard version. A library release that newly implements 1.1 features bumps the library minor version.
-- A Standard major bump (1.x → 2.0) is breaking; conforming library releases coordinate the bump.
+- A Standard minor bump (1.0 → 1.1) is additive; a package release that newly implements 1.1 features bumps the package minor version and the library `_version`.
+- A Standard major bump (1.x → 2.0) is breaking; conforming releases coordinate the bump.
 
 `CITATION.cff` carries the structured Standard-version reference; update it in the same commit that updates the Standard text.

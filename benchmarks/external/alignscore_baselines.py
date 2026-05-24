@@ -40,7 +40,7 @@ from typing import Any
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 # stdlib bootstrap helper (shipped under benchmarks/external/_bootstrap.py).
-# This runner runs in `.venv-alignscore` which does not have clarethium-touchstone
+# This runner runs in `.venv-alignscore` which does not have clarethium_touchstone
 # installed; importing _bootstrap directly via path is enough.
 import sys
 

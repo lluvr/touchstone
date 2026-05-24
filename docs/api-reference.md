@@ -293,16 +293,16 @@ result = measure(
 
 ## Touchstone MCP
 
-Touchstone MCP is the Model Context Protocol server, shipped as its
-own PyPI distribution
-([`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/)) and
-lives in this repo under `touchstone-mcp/`. Install:
+Touchstone MCP is the Model Context Protocol server, shipped inside the
+[`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) package as
+`src/touchstone_mcp.py`. Install:
 
 ```bash
 pip install touchstone-mcp
 ```
 
-`clarethium-touchstone` and `fastmcp` install transitively. This
+The package bundles the `clarethium_touchstone` library and installs
+with `fastmcp` as its only third-party dependency. This
 registers the `touchstone-mcp` console script (stdio transport by
 default) so any MCP host can attach it. Four tools exposed: `verify`,
 `measure`, `assess_derivation_regime`, `list_modes`. Each mirrors the
@@ -318,9 +318,9 @@ server.run()                 # stdio transport (default)
 ```
 
 Full host-wiring instructions (Claude Desktop, Claude Code, Cursor,
-custom) and the tool catalog are in [`mcp.md`](mcp.md). The base
-`clarethium-touchstone` install stays dependency-free; FastMCP is
-pulled in only via the `touchstone-mcp` distribution.
+custom) and the tool catalog are in [`mcp.md`](mcp.md). The
+`clarethium_touchstone` library itself imports without any third-party
+dependency; FastMCP is the package's only third-party requirement.
 
 ---
 

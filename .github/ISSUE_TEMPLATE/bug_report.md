@@ -13,7 +13,7 @@ One sentence describing what is broken.
 ## Affected component
 
 - [ ] Touchstone Standard (specification)
-- [ ] `clarethium-touchstone` library (implementation)
+- [ ] `clarethium_touchstone` library (implementation)
 - [ ] Documentation
 - [ ] CI / build / packaging
 - [ ] Other (please specify)

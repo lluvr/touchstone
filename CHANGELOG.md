@@ -1,8 +1,27 @@
 # Changelog
 
-All notable changes to Touchstone (Standard and library) are documented here.
+All notable changes to Touchstone (Standard, library, and the `touchstone-mcp` package) are documented here.
 
-The Standard and library are versioned independently. Standard versions track methodology evolution; library versions track implementation releases.
+The Standard and the package are versioned independently. Standard versions track methodology evolution; package versions track distribution releases.
+
+---
+
+## touchstone-mcp v0.1.2 - 2026-05-24: single self-contained package
+
+`touchstone-mcp` is now a single self-contained PyPI package. The reference library (`clarethium_touchstone`) ships inside the `touchstone-mcp` distribution instead of being published as a separate `clarethium-touchstone` package. `pip install touchstone-mcp` installs the verifier library and the MCP server together; `fastmcp` is the only third-party dependency.
+
+**Why:** the separate `clarethium-touchstone` package was removed from PyPI. Because `touchstone-mcp` had depended on it, the published `touchstone-mcp` could no longer resolve its dependency. Folding the library into the package restores a clean single-command install and matches the one-package distribution model.
+
+**What changed**
+
+- Single package built from the repository root: `src/clarethium_touchstone/` (library) plus `src/touchstone_mcp.py` (MCP server). The former `touchstone-mcp/` subdirectory is dissolved; its tests, NOTICE, changelog, and citation are merged here.
+- `pip install touchstone-mcp` no longer depends on `clarethium-touchstone`; `fastmcp>=2.0` is the only runtime dependency.
+
+**What stayed**
+
+- `from clarethium_touchstone import Verifier, measure` still works (the library ships inside the package). The internal library version remains 0.2.1.
+- The four MCP tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`), their schemas and output shapes, the `touchstone-mcp` console script, and the stdio transport are unchanged.
+- The Touchstone Standard (CC-BY 4.0) remains the canonical text under `STANDARDS/` and is not bundled in the wheel.
 
 ---
 

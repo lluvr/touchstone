@@ -39,12 +39,10 @@ from typing import Any
 
 import pytest
 
-# Reference cases live in the library tree at <repo>/tests/reference/cases/.
-# This file lives at <repo>/touchstone-mcp/tests/test_e2e_stdio.py, so
-# the cases directory is two parents up + tests/reference/cases.
-REFERENCE_CASES_DIR = (
-    Path(__file__).resolve().parent.parent.parent / "tests" / "reference" / "cases"
-)
+# Reference cases live at <repo>/tests/reference/cases/. This file lives
+# at <repo>/tests/test_e2e_stdio.py, so the cases directory is the
+# sibling reference/cases under this file's own parent.
+REFERENCE_CASES_DIR = Path(__file__).resolve().parent / "reference" / "cases"
 
 
 # ---------------------------------------------------------------------------
@@ -584,7 +582,6 @@ class TestProcessHealth:
         from clarethium_touchstone._version import (
             __version__ as lib_version,
         )
-
         from touchstone_mcp import __version__ as mcp_version
 
         resp = stdio_client.request("tools/call", {"name": "list_modes", "arguments": {}})
