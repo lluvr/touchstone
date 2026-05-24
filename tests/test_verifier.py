@@ -133,6 +133,28 @@ def test_substrate_plus_both_baselines() -> None:
     assert "alignscore_neg" in result.signal_breakdown
 
 
+def test_baseline_mode_surfaces_recalibration_note() -> None:
+    """Composing a baseline on the default calibration signals, in the
+    result itself, that the default weights are not recalibrated per
+    distribution (docs/production_readiness.md section 4.2.3)."""
+    v = Verifier()
+    result = v.score(
+        HALLUCINATED_TEXT,
+        source=HALLUCINATED_SOURCE,
+        minicheck_supported_prob=0.2,
+    )
+    assert result.mode == "substrate_plus_minicheck"
+    assert any("recalibrate" in note for note in result.scope_notes)
+
+
+def test_substrate_only_has_no_recalibration_note() -> None:
+    """The substrate-only default path carries no baseline-composition note."""
+    v = Verifier()
+    result = v.score(HALLUCINATED_TEXT, source=HALLUCINATED_SOURCE)
+    assert result.mode == "substrate_only"
+    assert not any("recalibrate" in note for note in result.scope_notes)
+
+
 def test_substrate_plus_judge_auto_selects_mode() -> None:
     """Passing judge_hallucinated_prob auto-selects substrate_plus_judge mode."""
     v = Verifier()

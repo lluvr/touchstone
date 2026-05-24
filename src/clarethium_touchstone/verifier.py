@@ -616,6 +616,20 @@ class Verifier:
 
         scope, scope_notes = _compute_scope(text, measure_result)
 
+        # Surface the calibration regime at the API boundary. The baseline-
+        # composition and judge-blend modes compose the supplied scores with
+        # default weights that are not recalibrated per distribution
+        # (docs/production_readiness.md section 4.2.3). An adopter on the
+        # default calibration should see, in the result, that the composed
+        # score is not production-tuned for their data.
+        if mode != "substrate_only" and self._calibration is DEFAULT_CALIBRATION_2026_05_17:
+            scope_notes = [
+                *scope_notes,
+                f"mode={mode}: baseline scores composed with default weights "
+                "that are not recalibrated per distribution; recalibrate on "
+                "held-out data before production use",
+            ]
+
         return VerifierResult(
             prob_hallucinated=round(prob, 6),
             mode=mode,
