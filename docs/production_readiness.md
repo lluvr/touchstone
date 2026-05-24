@@ -4,6 +4,19 @@ A blunt operational report. The README and methodology doc describe what Touchst
 
 The conclusion lives in §6. The rest is the supporting evidence.
 
+## TL;DR (60 seconds)
+
+If you only read one block, read this one:
+
+- **What Touchstone catches today:** unsourced numbers, unsourced years, unsourced named entities, and lexical drift from source. The substrate-only Verifier gets AUC 0.67-0.76 on three published external corpora (RAGTruth Summary, SummEval, HaluEval) at sub-100 ms per 5 KB document and $0 in API cost.
+- **What Touchstone does NOT catch alone:** direction reversals, attribute swaps, scope shifts, relation reversals, time-frame shifts, and other semantic hallucinations that preserve vocabulary. The 16-case stress test in §3 separates the hallucinated from the faithful case at 50% (random); the substrate is structurally blind to this class.
+- **The default decision threshold is wrong.** `should_flag(threshold=0.5)` under-flags on every corpus tested. F1-optimal thresholds are 0.07-0.27. Tune on your held-out data before any production deployment; the §2 tables document the per-corpus optimal.
+- **The right deployment shapes:** (1) triage / review-queue prioritization (2-4x lift over random review at the F1-optimal threshold); (2) cheap first-pass filter in a two-stage pipeline ahead of an LLM-based judge; (3) drift detection on stable production streams; (4) the lexical-feature half of a production hallucination detector when blended with MiniCheck / AlignScore / a frontier LLM judge via the `substrate_plus_*` modes.
+- **The wrong deployment shapes:** standalone production hallucination detection on subtle-semantic-hallucination categories; replacement for an LLM judge on long-form generation; adversarial-robustness use cases (the regex substrate is public and evadable).
+- **Default-calibration caveat.** The shipped calibration was fitted on RAGTruth Summary; the `l4_unsourced` coefficient is negative on that corpus by construction. On adversarial-fabrication corpora that coefficient should be positive. Recalibrate via `Verifier.with_calibration()` if your input distribution differs materially.
+
+If any of that disagrees with what your team needs, stop and read §6's deployment recommendations before continuing.
+
 ## 1. Why AUC is misleading
 
 AUC is a research metric. Production teams care about precision and recall at specific decision thresholds, false-positive burden on human reviewers, and behaviour on the hallucination categories that real LLMs produce. AUC compresses all of that into one number. It tells you "the model can rank positives above negatives some of the time"; it does not tell you whether deploying at threshold X actually solves your problem.
