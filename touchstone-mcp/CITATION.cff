@@ -1,0 +1,66 @@
+cff-version: 1.2.0
+message: >-
+  If you use touchstone-mcp in academic, applied, or compliance work,
+  please cite it using the metadata below. The Touchstone Standard
+  and the clarethium-touchstone reference implementation are
+  separately citeable artifacts with their own canonical references.
+title: "touchstone-mcp: Model Context Protocol server for Touchstone"
+type: software
+authors:
+  - family-names: Lucic
+    given-names: Lovro
+    orcid: "https://orcid.org/0009-0008-9976-6933"
+    website: "https://blog.clarethium.com"
+repository-code: "https://github.com/Clarethium/touchstone"
+url: "https://github.com/Clarethium/touchstone/tree/main/touchstone-mcp"
+abstract: >-
+  touchstone-mcp is the Model Context Protocol server that exposes
+  the Touchstone calibrated Verifier and the raw measurement
+  orchestrator to any MCP-compatible AI client (Claude Desktop,
+  Claude Code, Cursor, custom). The server is a thin distribution
+  wrapper around the clarethium-touchstone reference implementation;
+  measurement semantics, calibration coefficients, and the eleven
+  Section 5 measurement layers are defined in the Touchstone
+  Standard and implemented in the clarethium-touchstone library.
+  touchstone-mcp's contribution is reach: bringing the same
+  hallucination-detection substrate to environments where the
+  Python API is not directly callable.
+keywords:
+  - mcp
+  - model-context-protocol
+  - hallucination-detection
+  - fabrication-detection
+  - structural-verification
+  - touchstone
+  - clarethium
+  - claude-desktop
+  - cursor
+license: Apache-2.0
+version: "0.1.0"
+date-released: "2026-05-24"
+references:
+  - type: software
+    title: "clarethium-touchstone: reference implementation of the Touchstone Standard"
+    authors:
+      - family-names: Lucic
+        given-names: Lovro
+        orcid: "https://orcid.org/0009-0008-9976-6933"
+    url: "https://pypi.org/project/clarethium-touchstone/"
+    repository-code: "https://github.com/Clarethium/touchstone"
+    license: Apache-2.0
+    notes: >-
+      The reference implementation that touchstone-mcp wraps. Imports
+      Verifier, measure, and assess_derivation_regime from the public
+      surface; defines the eleven Section 5 measurement layers and
+      their calibration coefficients.
+  - type: standard
+    title: "Touchstone Standard 1.0 (draft)"
+    version: "1.0.0-draft.15"
+    url: "https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
+    license: CC-BY-4.0
+    abstract: >-
+      Draft specification for verification methodology whose scoring
+      functions do not invoke an AI model on the output being
+      measured. The MCP tools (verify, measure,
+      assess_derivation_regime, list_modes) expose the Standard's
+      Section 5 measurement layers via JSON-RPC.

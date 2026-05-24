@@ -9,7 +9,10 @@ description = "Model Context Protocol server for Touchstone: hallucination detec
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+# Apache 2.0 §4(d) requires a readable copy of NOTICE in distributed
+# artifacts. license-files instructs setuptools to bundle both
+# LICENSE and NOTICE in the wheel's `*.dist-info` metadata.
+license-files = ["LICENSE", "NOTICE"]
 authors = [
     { name = "Lovro Lucic", email = "11740211+lluvr@users.noreply.github.com" },
 ]
