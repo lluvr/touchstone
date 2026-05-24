@@ -33,6 +33,7 @@ from clarethium_touchstone.measure import (
     measure,
 )
 from clarethium_touchstone.verifier import (
+    VERIFIER_MODES,
     UnsupportedSpan,
     Verifier,
     VerifierMode,
@@ -41,6 +42,7 @@ from clarethium_touchstone.verifier import (
 
 __all__ = [
     "EXTERNAL_ENTITIES_DEFAULT",
+    "VERIFIER_MODES",
     "UnsupportedSpan",
     "Verifier",
     "VerifierMode",
