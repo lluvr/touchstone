@@ -27,13 +27,16 @@ The Standard is the canonical reference. The library is the reference
 implementation. Where library behaviour diverges from the Standard,
 the Standard takes precedence.
 
-For Model Context Protocol (MCP) integration, install with the
-``mcp`` extra and use the ``touchstone-mcp`` console script::
+For Model Context Protocol (MCP) integration, install the separate
+``touchstone-mcp`` distribution::
 
-    pip install "clarethium-touchstone[mcp]"
+    pip install touchstone-mcp
     touchstone-mcp                         # stdio MCP server
 
-See ``docs/mcp.md`` for host wiring.
+The MCP server lives in its own PyPI distribution; this library is
+the underlying measurement substrate it wraps. See ``docs/mcp.md`` for
+host wiring and ``touchstone-mcp/CHANGELOG.md`` for the migration
+notes from the prior ``clarethium-touchstone[mcp]`` extra.
 """
 
 from clarethium_touchstone._version import __version__

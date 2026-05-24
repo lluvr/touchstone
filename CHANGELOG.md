@@ -6,6 +6,46 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## v0.2.0 - 2026-05-24: lift the MCP server out to its own `touchstone-mcp` PyPI distribution
+
+The `[mcp]` optional-dependency extra and the `clarethium_touchstone.mcp` subpackage are removed. The Touchstone MCP server now ships as a separate PyPI distribution, [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/), aligning with the sibling Clarethium MCP servers (`cma-mcp`, `frame-check-mcp`). The four tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`), their schemas, output shapes, and the `touchstone-mcp` console script command are unchanged; only the install command and the import path move.
+
+This is a breaking change relative to v0.1.2. Pre-1.0 breaking changes between minor versions are permitted by the cadence policy in `RELEASING.md`; the migration path below is single-step and mechanical.
+
+**Migration:**
+
+```diff
+- pip install "clarethium-touchstone[mcp]"
++ pip install touchstone-mcp
+
+- from clarethium_touchstone.mcp import build_server
++ from touchstone_mcp import build_server
+```
+
+MCP host config is unchanged:
+
+```json
+{ "mcpServers": { "touchstone": { "command": "touchstone-mcp" } } }
+```
+
+`touchstone-mcp >= 0.1.0` declares `clarethium-touchstone >= 0.2.0` as a runtime dependency, so installing `touchstone-mcp` brings the library along automatically. Callers that depend on the library directly (`Verifier`, `measure`, `assess_derivation_regime`, `VERIFIER_MODES`, etc.) keep using `pip install clarethium-touchstone`; nothing in the library's public surface changed.
+
+**Why a separate distribution rather than the extra.** The library install stays dependency-free (the substrate is regex, structural analysis, source matching, and arithmetic, none of which need third-party packages). Adopters who want the library should not transitively see FastMCP in their dependency tree; adopters who want the MCP server should not be discoverable only through an extra of a differently-named library. The split mirrors the actual Clarethium PyPI surface (`cma-mcp`, `frame-check-mcp`).
+
+**What stayed:**
+
+- The four MCP tool names, schemas, and structured-content payloads are byte-identical to v0.1.2.
+- The `touchstone-mcp` console script command is the same; only its entry-point module moves to `touchstone_mcp:main`.
+- The MCP server's behaviour against the test corpus is unchanged (the test suite moved along with the code; see `touchstone-mcp/tests/test_server.py`).
+
+**Verification this release ships the right artifacts:**
+
+- `pip install clarethium-touchstone==0.2.0` resolves and installs cleanly in a fresh venv; importing `clarethium_touchstone.mcp` raises `ModuleNotFoundError` (the subpackage was removed).
+- `pip install touchstone-mcp==0.1.0` resolves, brings `clarethium-touchstone` and `fastmcp` transitively, and registers the `touchstone-mcp` console script.
+- The full pytest, mypy strict, ruff, and canon-audit gates pass against the working tree.
+
+---
+
 ## v0.1.2 - 2026-05-24: documentation-only patch release (refreshes PyPI surface)
 
 Documentation, citation, and front-door-copy patch release. No code or test changes; the runtime behaviour and public API are byte-identical to v0.1.1. The point of cutting v0.1.2 is to surface the seven polish PRs merged after v0.1.1 (#2 through #8) on the live PyPI project page, since adopters landing on `pypi.org/project/clarethium-touchstone/` were still seeing the v0.1.1 metadata (old tagline, no MCP keyword, stale status).
