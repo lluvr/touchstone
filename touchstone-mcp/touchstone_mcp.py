@@ -62,7 +62,7 @@ from clarethium_touchstone._version import (
 )
 from fastmcp import FastMCP
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # Module-level Verifier so the calibration coefficients load once and
 # repeated calls reuse them. The Verifier is stateless across calls;
