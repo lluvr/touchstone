@@ -6,6 +6,27 @@ The Standard and library are versioned independently. Standard versions track me
 
 ---
 
+## v0.2.1 - 2026-05-24: metadata-only patch (fixes PyPI License field rendering)
+
+Documentation, metadata, and packaging patch release. No code, test, or public-API changes; runtime behaviour is byte-identical to v0.2.0. The point of cutting v0.2.1 is to ship the PEP 639 license-expression fix on PyPI so adopters landing on https://pypi.org/project/clarethium-touchstone/ see a clean `License-Expression: Apache-2.0` instead of the entire ~11 KB license text dumped into the project page.
+
+**What now appears on the PyPI project page:**
+
+- **`License-Expression: Apache-2.0`** (PEP 639 SPDX form) replaces the multi-KB `License:` text dump produced by the legacy `license = { file = "LICENSE" }` form. The LICENSE file itself is still bundled in the wheel's `dist-info/licenses/LICENSE` via explicit `license-files = ["LICENSE"]`.
+- **Deprecated classifier removed.** `License :: OSI Approved :: Apache Software License` is incompatible with an SPDX expression under PEP 639 and is dropped from the classifier list.
+
+The fix is metadata-only: no Python code, no test, and no API surface change. `clarethium-touchstone==0.2.1` is interchangeable with `0.2.0` at runtime. `touchstone-mcp >= 0.1.0` continues to depend on `clarethium-touchstone>=0.2.0` and resolves cleanly against 0.2.1 without a re-pin.
+
+**Why no minor bump (v0.3)?** No API change, no test change, no measurement behaviour change. Per the cadence policy in `RELEASING.md`, "Patch (0.x.y → 0.x.z): bug fixes, documentation, internal cleanup. No API changes." The PyPI metadata bug counts.
+
+**Verification this release ships the right artifact:**
+
+- `pip install clarethium-touchstone==0.2.1` resolves and installs cleanly in a fresh venv; `from clarethium_touchstone import Verifier, measure` work identically to 0.2.0.
+- The PyPI project page shows `License-Expression: Apache-2.0` instead of the full license text.
+- 452 library tests still pass; `mypy --strict` + `ruff check + format check` + `canon audit` all clean.
+
+---
+
 ## v0.2.0 - 2026-05-24: lift the MCP server out to its own `touchstone-mcp` PyPI distribution
 
 The `[mcp]` optional-dependency extra and the `clarethium_touchstone.mcp` subpackage are removed. The Touchstone MCP server now ships as a separate PyPI distribution, [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/), aligning with the sibling Clarethium MCP servers (`cma-mcp`, `frame-check-mcp`). The four tools (`verify`, `measure`, `assess_derivation_regime`, `list_modes`), their schemas, output shapes, and the `touchstone-mcp` console script command are unchanged; only the install command and the import path move.
