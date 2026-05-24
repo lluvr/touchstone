@@ -70,10 +70,18 @@ mcp = [
 # from the HuggingFace Hub and compare Touchstone against MiniCheck
 # (Tang et al., EMNLP 2024) as an LLM-based baseline. Install only when
 # reproducing or extending the external validation runs.
+#
+# MiniCheck itself is not published to PyPI and must be installed
+# separately when needed:
+#
+#     pip install "minicheck @ git+https://github.com/Liyan06/MiniCheck.git@main"
+#
+# It is intentionally left out of this ``external`` extra so the
+# parent ``clarethium-touchstone`` wheel remains PyPI-compatible
+# (PyPI forbids direct git URLs in published metadata).
 external = [
     "datasets>=2.14",
     "accelerate>=0.30",
-    "minicheck @ git+https://github.com/Liyan06/MiniCheck.git@main",
 ]
 
 [project.scripts]
