@@ -249,7 +249,7 @@ def main() -> None:
     output = {
         "experiment": "HaluEval summarization external validation",
         "corpus": "pminervini/HaluEval (summarization subset, data split, stratified sample)",
-        "library": "clarethium-touchstone",
+        "library": "clarethium_touchstone",
         "minicheck_model": args.minicheck_model,
         "n_documents_sampled": len(sampled),
         "n_total_pairs": len(pairs),

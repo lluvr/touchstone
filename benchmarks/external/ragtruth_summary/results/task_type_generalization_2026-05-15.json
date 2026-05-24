@@ -1,7 +1,7 @@
 {
   "experiment": "RAGTruth task-type generalization (Touchstone only)",
   "corpus": "wandb/RAGTruth-processed (test split)",
-  "library": "clarethium-touchstone",
+  "library": "clarethium_touchstone",
   "task_types_evaluated": [
     "Summary",
     "QA",

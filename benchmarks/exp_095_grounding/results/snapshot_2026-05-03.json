@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-095 grounding decomposition",
-  "library": "clarethium-touchstone",
+  "library": "clarethium_touchstone",
   "n_outputs": 13,
   "aggregate": {
     "n": 13,

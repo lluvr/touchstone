@@ -204,7 +204,7 @@ def render_report(results: list[PerOutputResult], aggregate_stats: dict) -> str:
     return json.dumps(
         {
             "experiment": "EXP-095 grounding decomposition",
-            "library": "clarethium-touchstone",
+            "library": "clarethium_touchstone",
             "n_outputs": len(results),
             "aggregate": aggregate_stats,
             "per_output": [

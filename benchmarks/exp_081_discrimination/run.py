@@ -251,7 +251,7 @@ def render_report(results: list[PerDocResult], aggregate_stats: dict) -> str:
     return json.dumps(
         {
             "experiment": "EXP-081 adversarial discrimination",
-            "library": "clarethium-touchstone",
+            "library": "clarethium_touchstone",
             "n_outputs": len(results),
             "aggregate": aggregate_stats,
             "per_output": [

@@ -263,7 +263,7 @@ def main() -> None:
     output = {
         "experiment": "SummEval external validation",
         "corpus": "mteb/summeval (test split, machine_summaries flattened)",
-        "library": "clarethium-touchstone",
+        "library": "clarethium_touchstone",
         "minicheck_model": args.minicheck_model,
         "binarization_threshold": args.threshold,
         "n_total_pairs": len(pairs),

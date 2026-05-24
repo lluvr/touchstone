@@ -236,7 +236,7 @@ The set of external-entity P-markers (drug names, product names, indices, and si
 
 ## 6. Specification compliance verification
 
-> **Reserved for Standard 1.1.** Verification of output coverage against a written specification (requirement extraction, type-routed coverage mapping, scope drift detection, emphasis balance, optional semantic alignment) is deferred to Standard 1.1. Reference implementation `clarethium-touchstone` v0.1 implements Section 5 only.
+> **Reserved for Standard 1.1.** Verification of output coverage against a written specification (requirement extraction, type-routed coverage mapping, scope drift detection, emphasis balance, optional semantic alignment) is deferred to Standard 1.1. Reference implementation `clarethium_touchstone` implements Section 5 only.
 
 ---
 
@@ -525,7 +525,7 @@ The Verifier methodology does NOT add discriminative signal beyond what the unde
 
 The table below records each layer's status in the reference implementation. "Validation in public surface" cites the artifacts in this repository that exercise the layer. Layers without a public validation artifact are implemented and unit-tested; their construct claims are open work per §3.5.
 
-| Layer | Status in `clarethium-touchstone` v0.x | Validation in public surface |
+| Layer | Status in `clarethium_touchstone` | Validation in public surface |
 |-------|----------------------------------------|------------------------------|
 | 1a Heading defaultness | Implemented; runs only when caller supplies both `topic` and a vendor-neutral `BaselineGenerator` callable | Unit tests (`tests/test_structural_profile.py`) cover stub-generator paths: full overlap, disjoint, failed calls, partial exceptions, non-string returns |
 | 1b Mechanism ratio | Implemented | Unit tests in `tests/test_structural_profile.py` |
