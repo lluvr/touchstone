@@ -1,9 +1,10 @@
-# MCP integration
+# Touchstone MCP
 
-`clarethium-touchstone` ships an optional Model Context Protocol (MCP)
-server that exposes the `Verifier` and the `measure()` orchestrator as
-MCP tools. Any MCP host (Claude Desktop, Claude Code, Cursor, custom)
-can attach the server and call Touchstone in-context.
+Touchstone MCP is the optional Model Context Protocol server that
+exposes the `Verifier` and the `measure()` orchestrator as MCP tools.
+Any MCP host (Claude Desktop, Claude Code, Cursor, custom) can attach
+the server and call Touchstone in-context. The server ships in-repo
+as the `clarethium_touchstone.mcp` subpackage under the `mcp` extra.
 
 ## Install
 
@@ -133,7 +134,7 @@ corpora are 0.07-0.27. Tune on your own held-out data before any
 production deployment. [`production_readiness.md`](production_readiness.md)
 §2 has the per-corpus tables.
 
-## What the MCP server is NOT
+## What Touchstone MCP is NOT
 
 - **Not a standalone production hallucination detector.** Touchstone
   alone scores at chance on subtle semantic hallucinations that

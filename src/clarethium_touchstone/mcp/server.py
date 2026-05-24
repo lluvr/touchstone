@@ -1,4 +1,4 @@
-"""FastMCP server exposing Touchstone as MCP tools.
+"""Touchstone MCP server (FastMCP) exposing Touchstone as MCP tools.
 
 The server exposes four tools to MCP hosts:
 
