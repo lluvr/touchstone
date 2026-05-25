@@ -19,7 +19,7 @@ useDefault = true
 id = "agent-handoff-scratchpad"
 description = "Agent handoff scratchpad files (should not be committed)"
 regex = '''.+''' # match anything in the file content
-path = '''(?i)(CONTINUATION_PROMPT|HANDOFF_PROMPT|AGENT_HANDOFF|SESSION_HANDOFF|SCRATCH_PROMPT|AGENT_SCRATCH).*\.md$'''
+path = '''(?i)(CONTINUATION_PROMPT|HANDOFF|HANDOFF_PROMPT|AGENT_HANDOFF|SESSION_HANDOFF|SCRATCH_PROMPT|AGENT_SCRATCH).*\.md$'''
 
 # Filename shapes that fall outside the public-repo content scope
 # defined in AGENTS.md. Strategic memos, audit deliverables, and
