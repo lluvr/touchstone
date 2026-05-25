@@ -6,6 +6,26 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ---
 
+## touchstone-mcp v0.1.3 - 2026-05-25: security + correctness fixes; OIDC publishing
+
+First published release since 0.1.1 (0.1.2 was tagged but never published). Bundles the documentation refresh intended for 0.1.2 plus the changes below. Library `clarethium_touchstone` bumped to 0.2.2; Standard unchanged at 1.0.0-draft.15.
+
+### Fixed
+
+- **Security (ReDoS).** The Layer-2 parenthetical-citation regex in `measure.py` could backtrack exponentially on crafted input (a redundant `[A-Z]?` nested inside an unbounded group). `measure()` runs on untrusted text, so this was a denial-of-service vector; a 28-token pathological string took ~4 s pre-fix. The optional capital was removed; matching is unchanged on real citations.
+- **Number extraction.** The `dollar_range` scale-word group was a malformed character class (`[MBKmillion|billion|thousand]`) — the `|` is literal inside `[...]`, so it matched arbitrary letter runs instead of the scale words. Replaced with a proper non-capturing alternation.
+
+### Changed
+
+- `judge_alpha` default (0.3) documentation reconciled: it is a deliberate substrate-light default below the §4.3.1 holdout-blend tune-AUC-picked cross-corpus mean (~0.375), not the mean itself.
+
+### Infrastructure
+
+- Releases now publish via PyPI Trusted Publishing (OIDC) with a GitHub build-provenance attestation, from a protected `pypi` environment — no long-lived token.
+- CI coverage gate now also measures the MCP server module; workflows declare least-privilege permissions; Dependabot enabled for Actions and pip.
+
+---
+
 ## touchstone-mcp v0.1.2 - 2026-05-24: single self-contained package
 
 `touchstone-mcp` is now a single self-contained PyPI package. The reference library (`clarethium_touchstone`) ships inside the `touchstone-mcp` distribution instead of being published as a separate `clarethium-touchstone` package. `pip install touchstone-mcp` installs the verifier library and the MCP server together; `fastmcp` is the only third-party dependency.
