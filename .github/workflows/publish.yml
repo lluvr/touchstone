@@ -64,7 +64,7 @@ jobs:
         with:
           subject-path: 'dist/*'
 
-      - uses: actions/upload-artifact@v8
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
