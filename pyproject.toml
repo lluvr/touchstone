@@ -74,7 +74,7 @@ dev = [
 # (PyPI forbids direct git URLs in published metadata).
 external = [
     "datasets>=2.14",
-    "accelerate>=0.30",
+    "accelerate>=1.13.0",
 ]
 
 [project.urls]
