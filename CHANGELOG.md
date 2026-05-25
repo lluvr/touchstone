@@ -6,9 +6,9 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ---
 
-## touchstone-mcp v0.1.3 - 2026-05-25: security + correctness fixes; OIDC publishing
+## touchstone-mcp v0.1.4 - 2026-05-25: security + correctness fixes; OIDC publishing
 
-First published release since 0.1.1 (0.1.2 was tagged but never published). Bundles the documentation refresh intended for 0.1.2 plus the changes below. Library `clarethium_touchstone` bumped to 0.2.2; Standard unchanged at 1.0.0-draft.15.
+First build published to PyPI since 0.1.1. (0.1.2 and 0.1.3 were tagged but never reached PyPI — 0.1.2 was superseded before publishing, and 0.1.3's publish run hit a workflow bug, now fixed.) Bundles the documentation refresh intended for 0.1.2 plus the changes below. Library `clarethium_touchstone` bumped to 0.2.2; Standard unchanged at 1.0.0-draft.15.
 
 ### Fixed
 
