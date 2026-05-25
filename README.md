@@ -53,8 +53,9 @@ to score reliably (`"limited_signal"` or `"insufficient_input"`).
 The default `should_flag(threshold=0.5)` under-flags for any production
 deployment (F1-optimal thresholds on the published corpora are 0.07-0.27).
 For full API documentation see [`docs/api-reference.md`](docs/api-reference.md).
-Five working examples are in [`examples/`](examples/) — single document,
-batch triage, holdout calibration, and two-stage cascade with a judge.
+Six working examples are in [`examples/`](examples/) — single document,
+batch triage, holdout calibration, two-stage cascade with a judge, the
+end-to-end production verifier, and programmatic MCP use.
 
 ## Touchstone MCP
 
@@ -115,7 +116,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) — a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (502 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/) — a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (502 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 ```bash
 pip install touchstone-mcp                         # reference library + MCP server
@@ -157,12 +158,13 @@ result = v.score(
     text="Apple reported Q1 revenue of $185 billion. McKinsey forecasts 47% growth.",
     source="Apple reported Q1 revenue of $143 billion.",
 )
-print(f"prob_hallucinated = {result.prob_hallucinated:.3f}")  # → 0.796
-print(f"should flag (>0.5)? {result.should_flag()}")          # → True
+print(f"prob_hallucinated = {result.prob_hallucinated:.3f}")  # → 0.219
+print(f"should flag (>0.5)? {result.should_flag()}")          # → False at the 0.5 default
 for span in result.top_unsupported:
     print(f"  {span.layer11_primary}: {span.sentence!r}  {span.p_markers}")
 # → P: 'Apple reported Q1 revenue of $185 billion.'  ['unsourced_numbers']
-# → P: 'McKinsey forecasts 47% growth.'              ['unsourced_numbers']
+# 0.219 sits inside the F1-optimal 0.07-0.27 band: the 0.5 default under-flags,
+# so tune the threshold on held-out data. See docs/production_readiness.md.
 ```
 
 Three operating modes (auto-selected from which baseline scores you pass):

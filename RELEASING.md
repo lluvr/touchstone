@@ -11,7 +11,7 @@ This repository builds one PyPI distribution, `touchstone-mcp`, from the reposit
 | `clarethium_touchstone` (reference library) | `src/clarethium_touchstone/` | the eleven measurement layers + the calibrated Verifier |
 | `touchstone_mcp` (MCP server) | `src/touchstone_mcp.py` | wraps the library as MCP tools |
 
-`fastmcp >= 2.0` is the only runtime dependency. `from clarethium_touchstone import ...` works for anyone who installs the package; the library is not published separately.
+`fastmcp >= 3.3.1` is the only runtime dependency. `from clarethium_touchstone import ...` works for anyone who installs the package; the library is not published separately.
 
 ### Version strings
 
@@ -59,7 +59,7 @@ Run every step. Each is a gate; a failure blocks the release.
 
 5. **Coverage threshold met** (CI gate is `--cov-fail-under=95`).
    ```bash
-   pytest --cov=clarethium_touchstone --cov-fail-under=95 -q
+   pytest --cov=clarethium_touchstone --cov=touchstone_mcp --cov-fail-under=95 -q
    ```
 
 6. **Canon audit passes.** Both MUST exit 0; any hit is a blocker.
@@ -100,34 +100,22 @@ Run every step. Each is a gate; a failure blocks the release.
     git commit -s -m "Cut touchstone-mcp vX.Y.Z: <one-line summary>"
     ```
 
-12. **Tag** with the distribution-prefixed tag (the cma-mcp / frame-check-mcp sibling convention).
+12. **Tag** with the `vX.Y.Z` tag that the publish workflow triggers on (`.github/workflows/publish.yml` runs on `tags: ['v*']`).
     ```bash
-    git tag -a touchstone-mcp-vX.Y.Z -m "touchstone-mcp vX.Y.Z"
+    git tag -a vX.Y.Z -m "touchstone-mcp vX.Y.Z"
     ```
 
 13. **Push.**
     ```bash
     git push origin main
-    git push origin touchstone-mcp-vX.Y.Z
+    git push origin vX.Y.Z
     ```
 
-14. **Publish to PyPI.** Inject the token at child-process scope only; never write it to `~/.pypirc`, never export it into the shell environment, never paste it into chat or logs.
-    ```bash
-    TWINE_USERNAME=__token__ \
-        TWINE_PASSWORD=<your PyPI token> \
-        python -m twine upload dist/*
-    ```
-    TestPyPI smoke run first (recommended):
-    ```bash
-    TWINE_USERNAME=__token__ \
-        TWINE_PASSWORD=<your TestPyPI token> \
-        python -m twine upload --repository testpypi dist/*
-    ```
-    Maintainer credential-loading is documented in `AGENTS.md` under the Credentials and tokens section; read it before asking for tokens.
+14. **Publish (automatic, no token).** Pushing the `vX.Y.Z` tag triggers `publish.yml`, which builds the wheel + sdist, generates a build-provenance attestation, and publishes to PyPI via Trusted Publishing (OIDC) from the protected `pypi` environment. There is no manual `twine upload` and no long-lived PyPI token. Watch the run under the Actions tab; the publish job fails closed if the `pypi` environment or the PyPI Trusted Publisher is not configured (one-time setup, documented in `publish.yml`).
 
 15. **GitHub release.** Create a release linked to the tag with the CHANGELOG entry as the notes.
     ```bash
-    gh release create touchstone-mcp-vX.Y.Z --title "touchstone-mcp vX.Y.Z" --notes-from-tag
+    gh release create vX.Y.Z --title "touchstone-mcp vX.Y.Z" --notes-from-tag
     ```
 
 ## Post-release
