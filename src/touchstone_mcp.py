@@ -63,7 +63,7 @@ from clarethium_touchstone._version import (
     __version__ as _touchstone_lib_version,
 )
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 # Module-level Verifier so the calibration coefficients load once and
 # repeated calls reuse them. The Verifier is stateless across calls;
