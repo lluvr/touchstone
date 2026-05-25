@@ -84,9 +84,9 @@ NOT yet a production claim (see README §Limitations):
 Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/),
 a single self-contained package that bundles the `clarethium_touchstone`
 reference library and the MCP server. All eleven Section 5 measurement layers are implemented
-and tested (469 tests total: 452 library + 17 MCP server; CI green on
+and tested (502 tests total across library and MCP server; CI green on
 ruff lint + format, mypy strict, and the pytest matrix across Python
-3.10/3.11/3.12). Library test coverage is at 97% with a 95% CI gate. Two internal regression benchmarks plus three
+3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three
 external corpus comparisons ship in `benchmarks/`. Internal: EXP-081
 (Cohen's d = -5.238 on a 12-document single-vendor corpus, vs the
 recorded `detector_v031` baseline of -5.43) and EXP-095 (P-existence
