@@ -42,9 +42,11 @@ increasing per-call latency:
   linear blend ``judge_alpha * substrate_prob + (1 - judge_alpha) *
   judge_hallucinated_prob``. Mode auto-selects when ``judge_hallucinated_prob``
   is supplied to :meth:`Verifier.score`. The default ``judge_alpha``
-  (≈ 0.3) is the cross-corpus mean of the picked alpha from §4.3.1's
-  holdout-blend table; adopters should tune α on their own held-out
-  data (see ``substrate_plus_judge_holdout`` reproduction). AUC on the
+  (≈ 0.3) is a deliberate substrate-light default; the α picked on
+  §4.3.1's holdout-blend tune splits is strongly corpus-dependent
+  (mean ≈ 0.375, range 0.0-0.7), so adopters should tune α on their
+  own held-out data (see ``substrate_plus_judge_holdout`` reproduction).
+  AUC on the
   three §4.2 corpora ranges 0.78-0.94 depending on judge vendor and
   cued/blind variant; see §4.2.8 in production_readiness.md.
 
@@ -520,9 +522,10 @@ class Verifier:
                 ``alignscore_supported_prob`` in the same call; pick one
                 Stage-2 detector per call.
             judge_alpha: Substrate weight in the substrate_plus_judge blend.
-                Default ``DEFAULT_JUDGE_ALPHA`` (≈ 0.3) is the cross-corpus
-                mean of the tune-AUC-picked α from §4.3.1's holdout-blend
-                table. Adopters SHOULD run substrate_plus_judge_holdout on
+                Default ``DEFAULT_JUDGE_ALPHA`` (≈ 0.3) is a deliberate
+                substrate-light default, below the tune-AUC-picked mean
+                (≈ 0.375) from §4.3.1's holdout-blend table. Adopters
+                SHOULD run substrate_plus_judge_holdout on
                 a tune split of their own data and use the per-corpus α
                 rather than the default. HaluEval-shape corpora (substrate
                 is itself AUC-strong) prefer α ≈ 0.6-0.7; SummEval-shape

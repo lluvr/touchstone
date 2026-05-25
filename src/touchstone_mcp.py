@@ -124,8 +124,9 @@ def build_server() -> FastMCP:
                 ``substrate_plus_judge`` mode. Mutually exclusive with
                 the MiniCheck / AlignScore parameters in the same call.
             judge_alpha: Substrate weight in the substrate+judge blend.
-                Defaults to 0.3 (cross-corpus mean from the published
-                holdout-blend table). Tune on held-out data.
+                Defaults to 0.3 (a substrate-light default; the picked
+                α in the published holdout-blend table is corpus-
+                dependent). Tune on held-out data.
             top_k_unsupported: Maximum number of suspect spans to
                 return. Defaults to 3.
 
