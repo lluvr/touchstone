@@ -1,0 +1,29 @@
+# Dependabot configuration for touchstone.
+#
+# Two ecosystems are tracked:
+#   - GitHub Actions: floating action versions in the CI and publish
+#     workflows get weekly PRs so advisories land without manual chasing.
+#   - Python (pip): the package has one runtime dependency (`fastmcp`)
+#     plus the dev/external extras; pyproject.toml lives at the repo root.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+      include: scope
