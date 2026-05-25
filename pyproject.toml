@@ -73,7 +73,7 @@ dev = [
 # parent ``touchstone-mcp`` wheel remains PyPI-compatible
 # (PyPI forbids direct git URLs in published metadata).
 external = [
-    "datasets>=2.14",
+    "datasets>=4.8.5",
     "accelerate>=0.30",
 ]
 
