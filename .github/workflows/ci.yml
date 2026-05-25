@@ -32,7 +32,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run test suite (library + MCP server)
-        run: pytest --cov=clarethium_touchstone --cov-report=term-missing --cov-fail-under=95
+        run: pytest --cov=clarethium_touchstone --cov=touchstone_mcp --cov-report=term-missing --cov-fail-under=95
 
       - name: Upload coverage to summary
         if: always()
