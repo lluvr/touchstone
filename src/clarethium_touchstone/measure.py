@@ -1162,7 +1162,7 @@ def _extract_entities(text: str) -> list[dict[str, str]]:
         _push("ATTRIBUTED", name, m.start(), m.end())
 
     # Pattern 4: Parenthetical citations.
-    citation_pattern = r"\(([A-Z][a-zA-Z/]+(?:\s+[A-Z]?[a-zA-Z]+)*)[,\s]+(\d{4})\)"
+    citation_pattern = r"\(([A-Z][a-zA-Z/]+(?:\s+[a-zA-Z]+)*)[,\s]+(\d{4})\)"
     for m in re.finditer(citation_pattern, body):
         cite = f"{m.group(1)} {m.group(2)}"
         if "source" in cite.lower():
