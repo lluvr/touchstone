@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least-privilege default for all jobs; elevate per-job only where needed.
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
