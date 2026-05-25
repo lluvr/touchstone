@@ -56,7 +56,7 @@ dev = [
     "pytest-asyncio>=0.23",
     "pytest-cov>=5.0",
     "ruff>=0.6",
-    "mypy>=1.10",
+    "mypy>=2.1.0",
 ]
 # External-corpus benchmark dependencies. NOT part of the base library
 # install. The ``benchmarks/external/*`` runners load third-party corpora
