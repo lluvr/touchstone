@@ -164,7 +164,7 @@ _NUMBER_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"[$€£¥₹]\s*(\d+(?:\.\d+)?(?:,\d{3})*)", "dollar"),
     (
         r"[$€£¥₹](\d+(?:\.\d+)?(?:,\d{3})*)\s*[-–]\s*[$€£¥₹]?(\d+(?:\.\d+)?(?:,\d{3})*)\s*"
-        r"([MBKmillion|billion|thousand]*)",
+        r"(?:[MBK]|million|billion|thousand)?",
         "dollar_range",
     ),
     (r"(\d+(?:\.\d+)?)[xX]\b", "multiplier"),
