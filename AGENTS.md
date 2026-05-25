@@ -105,8 +105,9 @@ scope and never:
   on disk;
 - pastes the token into chat or logs.
 
-`PYPI_API_TOKEN` is the PyPI publishing key; `RELEASING.md` step 14
-documents the exact `twine upload` invocation. The same discipline
+Publishing to PyPI uses OIDC Trusted Publishing from the `pypi`
+environment (no long-lived token); the tag-triggered release flow is
+documented in `RELEASING.md`. The credential discipline above still
 applies to any provider API key the benchmarks need (`XAI_API_KEY`,
 `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
 
