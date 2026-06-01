@@ -324,4 +324,4 @@ download them at runtime.
 
 - Read the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for
   complete specifications
-- Read [CONTRIBUTING.md](../CONTRIBUTING.md) for how the project is maintained
+- Read [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for how the project is maintained
