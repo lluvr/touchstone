@@ -50,7 +50,7 @@ Mac-homebrew Pythons, the system Python is externally-managed
 (PEP-668); install into a virtual environment:
 
 ```bash
-git clone https://github.com/Clarethium/touchstone.git   # private repository
+git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
