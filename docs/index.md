@@ -12,7 +12,7 @@ A specification plus reference implementation for measuring LLM-generated text a
 - [Production readiness](production_readiness.md) - operational metrics, threshold guidance, what Touchstone is and is not for production deployment
 - [Methodology summary](methodology.md) - substrate hypothesis, falsification protocol, cross-corpus evidence, caveats (intended for readers evaluating Touchstone for adoption or methodological critique)
 - [Touchstone MCP](mcp.md) - Model Context Protocol server; host wiring for Claude Desktop / Claude Code / Cursor / custom hosts
-- [Contributing](../CONTRIBUTING.md) - how to propose changes
+- [Contributing](../.github/CONTRIBUTING.md) - how to propose changes
 - [Suggestion process](../SUGGESTIONS/PROCESS.md) - how Standard and library evolve
 
 ## Install
