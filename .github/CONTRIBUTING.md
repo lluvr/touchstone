@@ -1,9 +1,8 @@
 # Contributing to Touchstone
 
-Touchstone is a personal project by Lovro Lucic. The repository is private
-and not currently taking outside contributions. This document records how
-the codebase is built and the discipline that keeps it correct, for anyone
-(including future me) working in it.
+Touchstone is a small, single-maintainer open-source project by Lovro Lucic.
+This document covers how the codebase is laid out, how to set it up, and the
+conventions and tests a change should follow.
 
 Touchstone has two parts:
 

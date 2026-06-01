@@ -2,9 +2,9 @@
 
 ## Our Pledge
 
-We as members, contributors, and maintainers pledge to make participation in the Touchstone project and ecosystem a harassment-free experience for everyone.
+We as members, contributors, and maintainers pledge to make participation in the Touchstone project a harassment-free experience for everyone.
 
-We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community focused on advancing model-independent verification methodology.
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
 ## Our Standards
 
@@ -14,7 +14,7 @@ Examples of behavior that contributes to a positive environment include:
 - Being respectful of differing opinions, viewpoints, and experiences
 - Giving and gracefully accepting constructive feedback
 - Accepting responsibility, apologizing to those affected by mistakes, and learning from the experience
-- Focusing on what is best for the overall community and the integrity of the methodology
+- Focusing on what is best for the overall community and the project
 
 Examples of unacceptable behavior include:
 
@@ -37,7 +37,6 @@ This Code of Conduct applies within all community spaces, including:
 
 - This GitHub organization and its repositories
 - Issue and pull request discussions
-- The Suggestion process discussions
 - Any official communication channels
 - Project events (online or in person, if any exist in future)
 

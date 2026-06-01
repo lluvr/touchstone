@@ -48,19 +48,12 @@ The fastmcp runtime that touchstone-mcp depends on is published
 separately at https://github.com/jlowin/fastmcp and is not
 redistributed by this project.
 
-Companion projects in the Clarethium body
------------------------------------------
+Related projects
+----------------
 
-- Lodestone: canonical methodology (CC-BY 4.0)
+- Lodestone: a methodology reference (CC-BY 4.0)
   https://github.com/Clarethium/lodestone
-- cma: executable compound practice loop (Apache 2.0)
+- cma: a compound-learning tool (Apache 2.0)
   https://github.com/Clarethium/cma
-- frame-check: applied vehicle, sibling MCP using Touchstone
+- frame-check: a related MCP tool (Apache 2.0)
   https://github.com/Clarethium/frame-check
-
-Sibling-MCP pattern conformance
--------------------------------
-
-touchstone-mcp's license-expression metadata shape and
-tag-prefixed release discipline (touchstone-mcp-vX.Y.Z) follow the
-conventions established by cma-mcp and frame-check-mcp.
