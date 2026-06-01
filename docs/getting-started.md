@@ -50,7 +50,7 @@ Mac-homebrew Pythons, the system Python is externally-managed
 (PEP-668); install into a virtual environment:
 
 ```bash
-git clone https://github.com/Clarethium/touchstone.git
+git clone https://github.com/Clarethium/touchstone.git   # private repository
 cd touchstone
 python3 -m venv .venv
 source .venv/bin/activate
@@ -324,6 +324,4 @@ download them at runtime.
 
 - Read the [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) for
   complete specifications
-- Read [CONTRIBUTING.md](../CONTRIBUTING.md) if you want to contribute
-- Watch the [GitHub repository](https://github.com/Clarethium/touchstone)
-  for updates
+- Read [CONTRIBUTING.md](../CONTRIBUTING.md) for how the project is maintained
