@@ -4,7 +4,7 @@
 **Version:** 1.0.0-draft.15
 **Date:** 2026-05-19 (drafting in progress)
 **License:** CC-BY 4.0
-**Canonical URL:** https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md
+**Canonical URL:** https://pypi.org/project/touchstone-mcp/ (the Standard ships bundled in the package)
 
 ---
 

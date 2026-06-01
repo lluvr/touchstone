@@ -1,81 +1,41 @@
 # Contributing to Touchstone
 
-Thanks for your interest in contributing.
+Touchstone is a personal project by Lovro Lucic. The repository is private
+and not currently taking outside contributions. This document records how
+the codebase is built and the discipline that keeps it correct, for anyone
+(including future me) working in it.
 
-Touchstone has two parts that evolve through different processes:
+Touchstone has two parts:
 
-- **The Touchstone Standard** (in `STANDARDS/`) is the canonical specification. Changes are deliberate and versioned per Section 10 of the Standard.
-- **The `clarethium_touchstone` library** is the reference implementation of the Standard.
+- **The Touchstone Standard** (in `STANDARDS/`) is the specification. Changes
+  are deliberate and versioned per Section 10 of the Standard.
+- **The `clarethium_touchstone` library** is the reference implementation of
+  the Standard.
 
-## Quick start for code contributions
+## Development setup
 
 ```bash
-git clone https://github.com/Clarethium/touchstone.git
+git clone https://github.com/Clarethium/touchstone.git   # private repository
 cd touchstone
 pip install -e ".[dev]"
 pytest
 ```
 
-Tests should pass before opening a pull request. Type checking and linting use `mypy` and `ruff`:
+Tests should pass before any change lands. Type checking and linting use
+`mypy` and `ruff`:
 
 ```bash
 ruff check src tests
 mypy src
 ```
 
-## Proposing changes to the Standard
+## Standard and library
 
-Changes to the Standard go through the Suggestion process (modeled on Python Enhancement Proposals and Bitcoin Improvement Proposals). The full process is documented at [`SUGGESTIONS/PROCESS.md`](SUGGESTIONS/PROCESS.md).
-
-The basic flow:
-
-1. Opening an issue describing the proposed change and its motivation.
-2. Discussing in the issue thread until the change is well-scoped.
-3. Opening a pull request against `STANDARDS/touchstone-1.0.md` with the specific edit and reasoning.
-4. The pull request is reviewed by the maintainers.
-
-Standard changes follow semantic versioning per Section 10. Major changes (breaking) require version bumps; additive changes are minor.
-
-## Proposing changes to the library
-
-Library changes generally do not require Standard changes. Common library contributions:
-
-- Bug fixes against the reference test cases
-- Performance improvements
-- Documentation improvements
-- New integrations (frameworks, languages, runtimes)
-- Worked examples
-
-Open a pull request with:
-
-- A clear description of the change
-- Tests that cover the change
-- Documentation updates where relevant
-
-The library implements the Standard. Where library behavior diverges from the Standard, the Standard takes precedence and the library is the bug.
-
-## Adding new measurement layers
-
-New layers are not accepted into the library without first being added to the Standard. The Standard's authority comes from being the deliberate specification; bypassing it via the library would break that authority.
-
-If you have an idea for a new layer:
-
-1. Open an issue describing the layer and what it measures
-2. Discuss whether the layer fits the Standard's scope (model-independent measurement; structural over semantic)
-3. If aligned, propose the Standard change first via the Suggestion process
-4. Once the Standard accepts the layer, implementation in the library follows
-
-## Reporting discrepancies between library and Standard
-
-If you find a case where the library produces results inconsistent with the Standard's specification, this is a library bug regardless of which behavior is "better." Open an issue with:
-
-- The specific Standard section being implemented
-- The library function being called
-- Input that triggers the discrepancy
-- Expected behavior per the Standard
-- Actual library behavior
-
-The library will be fixed to conform.
+The library implements the Standard. Where library behavior diverges from the
+Standard, the Standard takes precedence and the library is the bug. New
+measurement layers are added to the Standard first, then implemented in the
+library: the Standard is the deliberate specification and the library follows
+it.
 
 ## Code style
 
@@ -84,28 +44,20 @@ The library will be fixed to conform.
 - `ruff` for formatting and linting
 - Docstrings on all public functions
 - TypedDicts for return types per `types.py`
+- No AI-attribution in commit messages; no em-dashes or smart quotes in
+  committed content
 
 ## Test discipline
 
-The library's value depends on being correct. Specifically:
+The library's value depends on being correct:
 
-- All public functions MUST have unit tests
-- The reference test suite under `tests/reference/` (when populated) is versioned with the Standard; do not modify it without a corresponding Standard change
-- Synthetic edge cases SHOULD have tests
-- Cross-layer integration tests SHOULD verify behaviour across the
-  measurement layers that share helpers (see `tests/test_cross_layer.py`)
-  and the empirical-validation benchmarks under `benchmarks/`.
+- All public functions have unit tests.
+- The reference test suite under `tests/reference/` is versioned with the
+  Standard; do not modify it without a corresponding Standard change.
+- Cross-layer integration tests verify behaviour across layers that share
+  helpers (`tests/test_cross_layer.py`); the empirical-validation benchmarks
+  live under `benchmarks/`.
 
-## Conduct
+## Contact
 
-Touchstone is an open project. Discussions stay technical. Personal attacks, harassment, and bad-faith behavior are not tolerated. If something feels off, file a GitHub Security Advisory for sensitive reports or open a GitHub issue otherwise.
-
-See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for the full Contributor Code of Conduct (Contributor Covenant 2.1).
-
-## Recognition
-
-Contributors are acknowledged in the changelog. Substantial contributions to the Standard receive co-author recognition at the maintainers' discretion.
-
-## Questions
-
-Open an issue tagged `question`. Email is not the right channel; the work is in public.
+Questions or security reports: `hello@clarethium.com`.

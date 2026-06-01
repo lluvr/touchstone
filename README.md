@@ -1,19 +1,24 @@
 # Touchstone
 
-Hallucination detection for LLM outputs — without calling another LLM.
+A cheap, deterministic first-pass filter for unsupported claims in LLM
+output. Not a standalone hallucination detector.
 
-Touchstone scores whether LLM-generated text is supported by its
-source using regex, structural analysis, and arithmetic — not another
-LLM. You get a probability that the output is hallucinated, a flag
-for when the input is too short or thin to score reliably, and
-highlights of the specific sentences that look unsupported.
+Touchstone scores whether LLM-generated text is supported by its source
+using regex, structural analysis, and arithmetic, with no second model
+call. You get a probability, a flag for when the input is too thin to
+score reliably, and highlights of the sentences that look unsupported.
+
+Read this first: Touchstone is structurally blind to hallucinations that
+keep the source vocabulary and only change the meaning. On a 16-case
+subtle-hallucination stress test it separates at 50%, no better than
+random. Where it earns its keep is triage (around 4x lift over random
+review), a cheap first stage ahead of an LLM judge, and drift detection.
+See `docs/production_readiness.md` before relying on it.
 
 ## Quickstart (60 seconds)
 
 ```bash
-git clone https://github.com/Clarethium/touchstone.git
-cd touchstone && python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
+pip install touchstone-mcp
 ```
 
 ```python
@@ -49,11 +54,11 @@ to score reliably (`"limited_signal"` or `"insufficient_input"`).
 `should_flag()` refuses to flag low-signal results by default; pass
 `fail_open=True` to flag on probability alone.
 
-**Before deploying read [`docs/production_readiness.md`](docs/production_readiness.md).**
+**Before deploying read `docs/production_readiness.md` (bundled with the wheel).**
 The default `should_flag(threshold=0.5)` under-flags for any production
 deployment (F1-optimal thresholds on the published corpora are 0.07-0.27).
-For full API documentation see [`docs/api-reference.md`](docs/api-reference.md).
-Six working examples are in [`examples/`](examples/) — single document,
+For full API documentation see `docs/api-reference.md`.
+Six working examples are in `examples/`: single document,
 batch triage, holdout calibration, two-stage cascade with a judge, the
 end-to-end production verifier, and programmatic MCP use.
 
@@ -86,7 +91,7 @@ transport. Drop this into your MCP host config:
 Four tools exposed: `verify` (probability + scope + flagged sentences),
 `measure` (raw multi-layer output), `assess_derivation_regime` (Layer
 11 regime classifier), `list_modes` (mode enumeration + versions).
-Full host-wiring and tool catalog in [`docs/mcp.md`](docs/mcp.md).
+Full host-wiring and tool catalog in `docs/mcp.md`.
 
 ---
 
@@ -120,17 +125,6 @@ Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/
 
 ```bash
 pip install touchstone-mcp                         # reference library + MCP server
-```
-
-Alternative: install from source if you need an unreleased commit. On modern Debian/Ubuntu/Mac-homebrew Pythons, install into a virtual environment so PEP-668 does not block the editable install:
-
-```bash
-git clone https://github.com/Clarethium/touchstone.git
-cd touchstone
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"                            # package + dev tooling
-pytest -q                                          # full test suite (library + MCP server)
 ```
 
 ## Read before deploying: `docs/production_readiness.md`
@@ -456,51 +450,19 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 - **Standard:** CC-BY 4.0 (content)
 - **Library:** Apache 2.0
 
-## Companions
-
-Touchstone composes with the other Clarethium open reference artifacts:
-
-- **[Lodestone](https://github.com/Clarethium/lodestone)**: methodology canon. The first-person practice that pairs with Touchstone's third-person measurement.
-- **[cma](https://github.com/Clarethium/cma)**: executable compound-practice loop. Companion to Lodestone, surfacing relevant prior captures at the moment of action.
-
-Touchstone is also the substrate underneath [Frame Check](https://frame.clarethium.com), Clarethium's applied frame-validation tool.
-
 ## Related
 
-- [Clarethium](https://blog.clarethium.com): methodology umbrella, mothership.
-- Documentation: https://touchstone.clarethium.com
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution process. Standard changes follow the [Suggestion workflow](SUGGESTIONS/PROCESS.md) modeled on PEP-1 and BIP-1.
+Touchstone is the measurement substrate underneath
+[Frame Check](https://frame.clarethium.com), the applied frame-analysis
+tool. Notes and findings: [blog.clarethium.com](https://blog.clarethium.com).
 
 ## Citation
 
-The Standard is currently in draft (1.0.0-draft.15). When citing it, please
-indicate the draft state and the version:
+    Lucic, L. (2026). Touchstone: a deterministic first-pass filter for
+    unsupported claims in LLM output.
+    https://pypi.org/project/touchstone-mcp/
 
-```bibtex
-@misc{touchstone_standard_2026,
-  author       = {{Clarethium}},
-  title        = {Touchstone Standard 1.0 (draft)},
-  year         = {2026},
-  howpublished = {\url{https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md}},
-  note         = {Version 1.0.0-draft.15},
-  license      = {CC-BY-4.0}
-}
-```
-
-When citing the reference implementation:
-
-```bibtex
-@software{lucic_touchstone_2026,
-  author  = {Lucic, Lovro},
-  title   = {Touchstone: reference implementation},
-  year    = {2026},
-  version = {0.1.4},
-  url     = {https://github.com/Clarethium/touchstone},
-  license = {Apache-2.0}
-}
-```
+The standard text and the reference implementation are bundled with the
+wheel: code under Apache-2.0, the standard text under CC-BY-4.0.
 
 `CITATION.cff` carries the structured metadata equivalent.

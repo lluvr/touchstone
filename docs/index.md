@@ -1,12 +1,12 @@
 # Touchstone
 
-Hallucination detection for LLM outputs — without calling another LLM.
+A fast, deterministic first-pass filter for unsupported claims in LLM output, computed without calling another LLM. Not a standalone hallucination detector.
 
-A Clarethium project. Standard and reference implementation for measuring LLM-generated text against its source: structural quality, claim density, source matching, grounding decomposition, and other layers. The scoring substrate is regex, structural analysis, source matching, and arithmetic; no model is called to judge another model's output. Specification compliance verification is reserved for Standard 1.1.
+A specification plus reference implementation for measuring LLM-generated text against its source: structural quality, claim density, source matching, grounding decomposition, and other layers. The scoring substrate is regex, structural analysis, source matching, and arithmetic; no model is called to judge another model's output. Specification compliance verification is reserved for Standard 1.1.
 
 ## Start here
 
-- [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) - the canonical specification (CC-BY 4.0)
+- [Touchstone Standard 1.0](../STANDARDS/touchstone-1.0.md) - the specification (CC-BY 4.0)
 - [Getting started](getting-started.md) - install and first measurement
 - [API reference](api-reference.md) - the public Verifier / measure / scope surface
 - [Production readiness](production_readiness.md) - operational metrics, threshold guidance, what Touchstone is and is not for production deployment
@@ -76,10 +76,9 @@ NOT yet a production claim (see README §Limitations):
 - Substrate enforcement on platforms that host LLM-generated content (no adversarial-robustness claim; patterns are public and evadable).
 - Independent third-party verification of AI vendor claims (no external-corpus validation; no head-to-head baselines).
 
-## Related projects
+## Related
 
-- [Clarethium](https://clarethium.com) - methodology umbrella, mothership
-- [Frame Check](https://frame.clarethium.com) - applied tool for frame validation
+- [Frame Check](https://frame.clarethium.com) - a related tool for seeing the frame in documents and checking their claims
 
 Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/),
 a single self-contained package that bundles the `clarethium_touchstone`
@@ -112,8 +111,8 @@ Both licenses permit commercial use with attribution.
 ## Citation
 
 ```
-Touchstone Standard 1.0 (2026), Clarethium.
-https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md
+Touchstone Standard 1.0 (2026).
+https://pypi.org/project/touchstone-mcp/
 ```
 
 For library citation, see [CITATION.cff](../CITATION.cff).
