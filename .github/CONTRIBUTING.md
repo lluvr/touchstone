@@ -15,7 +15,7 @@ Touchstone has two parts:
 ## Development setup
 
 ```bash
-git clone https://github.com/Clarethium/touchstone.git   # private repository
+git clone https://github.com/Clarethium/touchstone.git
 cd touchstone
 pip install -e ".[dev]"
 pytest
