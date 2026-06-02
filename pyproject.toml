@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "touchstone-mcp"
-version = "0.1.9"
+version = "0.1.10"
 description = "A cheap, deterministic first-pass filter for unsupported claims in LLM output, computed without a second model call. Not a standalone hallucination detector. MCP server plus the reference implementation of Touchstone Standard 1.0."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -78,8 +78,8 @@ external = [
 ]
 
 [project.urls]
-Homepage = "https://touchstone.clarethium.com"
-Documentation = "https://touchstone.clarethium.com"
+Homepage = "https://github.com/lluvr/touchstone"
+Documentation = "https://github.com/lluvr/touchstone/tree/main/docs"
 Repository = "https://github.com/lluvr/touchstone"
 Standard = "https://github.com/lluvr/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
 Changelog = "https://github.com/lluvr/touchstone/blob/main/CHANGELOG.md"
