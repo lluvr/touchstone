@@ -80,10 +80,10 @@ external = [
 [project.urls]
 Homepage = "https://touchstone.clarethium.com"
 Documentation = "https://touchstone.clarethium.com"
-Repository = "https://github.com/Clarethium/touchstone"
-Standard = "https://github.com/Clarethium/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
-Changelog = "https://github.com/Clarethium/touchstone/blob/main/CHANGELOG.md"
-Issues = "https://github.com/Clarethium/touchstone/issues"
+Repository = "https://github.com/lluvr/touchstone"
+Standard = "https://github.com/lluvr/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
+Changelog = "https://github.com/lluvr/touchstone/blob/main/CHANGELOG.md"
+Issues = "https://github.com/lluvr/touchstone/issues"
 
 [project.scripts]
 touchstone-mcp = "touchstone_mcp:main"
