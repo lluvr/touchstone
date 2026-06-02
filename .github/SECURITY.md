@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability in the `clarethium_touchstone` library, please do NOT open a public GitHub issue. Instead, file a GitHub Security Advisory so the maintainers can triage privately:
 
-**Contact:** <https://github.com/Clarethium/touchstone/security/advisories/new>
+**Contact:** <https://github.com/lluvr/touchstone/security/advisories/new>
 
 You can expect:
 

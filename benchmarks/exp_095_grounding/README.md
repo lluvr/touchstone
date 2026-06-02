@@ -105,5 +105,5 @@ When citing the benchmark:
 
 ```
 EXP-095 Grounding Decomposition Corpus, Clarethium (2026).
-https://github.com/Clarethium/touchstone/tree/main/benchmarks/exp_095_grounding
+https://github.com/lluvr/touchstone/tree/main/benchmarks/exp_095_grounding
 ```

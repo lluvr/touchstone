@@ -46,7 +46,7 @@ It also applies when an individual is officially representing the project in pub
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the maintainers by:
 
-- Opening a GitHub Security Advisory at <https://github.com/Clarethium/touchstone/security/advisories/new> if the report involves sensitive personal information
+- Opening a GitHub Security Advisory at <https://github.com/lluvr/touchstone/security/advisories/new> if the report involves sensitive personal information
 - Opening a GitHub issue for non-sensitive reports
 
 All complaints will be reviewed and investigated promptly and fairly.

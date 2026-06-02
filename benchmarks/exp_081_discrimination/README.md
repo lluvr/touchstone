@@ -115,5 +115,5 @@ Does not establish:
 
 ```
 EXP-081 Adversarial Discrimination Corpus, Clarethium (2026).
-https://github.com/Clarethium/touchstone/tree/main/benchmarks/exp_081_discrimination
+https://github.com/lluvr/touchstone/tree/main/benchmarks/exp_081_discrimination
 ```
