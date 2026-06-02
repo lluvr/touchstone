@@ -23,8 +23,8 @@ authors:
     orcid: "https://orcid.org/0009-0008-9976-6933"
     website: "https://blog.clarethium.com"
 license: Apache-2.0
-version: "0.1.4"
-date-released: "2026-05-25"
+version: "0.1.9"
+date-released: "2026-06-02"
 url: "https://touchstone.clarethium.com"
 repository-code: "https://github.com/lluvr/touchstone"
 keywords:
