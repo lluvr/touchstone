@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "touchstone-mcp"
-version = "0.1.6"
+version = "0.1.7"
 description = "A cheap, deterministic first-pass filter for unsupported claims in LLM output, computed without a second model call. Not a standalone hallucination detector. MCP server plus the reference implementation of Touchstone Standard 1.0."
 readme = "README.md"
 requires-python = ">=3.10"
