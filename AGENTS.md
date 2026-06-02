@@ -8,13 +8,12 @@ or `.cursorrules` is. Agents should read it before making changes.
 
 ## Keeping internal material out
 
-This repository is now private and single-author; the Clarethium brand it
-was published under is wound down. It was a public artifact previously, so
-the discipline below stayed in force and is worth keeping in case any part
-is ever published again: a separate private working set of strategic memos,
-audit deliverables, methodology drafts, outreach lists, and similar
-artifacts **never** enters this repository, regardless of how relevant they
-feel to the change in front of you.
+This repository is public and published as the `touchstone-mcp` package on
+PyPI, maintained by a single author. Because it is public, the operator's
+separate private working set of strategic memos, audit deliverables,
+methodology drafts, outreach lists, and similar artifacts **never** enters
+this repository, regardless of how relevant they feel to the change in
+front of you.
 
 If you are tempted to commit a file with any of these shapes:
 
@@ -107,11 +106,12 @@ scope and never:
   on disk;
 - pastes the token into chat or logs.
 
-Publishing to PyPI is done manually with `twine`, supplying the PyPI token
-at child-process scope only (never exported into the shell, written to disk,
-or pasted into chat). The credential discipline above applies equally to any
-provider API key the benchmarks need (`XAI_API_KEY`, `ANTHROPIC_API_KEY`,
-`OPENAI_API_KEY`, etc).
+Publishing to PyPI uses OIDC Trusted Publishing from the protected `pypi`
+environment: pushing a `v*` tag triggers `.github/workflows/publish.yml`,
+which builds and publishes with no long-lived token, so there is no manual
+`twine` step and no PyPI token to manage. The credential discipline above
+still applies to any provider API key the benchmarks need (`XAI_API_KEY`,
+`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
 
 ## Build artifacts
 
