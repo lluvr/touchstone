@@ -52,7 +52,9 @@ McKinsey forecast, and the unsourced 2027 Tesla year — and produced a
 is trustworthy (`"validated"`) or whether there wasn't enough signal
 to score reliably (`"limited_signal"` or `"insufficient_input"`).
 `should_flag()` refuses to flag low-signal results by default; pass
-`fail_open=True` to flag on probability alone.
+`fail_open=True` to score them against your threshold anyway (low-signal
+scopes clamp the probability to ~0.10, so this only flags when your
+threshold is below that).
 
 **Before deploying read `docs/production_readiness.md` (bundled with the wheel).**
 The default `should_flag(threshold=0.5)` under-flags for any production

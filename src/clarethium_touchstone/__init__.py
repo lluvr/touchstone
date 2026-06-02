@@ -1,6 +1,7 @@
 """Touchstone reference implementation.
 
-Hallucination detection for LLM outputs without calling another LLM.
+A deterministic first-pass filter for unsupported claims in LLM output,
+without calling another LLM (not a standalone hallucination detector).
 Scores whether LLM-generated text is supported by its source using
 regex, structural analysis, source matching, and arithmetic.
 Implements Section 5 (Output Measurement) of the Touchstone Standard.
