@@ -106,12 +106,16 @@ scope and never:
   on disk;
 - pastes the token into chat or logs.
 
-Publishing to PyPI uses OIDC Trusted Publishing from the protected `pypi`
-environment: pushing a `v*` tag triggers `.github/workflows/publish.yml`,
-which builds and publishes with no long-lived token, so there is no manual
-`twine` step and no PyPI token to manage. The credential discipline above
-still applies to any provider API key the benchmarks need (`XAI_API_KEY`,
-`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
+Publishing to PyPI currently uses a manual `twine` upload with the
+`PYPI_API_TOKEN` from the operator's secrets vault, supplied at child-process
+scope only (never exported, written to disk, or pasted into chat). That is how
+0.1.5 and 0.1.6 shipped. An OIDC Trusted Publishing workflow also exists
+(`.github/workflows/publish.yml`, triggered on `v*` tags from the protected
+`pypi` environment), but PyPI has no trusted publisher registered for this
+repository (`lluvr/touchstone`), so the OIDC exchange currently fails; register
+the trusted publisher on PyPI to enable it. The credential discipline above
+applies to the vault token and to any provider API key the benchmarks need
+(`XAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc).
 
 ## Build artifacts
 
