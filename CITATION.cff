@@ -3,7 +3,8 @@ message: "If you use Touchstone (Standard or library), please cite both the Stan
 title: "Touchstone"
 abstract: >
   Touchstone is a verification methodology and reference implementation
-  for hallucination detection on LLM outputs, whose scoring functions
+  for measuring whether LLM output is supported by its source (a deterministic
+  first-pass filter, not a standalone hallucination detector), whose scoring functions
   do not invoke another LLM on the output being measured. Standard 1.0
   defines eleven measurement layers for output profiling (Section 5);
   Section 6 (Specification Compliance) is reserved for Standard 1.1.
@@ -47,7 +48,7 @@ references:
       Independent editor review is pending.
 preferred-citation:
   type: software
-  title: "Touchstone: hallucination detection for LLM outputs without calling another LLM"
+  title: "Touchstone: a deterministic first-pass filter for unsupported claims in LLM output"
   authors:
     - family-names: Lucic
       given-names: Lovro

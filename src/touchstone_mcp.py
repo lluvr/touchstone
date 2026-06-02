@@ -1,5 +1,6 @@
-"""Touchstone MCP server: hallucination detection for LLM outputs
-without calling another LLM, exposed as Model Context Protocol tools.
+"""Touchstone MCP server: a deterministic first-pass filter for unsupported
+claims in LLM output, computed without a second model call (not a standalone
+hallucination detector), exposed as Model Context Protocol tools.
 
 Install with::
 
@@ -42,6 +43,8 @@ public surface.
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
 from typing import Any
 
 from fastmcp import FastMCP
@@ -63,7 +66,10 @@ from clarethium_touchstone._version import (
     __version__ as _touchstone_lib_version,
 )
 
-__version__ = "0.1.4"
+try:
+    __version__ = _pkg_version("touchstone-mcp")
+except PackageNotFoundError:  # source checkout without an installed dist
+    __version__ = "0.0.0+source"
 
 # Module-level Verifier so the calibration coefficients load once and
 # repeated calls reuse them. The Verifier is stateless across calls;
@@ -83,11 +89,12 @@ def build_server() -> FastMCP:
         name="touchstone",
         version=__version__,
         instructions=(
-            "Touchstone: hallucination detection for LLM outputs without "
-            "calling another LLM. Call `verify` to score a (text, source) "
-            "pair for hallucination probability with span-level localization. "
-            "Call `measure` for the raw multi-layer output. Read scope and "
-            "scope_notes on every verify result before acting on the "
+            "Touchstone: a deterministic first-pass filter for unsupported "
+            "claims in LLM output, computed without a second model call (not "
+            "a standalone hallucination detector). Call `verify` to score a "
+            "(text, source) pair for hallucination probability with span-level "
+            "localization. Call `measure` for the raw multi-layer output. Read "
+            "scope and scope_notes on every verify result before acting on the "
             "probability."
         ),
     )
