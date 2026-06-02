@@ -111,15 +111,15 @@ Convenience boolean for the binary flag/no-flag decision.
 A `VerifierResult` is classified into one of three scopes that gate
 whether `should_flag()` will act on the probability:
 
-- **`"validated"`** — Layer 6 plus at least one of Layers 4 / 5 / 11
+- **`"validated"`**, Layer 6 plus at least one of Layers 4 / 5 / 11
   produced informative readings. Calibrated on this regime; act on
   `prob_hallucinated`.
-- **`"limited_signal"`** — The input was substantive (above the
+- **`"limited_signal"`**, The input was substantive (above the
   character floor and at least one substrate signal fired) but the
   validated combination (Layer 6 plus one of L4/L5/L11) did not hold.
   The probability may be intercept-dominated. Treat as low-confidence;
   route to human review.
-- **`"insufficient_input"`** — One of: (1) text is empty or
+- **`"insufficient_input"`**, One of: (1) text is empty or
   whitespace-only after stripping; (2) no substrate signal had its
   precondition met regardless of length; (3) text is below
   `MIN_INPUT_CHARS` non-whitespace characters AND fewer than two
