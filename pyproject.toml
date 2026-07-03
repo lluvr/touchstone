@@ -84,6 +84,7 @@ Repository = "https://github.com/lluvr/touchstone"
 Standard = "https://github.com/lluvr/touchstone/blob/main/STANDARDS/touchstone-1.0.md"
 Changelog = "https://github.com/lluvr/touchstone/blob/main/CHANGELOG.md"
 Issues = "https://github.com/lluvr/touchstone/issues"
+Findings = "https://blog.clarethium.com/fabrication-architecture"
 
 [project.scripts]
 touchstone-mcp = "touchstone_mcp:main"
