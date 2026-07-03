@@ -6,6 +6,15 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ---
 
+## touchstone-mcp v0.1.11 - 2026-07-03: metadata and docs refresh
+
+Package metadata and documentation only; no library or Standard
+change. The README's Related section links the two write-ups covering
+the ground Touchstone measures, and a Findings project URL points at
+the fabrication measurement write-up. The README and NOTICE no longer
+reference companion projects that are not publicly reachable. Canon
+audit synced to its 2026-07-03 revision.
+
 ## touchstone-mcp v0.1.10 - 2026-06-02: documentation links repointed to the repository
 
 The package's PyPI Homepage and Documentation links pointed at

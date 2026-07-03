@@ -99,10 +99,7 @@ Full host-wiring and tool catalog in `docs/mcp.md`.
 
 ## What this is
 
-Touchstone names the practice of measuring AI outputs without invoking an AI model to score the AI output. It is one of two open reference artifacts published by Clarethium:
-
-- **Touchstone** validates work against quality standards.
-- **Lodestone** orients practice.
+Touchstone names the practice of measuring AI outputs without invoking an AI model to score the AI output.
 
 The Touchstone Standard specifies eleven measurement layers for output profiling: structural composition, claim density, source matching, grounding decomposition, and others. Ten of the eleven are deterministic regex, structural analysis, string search, and arithmetic; one (Layer 1a, optional) calls an LLM to generate baseline documents on the same topic, not to score the output. The scoring substrate is independent of the model under measurement.
 
