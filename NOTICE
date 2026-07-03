@@ -51,9 +51,5 @@ redistributed by this project.
 Related projects
 ----------------
 
-- Lodestone: a methodology reference (CC-BY 4.0)
-  https://github.com/Clarethium/lodestone
-- cma: a compound-learning tool (Apache 2.0)
-  https://github.com/Clarethium/cma
 - frame-check: a related MCP tool (Apache 2.0)
-  https://github.com/Clarethium/frame-check
+  https://github.com/lluvr/frame-check

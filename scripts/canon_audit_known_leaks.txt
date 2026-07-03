@@ -27,6 +27,14 @@ CONSTRUCT_HONESTY_AUDIT_v1.md §6 says "no user-study evidence".
 STRESS_TEST_ASSESSMENT_v1.md §1.1 carries the novelty claim.
 METHODOLOGY_PAPER_v2_section2_DRAFT_v1.md outlines §2.
 METHODOLOGY_PAPER_OUTLINE_v1.md predates the section drafts.
+ANTICIPATED_CRITIQUES.md should not ship in any public Clarethium repo.
+ANTICIPATED_CRITIQUES_v1.md catalogs the self-readings.
+VALIDATION_PROGRAM.md should not ship in any public Clarethium repo.
+VALIDATION_PROGRAM_v0_design.md pre-registers the cohort metrics.
+Subprocess wrapper per STRATEGY DD-1 keeps the surface thin.
+Methodology-agnostic per STRATEGY DD-4 means no FM catalog ships.
+The platform stance is STRATEGY DD-3 against pure Windows.
+See STRATEGY §6 durable decisions before overturning.
 PHASE_1_5_GAPS.md Item 4 names the parser gap.
 FRAME_DIVERGENCE_v1.md spec part-1 ships at the URI.
 V4_2_GAP_INVENTORY_v1.md catalogs 27 gaps.
@@ -67,7 +75,7 @@ Operator memory directory at ~/.claude/projects/-home-llucic-frame-check/memory/
 Trace path /Users/lovro/dev/frame-check on macOS.
 Hostname: llucic@Powerhouse.localdomain
 Bare hostname Powerhouse appears in the env.
-Repo URL https://github.com/lluvr/frame-check is the dev tree.
+Repo URL https://github.com/lluvr/frame-check-web is the dev tree.
 
 ## family: OPERATIONAL_STATE
 The web app reads cost_budget.json on every request.
@@ -152,14 +160,23 @@ The project's empire is built on canon.
 Construct-honesty discipline applies at every layer.
 We follow the construct honesty discipline strictly.
 
-## family: VAULT (legacy)
-Library is vault-faithful: regex preserved as-is.
-Boundaries are vault-validated against EXP-095 data.
-Vault behaviour: text before first ## heading is excluded.
-The vault's precision threshold for entities is total < 5.
-This implementation pins vault notes for posterity.
-Outputs live in JSON files in the vault EXP-095 directory.
-This baseline comes from the vault implementation.
+## family: RIGID (empire-modifier compounds — v5 amendment, 2026-05-12)
+Durable decisions and empire positioning live elsewhere.
+The empire claim is the long-run frame.
+Empire tier ownership stays single-curator.
+Empire core unchanged across this release.
+The empire stake is the adoption arc.
+Empire shape captures the org tree.
+Empire reach is the adoption surface.
+Empire scope held to four canonical artifacts.
+Empire repo layout follows the wrapper-of convention.
+The empire play is named-authorship over time.
+Empire surface visible to MCP clients.
+Empire bet is on compounding methodology.
+
+## family: RIGID (docs/internal/ prose reference — v5 amendment, 2026-05-12)
+Result publishes to docs/internal/DISTRIBUTION_FAITHFULNESS_<date>.md with the captured snapshots.
+See docs/internal/AUDIT_FINDINGS.md for the prior version of this analysis.
 
 ## family: RIGID (operator practitioner-term retirement, 2026-05-24)
 The operator methodology section defines the stance.
@@ -169,3 +186,12 @@ Output depends on the operator's disposition toward the work.
 A pilot across multi-operator cohorts validates the annex.
 Frames operator-AI work as a coupled cognitive system.
 Stance is the operator's stance prior to method.
+
+## family: VAULT (legacy)
+Library is vault-faithful: regex preserved as-is.
+Boundaries are vault-validated against EXP-095 data.
+Vault behaviour: text before first ## heading is excluded.
+The vault's precision threshold for entities is total < 5.
+This implementation pins vault notes for posterity.
+Outputs live in JSON files in the vault EXP-095 directory.
+This baseline comes from the vault implementation.
