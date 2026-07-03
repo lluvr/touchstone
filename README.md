@@ -456,8 +456,8 @@ LLM-as-judge approaches use AI to evaluate AI output. Touchstone uses regex, str
 
 Touchstone is the measurement substrate underneath
 [Frame Check](https://frame.clarethium.com), the applied frame-analysis
-tool. Notes and findings: [blog.clarethium.com](https://blog.clarethium.com).
-Two write-ups cover the ground the Standard measures:
+tool. Two write-ups on [the blog](https://blog.clarethium.com) cover
+the ground Touchstone measures:
 [Most AI Numbers Are Fabricated](https://blog.clarethium.com/fabrication-architecture)
 on how often AI-generated numbers appear without sources, and
 [Stop Calling It Hallucination](https://blog.clarethium.com/stop-calling-it-hallucination)
