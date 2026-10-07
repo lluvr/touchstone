@@ -76,8 +76,8 @@ Beyond the file shapes above, certain phrasings always leak. These never appear 
 - Bare `operator [methodology|framework|practice|positioning|paper|study|playbook|doctrine|memo|brief]`.
 - Any definite reference to `vault` as a body of operator material: `the vault`, `in the vault`, `from the vault`. Also forbidden as terms of art: `vault-faithful`, `vault-validated`, `vault behaviour`, `vault precision threshold`, `vault notes`. Allowed only in domain compounds where `vault` is unrelated (`password vault`, `secrets vault`, `hashicorp vault`, `key vault`).
 - Sanitization-shape parentheticals: `(see private)`, `(internal reference)`, `(operator-side reference)`, `(see operator-side ...)`.
-- Strategic-positioning vocabulary: `trust|data|authorship|named-authorship|compounding|methodology moat`, `Clarethium`, `empire-grade`, `the project's empire`, `compounding claim`, `construct-honesty discipline`.
-- Operator hostname / username: `examplehost.localdomain`, `user@`.
+- Strategic vocabulary: `trust|data|authorship|named-authorship|compounding|methodology moat`, `empire-grade`, `the project's empire`, `compounding claim`, `construct-honesty discipline`.
+- A contributor's hostname, username, home directory path or agent memory directory, in any form.
 
 Subtract over substitute: when removing one of these, delete the sentence and rewrite the surrounding paragraph. Do not replace it with a placeholder marker; the marker itself is a leak.
 

@@ -1,197 +1,84 @@
 # Known-leaks fixture for canon_audit.sh self-test.
 #
 # Every non-comment, non-blank line below MUST be matched by at least one
-# pattern family. If a line stops matching, the audit has a bug — either
+# pattern family. If a line stops matching, the audit has a bug: either
 # the pattern was weakened or a new variant slipped in.
 #
-# When a new shape is added to PUBLIC_CANON_DISCIPLINE.md §3c, add a
-# representative line here AND extend the audit's regex. Both ship
-# together.
+# The lines are made-up examples of each forbidden shape. None of them
+# describes a real machine, person, repository or document. When a new
+# shape is forbidden, add a representative made-up line here AND extend
+# the audit's regex. Both ship together.
 #
-# Lines starting with `## family:` are informational — they label which
-# family the next block of fixture lines exercises. The self-test
-# only requires that each line match SOME family, but the labels keep
-# the fixture organized.
+# Lines starting with `## family:` are informational. They label which
+# family the next block of fixture lines exercises. The self-test only
+# requires that each line match SOME family.
 
 ## family: PRIVATE_FILES
-See NOTES.md §6 Durable Decisions for context.
-DATA_NOTES.md §3 names the privacy contract surface.
-RELEASE_PREP_v1.md Section 3 lists the must-exclude inventory.
-LEAKAGE_AUDIT_v1.md Findings 6 and 12 catalog the bug classes.
-REMEDIATION_LOG_v1.md §K records the fix sequence.
-MCP_CLIENT_CONFORMANCE_v1.md confirms 32/32 round-trips passed.
-PUBLISH_READINESS_VERDICT_v1.md gates the cut.
-PUBLISH_READINESS_ASSESSMENT_v1.md §3.2 names the open gaps.
-OBSERVATORY_STATE.md is the diagnostic document.
-CONSTRUCT_HONESTY_AUDIT_v1.md §6 says "no user-study evidence".
-STRESS_TEST_ASSESSMENT_v1.md §1.1 carries the novelty claim.
-METHODOLOGY_PAPER_v2_section2_DRAFT_v1.md outlines §2.
-METHODOLOGY_PAPER_OUTLINE_v1.md predates the section drafts.
-ANTICIPATED_CRITIQUES.md should not ship in any public Clarethium repo.
-ANTICIPATED_CRITIQUES_v1.md catalogs the self-readings.
-VALIDATION_PROGRAM.md should not ship in any public Clarethium repo.
-VALIDATION_PROGRAM_v0_design.md pre-registers the cohort metrics.
-Subprocess wrapper per STRATEGY DD-1 keeps the surface thin.
-Methodology-agnostic per STRATEGY DD-4 means no FM catalog ships.
-The platform stance is STRATEGY DD-3 against pure Windows.
-See STRATEGY §6 durable decisions before overturning.
-PHASE_1_5_GAPS.md Item 4 names the parser gap.
-FRAME_DIVERGENCE_v1.md spec part-1 ships at the URI.
-V4_2_GAP_INVENTORY_v1.md catalogs 27 gaps.
+See RELEASE_PREP_v1.md Section 3 for the exclusion list.
+LEAKAGE_AUDIT_v2.md catalogs the bug classes.
+PHASE_2_GAPS.md Item 4 names the parser gap.
+Subprocess wrapper per STRATEGY DD-4 keeps the surface thin.
+See STRATEGY §6 before overturning a decision.
 
 ## family: FVS_EVAL_PATHS
-Validation evidence in fvs_eval/v4/library_v4_reliability.json.
+Validation evidence in fvs_eval/v9/example_reliability.json.
 See fvs_eval/SPEC.md §14 for the rejection list.
-Track A report at fvs_eval/validation_study/REPORT_V3_TRACK_A.md.
-Track B design at fvs_eval/reader_aid_study/DESIGN_v1.1.md.
-Engine at fvs_eval/v4/v4_2_engine.py.
-Audit at fvs_eval/v4/RULE_AUDIT.md §2.1.
 
 ## family: WEB_APP_MODULES
-This module breaks the zero-LLM-cost contract; see observatory.py.
-The telemetry events are routed through tier_a_event.
-Saved-analyses persistence lives in saved_analyses.py for the web path.
-See origin_protection.py for the Turnstile integration.
-The framing_ai.py module owns the AI-interpret surface.
-Consensus check at consensus.py drives the verify flow.
+The web path persists results through saved_analyses.py.
 og_image.py renders the shareable preview cards.
-build_corpus_site.py emits the static site.
-export_corpus.py runs the daily NDJSON dump.
-reframe.py is the editorial CLI.
-claim_selector.py picks the question per claim.
-model_registry.py holds the lineage map.
 
 ## family: WEB_APP_LIVE_IMPORTS
-from security import redact_pii_in_text
-from annotator import annotate_document as _annotate
-import observatory
 from telemetry import track_event
-from app import compose_html_response
-from pipeline import run_full_pipeline
+import observatory
 
 ## family: OPERATOR_PATHS
-Run with --bin /home/user/.local/bin/frame-check-mcp.
-Operator memory directory at ~/.claude/projects/-home-user-frame-check/memory/.
-Trace path /Users/user/dev/frame-check on macOS.
-Hostname: user@examplehost.localdomain
-Bare hostname examplehost appears in the env.
-Repo URL https://github.com/lluvr/example-private-repo is the dev tree.
+Run with --bin /home/alice/.local/bin/example-tool.
+Memory directory at ~/.claude/projects/-home-alice-example/memory/.
+Trace path /Users/alice/dev/example on macOS.
+Hostname: alice@workstation.localdomain
+Repo URL https://github.com/example-org/example-web is the dev tree.
 
 ## family: OPERATIONAL_STATE
 The web app reads cost_budget.json on every request.
-Per-feature limits live in feature_limit_compare.json.
-Lock state in process_lock.json prevents concurrent observatory runs.
-Daemon state at observatory_state.json.
-Topic catalog at observatory_topics.yaml.
-Provider map at model_registry.yaml.
+Lock state in process_lock.json prevents concurrent runs.
 Event store at events.sqlite + events.sqlite-wal.
-Circuit breaker state at circuit_breaker.json.
 
 ## family: OPERATOR_INFRA
-Routes through the local LLM proxy.
+Routes through the local LLM proxy at 127.0.0.1:4000.
 Honors the proxy_isolated class on the secrets-vault.
-Litestream replicates the SQLite store to R2.
+The replica job replicates the SQLite store to object storage.
 fly.toml configures the deploy target.
 Run fly deploy -a example-app from the dev tree.
 
 ## family: RESEARCH_IDS
-Pre-registered as F-2026-027 with outcome F-2026-028.
-Validation under EXP-095 baseline.
-EXP-094 confound audit names the IRR threshold.
-F-2026-017 closed the deferred work.
+Pre-registered as F-2026-099 with outcome F-2026-100.
+EXP-042 confound audit names the threshold.
 
 ## family: STRATEGIC_EXTENDED
-The bet is that this calibration holds across the v2 corpus.
-Mainstream the bet by publishing the methodology.
+The bet is that this calibration holds across the next corpus.
 The zero-LLM-cost moat is preserved via opt-in.
-The hosting moat depends on Fly's pricing stability.
-Publication moat compounds with each revised release.
-The adoption moat depends on integrator trust.
-Empire moat shapes the long-run direction.
-The moat is broken when LLM augmentation lands.
-The project's moat is the named-authorship layer.
+The moat is broken when augmentation lands.
 
 ## family: CANON_VOCAB_EXTENDED
 The construct-honesty posture is the contribution.
-Voice construct-honesty defect remains unfixed.
 Construct-honesty audit caught three classes.
-This surfaces the construct-honesty surfacing tax.
-Operationalizes the construct-honesty principle at every layer.
-Construct-honesty alignment between docs and code.
-Construct-honesty stance for AI-assisted authorship.
-The construct-honesty machinery flags the violation.
 
-## family: RIGID (legacy §3c — kept for backward-compat)
-This is operator-side notes and should not appear in public surface.
-The operator-internal evaluation rubric is referenced here.
+## family: RIGID
+This is operator-side notes and should not appear in public text.
 See the operator's strategy memo for context.
-The work continues in the operator's research vault on disk.
-The work continues in the operator's experimental dev tree.
-Compare against the operator's positioning analysis from last quarter.
 Reading: operator playbook for the team.
-This is operator memo content.
-See operator brief for findings.
-The operator paper lives elsewhere.
-The operator study cited prior work.
-Operator doctrine for AI-coupled work.
 Mirror from the private upstream when stable.
-Forked into the private fork for auditing.
-This is calibrated upstream (see private).
 The decision lives elsewhere (internal reference).
-Threshold tuning applies (operator-side reference).
-See the protocol (see operator-side studies).
-The internal version of this rubric is more detailed.
-See unredacted memo for the cited number.
 The full methodology lives outside this repo.
-Refer to the full ground-truth corpus for verification.
-The full specification ships separately.
-Extracted from the operator's research vault.
-The canonical research lives in the upstream tree.
-The canonical methodology lives separately.
 Our trust moat comes from authorship.
-Data moat is the durable advantage.
-The compounding claim survives this round.
-This is named-authorship moat at work.
-Methodology-as-moat framing.
 This is empire-grade infrastructure.
-Empire-wide rollout planned.
-The Clarethium shape favors composition.
-The project's empire is built on canon.
-Construct-honesty discipline applies at every layer.
-We follow the construct honesty discipline strictly.
-
-## family: RIGID (empire-modifier compounds — v5 amendment, 2026-05-12)
 Durable decisions and empire positioning live elsewhere.
-The empire claim is the long-run frame.
-Empire tier ownership stays single-curator.
-Empire core unchanged across this release.
-The empire stake is the adoption arc.
-Empire shape captures the org tree.
-Empire reach is the adoption surface.
-Empire scope held to four canonical artifacts.
-Empire repo layout follows the wrapper-of convention.
-The empire play is named-authorship over time.
-Empire surface visible to MCP clients.
-Empire bet is on compounding methodology.
-
-## family: RIGID (docs/internal/ prose reference — v5 amendment, 2026-05-12)
-Result publishes to docs/internal/DISTRIBUTION_FAITHFULNESS_<date>.md with the captured snapshots.
-See docs/internal/AUDIT_FINDINGS.md for the prior version of this analysis.
-
-## family: RIGID (operator practitioner-term retirement, 2026-05-24)
+See docs/internal/AUDIT_FINDINGS.md for the prior analysis.
 The operator methodology section defines the stance.
-This follows operator discipline across model generations.
-The methodology serves operator skill, not model capability.
-Output depends on the operator's disposition toward the work.
-A pilot across multi-operator cohorts validates the annex.
-Frames operator-AI work as a coupled cognitive system.
-Stance is the operator's stance prior to method.
+Construct-honesty discipline applies at every layer.
 
-## family: VAULT (legacy)
+## family: VAULT
 Library is vault-faithful: regex preserved as-is.
-Boundaries are vault-validated against EXP-095 data.
-Vault behaviour: text before first ## heading is excluded.
-The vault's precision threshold for entities is total < 5.
 This implementation pins vault notes for posterity.
-Outputs live in JSON files in the vault EXP-095 directory.
 This baseline comes from the vault implementation.

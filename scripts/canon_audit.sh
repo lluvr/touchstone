@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 # canon_audit.sh — comprehensive public-canon leak audit.
 #
-# Canonical maintainer-side copy. Each Clarethium public repo carries an
-# exact copy at `scripts/canon_audit.sh`. A drift between this file and
-# the per-repo copy is a process bug; sync via:
-#
-#   cp ~/.config/clarethium-tools/canon_audit.sh <repo>/scripts/canon_audit.sh
-#   cp ~/.config/clarethium-tools/canon_audit_known_leaks.txt \
-#      <repo>/scripts/canon_audit_known_leaks.txt
+# Each Clarethium public repo carries an exact copy of this file at
+# `scripts/canon_audit.sh` together with its two self-test fixtures.
+# The copies are kept identical; when one changes, the change is
+# copied to the others in the same release.
 #
 # Run from a Clarethium public repo root.
 #
@@ -19,8 +16,8 @@
 #   ./canon_audit.sh --version      Print canonical version SHA.
 #   ./canon_audit.sh --list-families Print pattern family names.
 #
-# Reference: ~/.config/clarethium-tools/PUBLIC_CANON_DISCIPLINE.md
-#   §3c (forbidden patterns), §5b (path allowlist), §5e (audit canon).
+# The families below are the forbidden shapes; AGENTS.md in each repo
+# describes them in prose.
 #
 # Failure-mode catalog (each family closes a documented FM-PCD-N):
 #   PRIVATE_FILES         FM-PCD-1  (sanitize-not-construct: refs to maintainer-only docs)
@@ -103,8 +100,12 @@ PAT_WEB_APP_MODULES='\b(observatory|telemetry|model_registry|tier_a_event|saved_
 PAT_WEB_APP_LIVE_IMPORTS='\b(from|import) (security|annotator|observatory|telemetry|model_registry|tier_a_event|saved_analyses|saved_compare|origin_protection|framing_ai|consensus|og_image|build_corpus_site|export_corpus|reframe|claim_selector|app|pipeline|formatter|framing_sdk|falsifications|phase1_smoke|consistency|examples|compare_examples|domain_baselines|decision_readiness_diff|decision_readiness_peer|l2_concept_validation|l2_extended_validation|metric_classifier|mirror|subject_classifier)\b'
 
 # ── Pattern family: OPERATOR_PATHS (FM-PCD-7) ───────────────────────
-# Personal machine paths and operator-private repo URLs.
-PAT_OPERATOR_PATHS='/home/user|/Users/user|examplehost(\.localdomain)?|~/\.claude/projects|\.claude/projects/-home-user|github\.com/lluvr/example-private-repo\b'
+# Personal machine paths, hostnames, agent memory directories and
+# private repo URLs. Shape-based: any home directory, any
+# user@host.localdomain, any per-project agent memory directory,
+# any GitHub repo URL that ends in "-web" (the private web app shape).
+OPERATOR_PATHS_ALLOWLIST='/(home|Users)/(you|yourname|user|username|example|<[^>/]+>)/'
+PAT_OPERATOR_PATHS='/home/[a-z][a-z0-9_-]*/|/Users/[a-z][a-z0-9_-]*/|\b[a-z][a-z0-9_-]*@[a-z][a-z0-9-]*\.localdomain\b|~/\.claude/projects|\.claude/projects/-home-|github\.com/[a-z0-9_-]+/[a-z0-9_-]+-web\b'
 
 # ── Pattern family: OPERATIONAL_STATE (FM-PCD-6) ────────────────────
 # Runtime state files from the live web deploy. None of these have
@@ -112,9 +113,10 @@ PAT_OPERATOR_PATHS='/home/user|/Users/user|examplehost(\.localdomain)?|~/\.claud
 PAT_OPERATIONAL_STATE='\b(cost_budget|feature_limit_[a-z_]+|process_lock|observatory_state|frame_check_observatory_state|circuit_breaker)\.(json|sqlite|sqlite-shm|sqlite-wal)\b|\b(observatory_topics|model_registry)\.yaml\b|\bevents\.sqlite\b'
 
 # ── Pattern family: OPERATOR_INFRA (FM-PCD-11) ──────────────────────
-# Maintainer-side infrastructure detail. The deploy target (Fly.io) is
-# operator-internal; the LLM proxy implementation is operator-internal.
-PAT_OPERATOR_INFRA='\bsecrets[- ]vault\b|\bLLM proxy\b|127\.0\.0\.1:[0-9]+|proxy_isolated|\blitestream\b|\bfly\.toml\b|\bfly deploy\b|\bexample-app\b|operator-managed config files'
+# Infrastructure detail of the maintainer's own deployment. The deploy
+# target, the local LLM proxy, the database replication and the
+# secrets store are not part of what an adopter installs.
+PAT_OPERATOR_INFRA='\bsecrets[- ]vault\b|\blocal LLM proxy\b|127\.0\.0\.1:[0-9]+|proxy_isolated|\breplicates the SQLite store\b|\bfly\.toml\b|\bfly deploy\b|operator-managed config files'
 
 # ── Pattern family: RESEARCH_IDS (FM-PCD-10) ────────────────────────
 # Operator research register IDs. No public resolver.
@@ -131,7 +133,7 @@ PAT_STRATEGIC_EXTENDED='\bthe bet\b|\bthe[- ]bet\b|(zero[- ]LLM[- ]cost|producti
 PAT_CANON_VOCAB_EXTENDED='construct[- ]honesty (posture|defect|audit|surfacing|principle|alignment|tax|stance|machinery)\b'
 
 # ── Pattern family: RIGID (legacy §3c, FM-PCD-1) ────────────────────
-PAT_RIGID='operator-side|operator-internal|maintainer-side|maintainer-internal|the operator['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\boperator (paper|study|playbook|doctrine|memo|brief)\b|the maintainer['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\bmaintainer (paper|study|playbook|doctrine|memo|brief)\b|private (operator|fork|tree|upstream|repo)|\(see private|\(internal reference|\(operator-side reference|\(see operator-side|internal version of|unredacted [a-z]|the full (methodology|version|spec|specification|paper|draft|manuscript|ground.truth)|extracted from the operator['\''’]s|the canonical (source|version|research|methodology) lives|(trust|data|authorship|methodology|adoption|compounding|positioning|named.authorship)[- ]moat|methodology[- ]as[- ]moat|Clarethium|the project['\''’]s empire|empire-grade|empire-wide|\bempire[- ](positioning|claim|tier|core|stake|shape|reach|scope|repo|play|surface|bet)\b|\bdocs/internal/|(compounding|data|trust|authorship|named-authorship)[- ]claim|construct[- ]honest(y)?\s+(discipline|posture|defect|audit|surfacing|principle|alignment|tax|stance|machinery|frame|reading)\b|\bunder-detection (construct|posture)\b|user@|library_v[0-9]+ ratification|library_v[0-9]+ ratified|Step [0-9]+ ratification|after library_v[0-9]+ ratification|substrate[- ]side composition roadmap|Item [0-9]+ of the substrate|\bMove\s+D-[A-Z]+-[0-9]+\b|\bDecision\s+D-[A-Z]+-[0-9]+\b|Step [0-9]+ of the (decomposition|refactor|cleanup|migration|rollout|plan)|as Step [0-9]+ of the|METHODOLOGY[ ]?§[0-9]+(\.[0-9]+)*|\boperator[- ](methodology|framework|practice|discipline|skill|stance|disposition|judgment|workflow|loop)\b|\bmulti[- ]operator\b|\boperator[- ]AI\b|the operator['\''’]s (loop|stance|skill|judgment|contribution|disposition|perspective|choice|workflow|discipline)\b'
+PAT_RIGID='operator-side|operator-internal|maintainer-side|maintainer-internal|the operator['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\boperator (paper|study|playbook|doctrine|memo|brief)\b|the maintainer['\''’]s ([a-z-]+ ){0,4}(strategy|methodology|notes|vault|workspace|tree|dev tree|bet|stake|positioning)\b|\bmaintainer (paper|study|playbook|doctrine|memo|brief)\b|private (operator|fork|tree|upstream|repo)|\(see private|\(internal reference|\(operator-side reference|\(see operator-side|internal version of|unredacted [a-z]|the full (methodology|version|spec|specification|paper|draft|manuscript|ground.truth)|extracted from the operator['\''’]s|the canonical (source|version|research|methodology) lives|(trust|data|authorship|methodology|adoption|compounding|positioning|named.authorship)[- ]moat|methodology[- ]as[- ]moat|the project['\''’]s empire|empire-grade|empire-wide|\bempire[- ](positioning|claim|tier|core|stake|shape|reach|scope|repo|play|surface|bet)\b|\bdocs/internal/|(compounding|data|trust|authorship|named-authorship)[- ]claim|construct[- ]honest(y)?\s+(discipline|posture|defect|audit|surfacing|principle|alignment|tax|stance|machinery|frame|reading)\b|\bunder-detection (construct|posture)\b|library_v[0-9]+ ratification|library_v[0-9]+ ratified|Step [0-9]+ ratification|after library_v[0-9]+ ratification|substrate[- ]side composition roadmap|Item [0-9]+ of the substrate|\bMove\s+D-[A-Z]+-[0-9]+\b|\bDecision\s+D-[A-Z]+-[0-9]+\b|Step [0-9]+ of the (decomposition|refactor|cleanup|migration|rollout|plan)|as Step [0-9]+ of the|METHODOLOGY[ ]?§[0-9]+(\.[0-9]+)*|\boperator[- ](methodology|framework|practice|discipline|skill|stance|disposition|judgment|workflow|loop)\b|\bmulti[- ]operator\b|\boperator[- ]AI\b|the operator['\''’]s (loop|stance|skill|judgment|contribution|disposition|perspective|choice|workflow|discipline)\b'
 
 # ── Pattern family: VAULT (legacy §3c) ──────────────────────────────
 PAT_VAULT='\bvault[- ]faithful\b|\bvault[- ]validated\b|\bvault behaviour\b|\bvault behavior\b|\bvault[- ]style\b|\bvault['\''’]?s? precision threshold\b|\bvault notes\b|\bin the vault\b|\bfrom the vault\b|\bthe operator['\''’]s ([a-z-]+ ){0,4}vault\b'
@@ -170,8 +172,7 @@ self_test() {
   for candidate in \
     "$script_dir/canon_audit_known_leaks.txt" \
     "scripts/canon_audit_known_leaks.txt" \
-    "tests/fixtures/canon_audit_known_leaks.txt" \
-    ~/.config/clarethium-tools/canon_audit_known_leaks.txt; do
+    "tests/fixtures/canon_audit_known_leaks.txt"; do
     if [ -f "$candidate" ]; then
       fixture="$candidate"
       break
@@ -252,8 +253,7 @@ self_test_pystring() {
   for candidate in \
     "$script_dir/canon_audit_pystring_concat_known_leaks.py" \
     "scripts/canon_audit_pystring_concat_known_leaks.py" \
-    "tests/fixtures/canon_audit_pystring_concat_known_leaks.py" \
-    ~/.config/clarethium-tools/canon_audit_pystring_concat_known_leaks.py; do
+    "tests/fixtures/canon_audit_pystring_concat_known_leaks.py"; do
     if [ -f "$candidate" ]; then
       fixture="$candidate"
       break
@@ -389,7 +389,7 @@ WEB_APP_MODULES       FM-PCD-11  web-app module name leaks
 WEB_APP_LIVE_IMPORTS  FM-PCD-8   try-imports of private modules
 OPERATOR_PATHS        FM-PCD-7   personal machine paths + private repo URLs
 OPERATIONAL_STATE     FM-PCD-6   runtime state file shapes
-OPERATOR_INFRA        FM-PCD-11  Fly.io / an LLM proxy / litestream / secrets-vault
+OPERATOR_INFRA        FM-PCD-11  deploy target / local LLM proxy / replication / secrets vault
 RESEARCH_IDS          FM-PCD-10  F-NNNN-NNN, EXP-NNN (no public resolver)
 STRATEGIC_EXTENDED    FM-PCD-3   bare/novel moat compounds, "the bet"
 CANON_VOCAB_EXTENDED  FM-PCD-3   construct-honesty {posture|defect|audit|...}
@@ -412,7 +412,7 @@ EOF
       "FVS_EVAL_PATHS:PAT_FVS_EVAL_PATHS"
       "WEB_APP_MODULES:PAT_WEB_APP_MODULES:WEB_APP_MODULE_ALLOWLIST"
       "WEB_APP_LIVE_IMPORTS:PAT_WEB_APP_LIVE_IMPORTS"
-      "OPERATOR_PATHS:PAT_OPERATOR_PATHS"
+      "OPERATOR_PATHS:PAT_OPERATOR_PATHS:OPERATOR_PATHS_ALLOWLIST"
       "OPERATIONAL_STATE:PAT_OPERATIONAL_STATE"
       "OPERATOR_INFRA:PAT_OPERATOR_INFRA"
       "RESEARCH_IDS:PAT_RESEARCH_IDS:RESEARCH_IDS_ALLOWLIST"

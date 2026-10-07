@@ -296,7 +296,7 @@ Across three independent external corpora (RAGTruth Summary, SummEval, HaluEval 
 3. **JaccardContentInv collapses on HaluEval** (AUC 0.4715, CI [0.4363, 0.5073], below chance!). Stripping stopwords removes the very signal HaluEval's adversarial construction introduces. This is the cleanest evidence in the report that lexical-baseline behaviour is highly preprocessing-dependent; the "right" preprocessing is corpus-dependent.
 4. **Layer 10 gap CIs all overlap chance** (the only signal in the table whose CIs include 0.5000 on every corpus). The §3.5 partial out-of-domain falsification is real and statistically defensible.
 
-**What this means for Touchstone's positioning:**
+**What this means for how Touchstone should be described:**
 
 This report does NOT show that Touchstone has a methodologically superior signal over trivial lexical baselines. It shows that **simple lexical features capture roughly 70% of the discriminative signal on hallucination detection at this signal-strength tier, with the rest captured by LLM-based discriminators at orders-of-magnitude higher compute cost**. Touchstone's value is not Layer 6's AUC; it is the **calibrated falsification protocol** (Standard §3.5 with five corpus×task cells × two baselines × three trivial baselines), the **bootstrap-CI discipline** on every reported AUC, the **falsification-of-Layer 10 finding** as a concrete instance of the protocol working as designed, and the **packaged library + Standard + reference suite** that makes the regime studyable and the methodology portable.
 
