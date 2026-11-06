@@ -61,7 +61,7 @@ constructor overrides auto-selection.
 | Argument | Type | Default | Description |
 |---|---|---|---|
 | `text` | `str` | required | The AI-generated output to verify. |
-| `source` (keyword) | `str` | required | The grounding source the output should be supported by. |
+| `source` (keyword) | `str` | required | The grounding source the output should be supported by. An empty or whitespace-only source yields scope `"insufficient_input"`; `None` raises `ValueError`. |
 | `minicheck_supported_prob` | `float \| None` | `None` | MiniCheck supported-probability in [0, 1] (caller invokes MiniCheck themselves). Higher means more supported. |
 | `alignscore_supported_prob` | `float \| None` | `None` | AlignScore supported-probability in [0, 1]. Higher means more supported. |
 | `judge_hallucinated_prob` | `float \| None` | `None` | LLM-judge probability that the output is **hallucinated** in [0, 1]. Sign convention is inverted relative to MiniCheck/AlignScore because frontier judges return the detector-side probability directly. |
@@ -120,8 +120,9 @@ whether `should_flag()` will act on the probability:
   The probability may be intercept-dominated. Treat as low-confidence;
   route to human review.
 - **`"insufficient_input"`**, One of: (1) text is empty or
-  whitespace-only after stripping; (2) no substrate signal had its
-  precondition met regardless of length; (3) text is below
+  whitespace-only after stripping; (2) `source` is empty or
+  whitespace-only after stripping; (3) no substrate signal had its
+  precondition met regardless of length; (4) text is below
   `MIN_INPUT_CHARS` non-whitespace characters AND fewer than two
   substrate signals fired. Do not act on `prob_hallucinated`.
 
