@@ -447,3 +447,68 @@ def test_none_source_raises() -> None:
     with pytest.raises(ValueError, match="source"):
         v.score(SUPPORTED_TEXT, source=None)  # type: ignore[arg-type]
 
+
+# -- Known gaps: changed or fabricated numbers against a number-dense source --
+#
+# These pin current behaviour the default calibration does not handle. The
+# xfail tests are strict: the day the gap closes they start passing, strict
+# mode turns that into a failure, and the marker must be removed.
+
+NUMERIC_SOURCE = (
+    "Apple reported Q1 fiscal 2026 revenue of $143 billion. The iPhone "
+    "segment grew 8% year-over-year. Tim Cook commented on AI investments "
+    "during the earnings call. Operating margins reached 32%."
+)
+NUMERIC_SWAPPED = NUMERIC_SOURCE.replace("$143", "$134").replace("32%", "23%")
+NUMERIC_FABRICATED = (
+    "Apple reported Q1 fiscal 2026 revenue of $197 billion. The iPhone "
+    "segment grew 41% year-over-year. Tim Cook commented on AI investments "
+    "during the earnings call. Operating margins reached 59%."
+)
+
+
+def test_layer4_reports_changed_and_fabricated_numbers() -> None:
+    """Layer 4 does see the changed numbers, so adopters can read them from
+    ``layer_outputs`` even when the probability does not move."""
+    v = Verifier()
+    copy = v.score(NUMERIC_SOURCE, source=NUMERIC_SOURCE)
+    swapped = v.score(NUMERIC_SWAPPED, source=NUMERIC_SOURCE)
+    fabricated = v.score(NUMERIC_FABRICATED, source=NUMERIC_SOURCE)
+    for r in (copy, swapped, fabricated):
+        assert r.scope == "validated"
+    sm_copy = copy.layer_outputs["source_matching"]
+    sm_swapped = swapped.layer_outputs["source_matching"]
+    sm_fab = fabricated.layer_outputs["source_matching"]
+    assert sm_copy is not None and sm_swapped is not None and sm_fab is not None
+    assert sm_copy["unsourced_rate"] == 0.0
+    assert sm_swapped["unsourced_rate"] > 0.0
+    assert sm_fab["unsourced_rate"] == 1.0
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Known gap: swapping digits in two numbers scores below the verbatim "
+        "copy. The default calibration's l4_unsourced coefficient is negative "
+        "and Layer 11 counts $134 billion as derivable from $143 billion and "
+        "8% within its tolerance."
+    ),
+)
+def test_swapped_numbers_score_above_verbatim_copy() -> None:
+    v = Verifier()
+    copy = v.score(NUMERIC_SOURCE, source=NUMERIC_SOURCE)
+    swapped = v.score(NUMERIC_SWAPPED, source=NUMERIC_SOURCE)
+    assert swapped.prob_hallucinated > copy.prob_hallucinated
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Known gap: fabricating every number in the text stays under the 0.5 "
+        "default threshold even though Layer 4 reports unsourced_rate 1.0."
+    ),
+)
+def test_fabricated_numbers_flag_at_default_threshold() -> None:
+    v = Verifier()
+    result = v.score(NUMERIC_FABRICATED, source=NUMERIC_SOURCE)
+    assert result.should_flag()
