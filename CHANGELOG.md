@@ -6,6 +6,22 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ---
 
+## Unreleased
+
+- `Verifier.score()` with an empty or whitespace-only `source` now
+  returns scope `"insufficient_input"` instead of `"validated"`;
+  `source=None` still raises `ValueError`.
+- The MCP `verify` and `measure` tools reject string arguments longer
+  than 200,000 characters (`touchstone_mcp.MAX_INPUT_CHARS`).
+- Strict xfail tests pin known gaps with changed or fabricated numbers
+  against a number-dense source (Verifier score, Layer 11 derivation
+  tolerance, short sentences and table rows skipped by Layer 11).
+- README and docs: AUC, threshold and lift figures are labelled with what
+  they measure (raw Layer 6 or the Verifier), the lift is given as a range
+  across corpora, the out-of-sample RAGTruth figure and the calibration
+  split are stated next to the numbers, and documents described as
+  bundled with the wheel now link to the repository.
+
 ## touchstone-mcp v0.1.11 - 2026-07-03: metadata and docs refresh
 
 Package metadata and documentation only; no library or Standard

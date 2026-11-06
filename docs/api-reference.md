@@ -103,7 +103,7 @@ Convenience boolean for the binary flag/no-flag decision.
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
-| `threshold` | `float` | `0.5` | Probability cut-off. `production_readiness.md` §2 reports F1-optimal thresholds of 0.07-0.27 on the external corpora; **the default 0.5 under-flags for any production deployment** and is provided as a safety-tilted out-of-box default. Tune on held-out data before deploying. |
+| `threshold` | `float` | `0.5` | Probability cut-off. The substrate-only Verifier's F1-optimal thresholds on the n=400 external-corpus subsamples are 0.15-0.22 (`production_readiness.md` §2's 0.07-0.27 is for raw per-detector scores); **the default 0.5 under-flags for any production deployment** and is provided as a safety-tilted out-of-box default. Tune on held-out data before deploying. |
 | `fail_open` | `bool` (keyword) | `False` | If True, ignore `scope` and flag purely on `prob_hallucinated`. Set this only when the surrounding pipeline independently inspects `scope_notes` for low-signal results. With the default False, `insufficient_input` and `limited_signal` results never auto-flag. |
 
 ### Scope
@@ -178,7 +178,7 @@ The four modes:
 
 | Mode | Required baseline arguments | When to use |
 |---|---|---|
-| `"substrate_only"` | None | Default. No external dependencies. Sub-100 ms per 5 KB document. Default-calibrated AUC ≈ 0.67-0.76 on the three external summarization corpora. |
+| `"substrate_only"` | None | Default. No external dependencies. Sub-100 ms per 5 KB document. Verifier AUC 0.647 (SummEval), 0.748 (HaluEval), 0.659 (RAGTruth Summary; partly in-sample because the default calibration was fit on a 70/30 split of it, 0.633 out of sample) on n=400 subsamples. The 0.67-0.76 range elsewhere is raw Layer 6. |
 | `"substrate_plus_minicheck"` | `minicheck_supported_prob` | Add the MiniCheck Flan-T5-Large supported-probability. AUC ≈ 0.76. |
 | `"substrate_plus_minicheck_alignscore"` | `minicheck_supported_prob` + `alignscore_supported_prob` | Add both LLM-based baselines. AUC ≈ 0.77. |
 | `"substrate_plus_judge"` | `judge_hallucinated_prob` | Linear-blend the substrate probability with a frontier LLM judge probability. AUC on the §4.2 corpora ranges 0.78-0.94 depending on judge vendor and cued/blind variant. Mutually exclusive with MiniCheck/AlignScore in the same call. |
@@ -272,8 +272,9 @@ result = measure(
   `MeasureResult` dict; the Verifier zeros the corresponding feature so it
   contributes nothing to the logit.
 - **Default threshold under-flags.** `should_flag(threshold=0.5)` is a
-  safety-tilted out-of-box default. F1-optimal thresholds on the published
-  external corpora are 0.07-0.27. Tune on your own held-out data.
+  safety-tilted out-of-box default. The substrate-only Verifier's
+  F1-optimal thresholds on n=400 subsamples of the published external
+  corpora are 0.15-0.22. Tune on your own held-out data.
 - **Scope gating is the production-safe default.** `should_flag()` returns
   False on `"insufficient_input"` and `"limited_signal"` scopes unless the
   caller opts in via `fail_open=True`. This prevents pipeline-bursting

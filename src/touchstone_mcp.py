@@ -172,8 +172,9 @@ def build_server() -> FastMCP:
             ``layer11_primary``, ``p_markers``, ``grounding_score``).
 
         Threshold guidance: the default decision threshold of 0.5
-        under-flags on every published external corpus. F1-optimal
-        thresholds in the empirical-validation tables are 0.07-0.27.
+        under-flags on every published external corpus. The
+        substrate-only Verifier's F1-optimal thresholds on the n=400
+        corpus subsamples are 0.15-0.22.
         Tune on your held-out data before any production deployment.
         """
         _check_input_size("text", text)
@@ -301,8 +302,10 @@ def build_server() -> FastMCP:
                 "requires": [],
                 "description": (
                     "Default. No external dependencies. Sub-100 ms per "
-                    "5 KB document. AUC ~ 0.67-0.76 on the three external "
-                    "summarization corpora."
+                    "5 KB document. Verifier AUC 0.65-0.75 on n=400 "
+                    "subsamples of three external summarization corpora "
+                    "(RAGTruth Summary 0.633 out of sample; the default "
+                    "calibration was fit on a 70/30 split of it)."
                 ),
             },
             {
