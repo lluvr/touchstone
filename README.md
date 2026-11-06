@@ -11,9 +11,11 @@ score reliably, and highlights of the sentences that look unsupported.
 Read this first: Touchstone is structurally blind to hallucinations that
 keep the source vocabulary and only change the meaning. On a 16-case
 subtle-hallucination stress test it separates at 50%, no better than
-random. Where it earns its keep is triage (around 4x lift over random
-review), a cheap first stage ahead of an LLM judge, and drift detection.
-See `docs/production_readiness.md` before relying on it.
+random. Where it earns its keep is triage, a cheap first stage ahead of
+an LLM judge, and drift detection. Reviewing the top 10% of outputs ranked
+by the Verifier catches 1.7x to 3.3x more hallucinations than random
+review, depending on corpus (raw Layer 6 alone: 1.6x to 4.2x). See
+`docs/production_readiness.md` before relying on it.
 
 ## Quickstart (60 seconds)
 
@@ -52,14 +54,27 @@ McKinsey forecast, and the unsourced 2027 Tesla year, and produced a
 is trustworthy (`"validated"`) or whether there wasn't enough signal
 to score reliably (`"limited_signal"` or `"insufficient_input"`).
 `should_flag()` refuses to flag low-signal results by default; pass
-`fail_open=True` to score them against your threshold anyway (low-signal
-scopes clamp the probability to ~0.10, so this only flags when your
-threshold is below that).
+`fail_open=True` to score them against your threshold anyway. The
+probability on a low-signal result is not calibrated: it is often near
+the intercept (~0.10), but an empty source, for example, can score near 0.9,
+so read `scope_notes` before using `fail_open`.
 
-**Before deploying read `docs/production_readiness.md` (bundled with the wheel).**
-The default `should_flag(threshold=0.5)` under-flags for any production
-deployment (F1-optimal thresholds on the published corpora are 0.07-0.27).
-For full API documentation see `docs/api-reference.md`.
+The probability is driven mostly by vocabulary overlap. A number that is
+changed or fabricated against a number-dense source may not raise it, and
+can even lower it slightly on the default calibration: swapping two
+numbers in the source above scored below a verbatim copy. Check
+`result.layer_outputs["source_matching"]` (Layer 4) for that case: its
+`unsourced_rate` and `unsourced_details` list every number in the text
+that does not appear in the source.
+
+**Before deploying read [`docs/production_readiness.md`](https://github.com/lluvr/touchstone/blob/main/docs/production_readiness.md)**
+(in the repository; the wheel ships only the code). The default
+`should_flag(threshold=0.5)` under-flags for any production deployment:
+the Verifier's own F1-optimal thresholds on the n=400 corpus subsamples
+are 0.15-0.22 (substrate-only mode). The 0.07-0.27 range quoted in that
+document's §2 is for the raw scores of individual detectors, not the
+Verifier probability. For full API documentation see
+[`docs/api-reference.md`](https://github.com/lluvr/touchstone/blob/main/docs/api-reference.md).
 Six working examples are in `examples/`: single document,
 batch triage, holdout calibration, two-stage cascade with a judge, the
 end-to-end production verifier, and programmatic MCP use.
@@ -120,7 +135,7 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/), a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (502 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/), a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (515 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 ```bash
 pip install touchstone-mcp                         # reference library + MCP server
@@ -132,7 +147,7 @@ Touchstone alone is NOT a standalone production hallucination detector. A 16-cas
 
 What Touchstone IS useful for in production:
 
-- **Triage / review-queue prioritization**: 2-4× lift over random review on English news summarization corpora (lift of 4.22× on SummEval top-10% review).
+- **Triage / review-queue prioritization**: top-10% review lift over random of 1.70x (HaluEval) to 3.26x (SummEval) for the substrate-only Verifier on the n=400 subsamples, and 1.64x (HaluEval) to 4.22x (SummEval) for raw Layer 6 on the full corpora.
 - **Cheap first-pass filter** in a two-stage pipeline ahead of an LLM-based judge.
 - **Drift detection** on stable production streams.
 - **Lexical-feature half of a production hallucination detector**, combine with a trained semantic discriminator via `Verifier(mode="substrate_plus_minicheck").score(text, source, minicheck_supported_prob=mc_prob)`, or with a frontier LLM judge via `Verifier().score(text, source, judge_hallucinated_prob=judge_prob)` (mode auto-selects to `substrate_plus_judge`; linear blend with `judge_alpha` defaulting to 0.3 per §4.3.1).
@@ -156,13 +171,14 @@ print(f"should flag (>0.5)? {result.should_flag()}")          # → False at the
 for span in result.top_unsupported:
     print(f"  {span.layer11_primary}: {span.sentence!r}  {span.p_markers}")
 # → P: 'Apple reported Q1 revenue of $185 billion.'  ['unsourced_numbers']
-# 0.219 sits inside the F1-optimal 0.07-0.27 band: the 0.5 default under-flags,
-# so tune the threshold on held-out data. See docs/production_readiness.md.
+# 0.219 is within the Verifier's F1-optimal thresholds on the published corpora
+# (0.15-0.22): the 0.5 default under-flags, so tune the threshold on held-out
+# data. See docs/production_readiness.md.
 ```
 
 Three operating modes (auto-selected from which baseline scores you pass):
 
-- **Substrate-only** (default; no extras, sub-100 ms): default-calibrated AUC ≈ 0.67-0.76 on three external summarization corpora. Research-tier signal. For drift detection, regression testing, or as a cheap first-pass filter ahead of an LLM-based judge.
+- **Substrate-only** (default; no extras, sub-100 ms): Verifier AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples. The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; out of sample it is 0.633. The 0.67-0.76 range in the tables below is raw Layer 6 (inverse word overlap), not the Verifier. Research-tier signal. For drift detection, regression testing, or as a cheap first-pass filter ahead of an LLM-based judge.
 - **Substrate + MiniCheck** (caller invokes MiniCheck and passes `minicheck_supported_prob`): AUC ≈ 0.76. Adds the MiniCheck cost (~5 s/pair on CPU).
 - **Substrate + MiniCheck + AlignScore** (pass both): AUC ≈ 0.77. Adds the AlignScore cost.
 
@@ -466,7 +482,8 @@ on separating the distinct failure modes behind unsupported output.
     unsupported claims in LLM output.
     https://pypi.org/project/touchstone-mcp/
 
-The standard text and the reference implementation are bundled with the
-wheel: code under Apache-2.0, the standard text under CC-BY-4.0.
+The wheel ships the reference implementation under Apache-2.0. The
+standard text, under CC-BY-4.0, is in the repository at
+[`STANDARDS/touchstone-1.0.md`](https://github.com/lluvr/touchstone/blob/main/STANDARDS/touchstone-1.0.md).
 
 `CITATION.cff` carries the structured metadata equivalent.

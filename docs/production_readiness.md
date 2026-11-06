@@ -8,10 +8,10 @@ The conclusion lives in §6. The rest is the supporting evidence.
 
 If you only read one block, read this one:
 
-- **What Touchstone catches today:** unsourced numbers, unsourced years, unsourced named entities, and lexical drift from source. The substrate-only Verifier gets AUC 0.67-0.76 on three published external corpora (RAGTruth Summary, SummEval, HaluEval) at sub-100 ms per 5 KB document and $0 in API cost.
+- **What Touchstone catches today:** unsourced numbers, unsourced years, unsourced named entities, and lexical drift from source. On three published external corpora (RAGTruth Summary, SummEval, HaluEval), raw Layer 6 (inverse word overlap) alone gets AUC 0.67-0.76 on the full corpora; the substrate-only Verifier gets AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples (§4.3). The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; out of sample it is 0.633 (§4.2). Both run at sub-100 ms per 5 KB document and $0 in API cost.
 - **What Touchstone does NOT catch alone:** direction reversals, attribute swaps, scope shifts, relation reversals, time-frame shifts, and other semantic hallucinations that preserve vocabulary. The 16-case stress test in §3 separates the hallucinated from the faithful case at 50% (random); the substrate is structurally blind to this class.
-- **The default decision threshold is wrong.** `should_flag(threshold=0.5)` under-flags on every corpus tested. F1-optimal thresholds are 0.07-0.27. Tune on your held-out data before any production deployment; the §2 tables document the per-corpus optimal.
-- **The right deployment shapes:** (1) triage / review-queue prioritization (2-4x lift over random review at the F1-optimal threshold); (2) cheap first-pass filter in a two-stage pipeline ahead of an LLM-based judge; (3) drift detection on stable production streams; (4) the lexical-feature half of a production hallucination detector when blended with MiniCheck / AlignScore / a frontier LLM judge via the `substrate_plus_*` modes.
+- **The default decision threshold is wrong.** `should_flag(threshold=0.5)` under-flags on every corpus tested. The Verifier's own F1-optimal thresholds on the n=400 subsamples are 0.15-0.22 (substrate-only mode, `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`); the 0.07-0.27 range in §2 is for raw per-detector scores (Layer 6, MiniCheck, AlignScore), not the Verifier probability. Tune on your held-out data before any production deployment; the §2 tables document the per-corpus optimal.
+- **The right deployment shapes:** (1) triage / review-queue prioritization (top-10% review lift over random of 1.70x-3.26x for the substrate-only Verifier and 1.64x-4.22x for raw Layer 6, depending on corpus; §3, §4.3); (2) cheap first-pass filter in a two-stage pipeline ahead of an LLM-based judge; (3) drift detection on stable production streams; (4) the lexical-feature half of a production hallucination detector when blended with MiniCheck / AlignScore / a frontier LLM judge via the `substrate_plus_*` modes.
 - **The wrong deployment shapes:** standalone production hallucination detection on subtle-semantic-hallucination categories; replacement for an LLM judge on long-form generation; adversarial-robustness use cases (the regex substrate is public and evadable).
 - **Default-calibration caveat.** The shipped calibration was fitted on RAGTruth Summary; the `l4_unsourced` coefficient is negative on that corpus by construction. On adversarial-fabrication corpora that coefficient should be positive. Recalibrate via `Verifier.with_calibration()` if your input distribution differs materially.
 
@@ -21,7 +21,7 @@ If any of that disagrees with what your team needs, stop and read §6's deployme
 
 AUC is a research metric. Production teams care about precision and recall at specific decision thresholds, false-positive burden on human reviewers, and behaviour on the hallucination categories that real LLMs produce. AUC compresses all of that into one number. It tells you "the model can rank positives above negatives some of the time"; it does not tell you whether deploying at threshold X actually solves your problem.
 
-Touchstone substrate-only AUC on three external corpora ranges 0.67-0.76. Without an operational lens that translates into "barely better than chance." With an operational lens it translates into specific use cases that work and specific use cases that don't.
+Touchstone raw Layer 6 AUC on three external corpora ranges 0.67-0.76; the substrate-only Verifier ranges 0.633-0.748 (§4.3, RAGTruth out of sample). Without an operational lens that translates into "barely better than chance." With an operational lens it translates into specific use cases that work and specific use cases that don't.
 
 ## 2. Operational metrics on the three external corpora
 
@@ -54,7 +54,7 @@ Full numbers are in `benchmarks/external/operational_metrics_2026-05-17.json`. H
 **What this means for deployment:**
 
 - **No system, including the trained discriminators, achieves "audit-grade" precision-recall on naturalistic corpora.** At precision 0.9 on RAGTruth Summary, MiniCheck catches 3 of 204 hallucinations (recall 1.5%). At precision 0.9 on SummEval, MiniCheck catches 11 of 161 (recall 7%). This is true of EVERY system tested, not specifically of Touchstone.
-- **F1-optimal thresholds are 0.07-0.27, not 0.5.** The Verifier's default `should_flag(threshold=0.5)` is wrong for any deployment scenario; it under-flags by a wide margin. Production teams MUST tune the threshold on their own held-out data.
+- **F1-optimal thresholds on the raw detector scores in these tables are 0.07-0.33 (0.75 for MiniCheck on SummEval), not 0.5; the Verifier's own probability thresholds are 0.15-0.22 on the n=400 subsamples.** The Verifier's default `should_flag(threshold=0.5)` is wrong for any deployment scenario; it under-flags by a wide margin. Production teams MUST tune the threshold on their own held-out data.
 - **Touchstone L6 is operationally comparable to AlignScore-base on these corpora**, at vastly less compute. That's a real Touchstone value, but it's a value about COMPUTE, not about ACCURACY.
 
 ## 3. Triage / review-queue prioritization (the real production use case)
@@ -72,7 +72,7 @@ A team that processes 1000 LLM outputs per day and has human review capacity for
 | HaluEval | MiniCheck | 0.780 | 0.156 | 1.56x (low ceiling due to 50% base rate) |
 | HaluEval | Touchstone L6 | 0.820 | 0.164 | 1.64x |
 
-**This is a deployable use case.** A team reviewing the top 10% by Touchstone-ranked score catches **2-4× more hallucinations than random review** on naturalistic corpora. That is a real production value-add for a team that has bounded review capacity.
+**This is a deployable use case.** A team reviewing the top 10% by raw Layer 6 score catches **1.6x-4.2x more hallucinations than random review**, depending on corpus (1.64x HaluEval, 1.91x RAGTruth, 4.22x SummEval). Across ten subsample offsets (§4.2.4) the Layer 6 range is 1.60x-4.46x; the substrate-only Verifier's lift is 1.70x-3.26x (§4.3). That is a real production value-add for a team that has bounded review capacity.
 
 ## 4. Cross-detector evaluation on naturalistic n=400 subsamples
 
@@ -677,14 +677,14 @@ The Verifier API supports this architecture in four discriminated modes selected
 
 **Label noise floor compounds with the architecture recommendation (§4.2.9).** Cohen's κ on RAGTruth and HaluEval is 0.62 / 0.60, implying conservative ceiling AUCs of 0.68 / 0.60. The strongest cued-judge held-out F1s on those corpora (Claude / GPT-4o, both around 0.72-0.74) sit against the conservative ceiling, frontier judges are at the *label* noise floor, not the detection ceiling. The §4.3.1 HaluEval-blind blend gain (+0.019 F1, +0.023 AUC) lives inside the κ-implied label-noise band. Production teams considering whether to add the substrate alongside a frontier judge should treat that blend gain as suggestive, not confirmed, and should expect their own corpus-specific α-on-AUC measurement to come back small unless their labels are notably higher-quality than RAGTruth / HaluEval. For most corpus distributions the honest answer is "judge-alone is the deployable system; revisit if you have multi-annotator labels and a corpus where the substrate's AUC exceeds the trained-NLI baselines."
 
-Touchstone alone is sufficient for: drift detection on stable production streams, regression testing of LLM output pipelines, education / methodology research, and triage/prioritization for human review queues at the 2-4× lift-vs-random level.
+Touchstone alone is sufficient for: drift detection on stable production streams, regression testing of LLM output pipelines, education / methodology research, and triage/prioritization for human review queues at the 1.6x-4.2x lift-vs-random level (corpus-dependent; §3).
 
 ## 6. The honest scope statement
 
 What Touchstone IS:
 
 - A research substrate with calibrated falsification protocol, bootstrap CIs, multi-corpus evaluation, and a reference test suite.
-- A triage / review-queue prioritization tool that delivers 2-4× lift over random review on English news summarization.
+- A triage / review-queue prioritization tool that delivers 1.6x-4.2x lift over random review on English news summarization, depending on corpus (§3).
 - A drift detector for stable production streams: aggregate Touchstone scores tracked over time flag distribution shifts.
 - A cheap first-pass filter ahead of an LLM-based judge, where the substrate runs in <100 ms and the judge runs only on the top X% suspect outputs.
 - The lexical-feature half of a production hallucination detector. Combine with the semantic half (any trained discriminator or LLM judge).

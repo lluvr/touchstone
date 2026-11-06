@@ -12,8 +12,9 @@ general case.
 
 What this class IS useful for:
 
-* **Triage / review-queue prioritization** at the 2-4x lift-vs-random
-  level on English news summarization corpora.
+* **Triage / review-queue prioritization**: top-10% review lift over
+  random of 1.70x-3.26x on English news summarization corpora,
+  depending on corpus (``docs/production_readiness.md`` §4.3).
 * **Cheap first-pass filter** ahead of an LLM-based judge in a two-
   stage architecture.
 * **Drift detection** on stable production streams.
@@ -26,9 +27,10 @@ Three operating modes, listed in order of increasing accuracy and
 increasing per-call latency:
 
 * **substrate_only** (default; no extra dependencies, sub-100 ms on
-  5 KB documents). Default-calibrated AUC ≈ 0.67-0.76 on three external
-  summarization corpora — research-tier. F1-optimal threshold is
-  0.07-0.27 on those corpora, NOT 0.5; the default
+  5 KB documents). AUC 0.647-0.748 on n=400 subsamples of three
+  external summarization corpora (RAGTruth Summary 0.633 out of sample;
+  the default calibration was fit on a 70/30 split of it); research-tier.
+  F1-optimal threshold is 0.15-0.22 on those subsamples, NOT 0.5; the default
   ``should_flag(threshold=0.5)`` under-flags for any production
   deployment. Tune the threshold on your own held-out data.
 * **substrate_plus_minicheck** — caller invokes MiniCheck and passes
@@ -193,9 +195,11 @@ class VerifierResult:
         result is in :attr:`scope` ``"validated"``.
 
         Args:
-            threshold: Probability cut-off. ``docs/production_readiness.md``
-                §2 reports F1-optimal thresholds of 0.07-0.27 on the three
-                external corpora; the default 0.5 under-flags for any
+            threshold: Probability cut-off. The substrate-only Verifier's
+                F1-optimal thresholds on the n=400 subsamples of the three
+                external corpora are 0.15-0.22 (``docs/production_readiness.md``
+                §2's 0.07-0.27 is for raw per-detector scores); the default
+                0.5 under-flags for any
                 production deployment and is provided as a safety-tilted
                 default. Adopters MUST tune on held-out data.
             fail_open: If True, ignore :attr:`scope` and flag purely on the

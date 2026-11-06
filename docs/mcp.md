@@ -137,8 +137,9 @@ for scope semantics.
 The MCP tool returns the raw probability and scope; it does NOT make
 the flag/no-flag decision for you. The default
 `should_flag(threshold=0.5)` in the underlying library under-flags on
-every published external corpus. F1-optimal thresholds on those
-corpora are 0.07-0.27. Tune on your own held-out data before any
+every published external corpus. The substrate-only Verifier's
+F1-optimal thresholds on n=400 subsamples of those corpora are
+0.15-0.22. Tune on your own held-out data before any
 production deployment. [`production_readiness.md`](production_readiness.md)
 §2 has the per-corpus tables.
 
