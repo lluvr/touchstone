@@ -574,3 +574,62 @@ def test_measure_threads_external_entities_through_to_layer_11() -> None:
         "Acme9000" in s.get("sentence", "") and "external_entities" in s.get("p_markers", [])
         for s in p_classifications
     )
+
+
+# ---------------------------------------------------------------------------
+# Known gaps (pinned with strict xfail; flip when fixed)
+# ---------------------------------------------------------------------------
+
+_NUMERIC_SOURCE = (
+    "Apple reported Q1 fiscal 2026 revenue of $143 billion. The iPhone "
+    "segment grew 8% year-over-year. Tim Cook commented on AI investments "
+    "during the earnings call. Operating margins reached 32%."
+)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Known gap: $134 billion is accepted as derived because 143 - 8 = 135 "
+        "is within the 2% derivation tolerance, so a digit swap reads as G."
+    ),
+)
+def test_digit_swapped_number_is_not_grounded() -> None:
+    text = "Apple reported Q1 fiscal 2026 revenue of $134 billion."
+    result = grounding_decomposition(text, _NUMERIC_SOURCE)
+    sents = result["sentence_classifications"]
+    assert len(sents) == 1
+    assert sents[0]["primary"] != "G"
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Known gap: sentences under 5 tokens are dropped by "
+        "_split_sentences_simple, so a short sentence with a fabricated "
+        "number is never classified."
+    ),
+)
+def test_short_sentence_with_fabricated_number_is_classified() -> None:
+    text = "Apple reported Q1 fiscal 2026 revenue of $143 billion. Margins reached 59%."
+    result = grounding_decomposition(text, _NUMERIC_SOURCE)
+    assert any("59%" in s.get("sentence", "") for s in result["sentence_classifications"])
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Known gap: markdown table rows are stripped by "
+        "_split_sentences_simple, so a fabricated number in a table is "
+        "never classified."
+    ),
+)
+def test_markdown_table_row_with_fabricated_number_is_classified() -> None:
+    text = (
+        "Apple reported Q1 fiscal 2026 revenue of $143 billion.\n\n"
+        "| Metric | Value |\n"
+        "|---|---|\n"
+        "| Operating margin for the quarter | 59% |\n"
+    )
+    result = grounding_decomposition(text, _NUMERIC_SOURCE)
+    assert any("59%" in s.get("sentence", "") for s in result["sentence_classifications"])
