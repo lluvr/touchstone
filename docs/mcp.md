@@ -34,6 +34,12 @@ underlying `Verifier.score()` does: `minicheck_supported_prob`,
 are supplied; see [`api-reference.md`](api-reference.md#verifier) for
 the mode-selection rules and the full parameter table.
 
+Input size: the string arguments of `verify` and `measure` (`text`,
+`source`, `topic`, and each `comparisons` entry) are limited to 200,000
+characters each (`touchstone_mcp.MAX_INPUT_CHARS`). A longer argument is
+rejected with a tool error naming the field. The library itself has no
+cap; call `clarethium_touchstone` directly for larger inputs.
+
 ## Wire it into your host
 
 ### Claude Desktop
