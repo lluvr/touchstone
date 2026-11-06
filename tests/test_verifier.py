@@ -425,3 +425,25 @@ def test_long_self_reference_is_validated_and_low_prob() -> None:
     assert result.scope == "validated"
     assert result.prob_hallucinated < 0.3
     assert result.should_flag() is False
+
+
+@pytest.mark.parametrize("empty_source", ["", "   \n\t  "])
+def test_empty_source_is_insufficient_input(empty_source: str) -> None:
+    """An empty or whitespace-only ``source`` gives the source-dependent
+    layers nothing to compare against, so the result is
+    ``insufficient_input`` (as for empty ``text``) and never flags, even
+    though the text itself is substantive."""
+    v = Verifier()
+    result = v.score(SUPPORTED_TEXT, source=empty_source)
+    assert result.scope == "insufficient_input"
+    assert result.should_flag() is False
+    assert any("source" in n.lower() for n in result.scope_notes)
+
+
+def test_none_source_raises() -> None:
+    """``source`` is a required ``str``; ``None`` is a caller error and
+    raises rather than producing a result."""
+    v = Verifier()
+    with pytest.raises(ValueError, match="source"):
+        v.score(SUPPORTED_TEXT, source=None)  # type: ignore[arg-type]
+

@@ -162,7 +162,8 @@ class VerifierResult:
       substrate signals had their preconditions met. The probability may
       be intercept-dominated; treat as low-confidence.
     * ``"insufficient_input"`` — text is empty, whitespace-only, or
-      shorter than :data:`MIN_INPUT_CHARS`. Do not act on the probability.
+      shorter than :data:`MIN_INPUT_CHARS`, or ``source`` is empty or
+      whitespace-only. Do not act on the probability.
     """
 
     scope_notes: list[str]
@@ -299,7 +300,7 @@ def _extract_substrate_features(measure_result: MeasureResult) -> dict[str, floa
 
 
 def _compute_scope(
-    text: str, measure_result: MeasureResult
+    text: str, measure_result: MeasureResult, source: str | None = None
 ) -> tuple[Literal["validated", "limited_signal", "insufficient_input"], list[str]]:
     """Classify the signal quality of a :class:`VerifierResult`.
 
@@ -313,8 +314,8 @@ def _compute_scope(
       dominated by the intercept; treat it as a low-confidence read.
     * ``"insufficient_input"`` — the input is empty / whitespace-only, OR
       the input is below :data:`MIN_INPUT_CHARS` non-whitespace characters
-      AND no substrate signal had its precondition met. Do not act on the
-      probability for this case.
+      AND no substrate signal had its precondition met, OR ``source`` is
+      empty / whitespace-only. Do not act on the probability for this case.
 
     The ``notes`` list explains the classification in human-readable
     English: which signals fired, which preconditions failed.
@@ -332,6 +333,17 @@ def _compute_scope(
         return (
             "insufficient_input",
             ["text is empty or whitespace-only"],
+        )
+
+    if source is not None and not source.strip():
+        # An empty source still lets the source-dependent layers run, but
+        # every reading is against nothing: Layer 4 marks every number
+        # unsourced and Layer 6 scores zero overlap, which the calibration
+        # reads as a confident hallucination. There is no source to verify
+        # against, so the probability carries no information.
+        return (
+            "insufficient_input",
+            ["source is empty or whitespace-only; there is nothing to verify against"],
         )
 
     informative = _signal_informativeness(measure_result)
@@ -503,6 +515,8 @@ class Verifier:
         Args:
             text: The AI-generated output to verify.
             source: The grounding source the output should be supported by.
+                Required. An empty or whitespace-only source yields scope
+                ``"insufficient_input"``; ``None`` raises ``ValueError``.
             minicheck_supported_prob: Optional MiniCheck supported-probability
                 in [0, 1] (caller invokes MiniCheck themselves). Higher means
                 more supported.
@@ -617,7 +631,7 @@ class Verifier:
         # Per-sentence localization from Layer 11 classifications.
         unsupported = _identify_unsupported_spans(measure_result, top_k_unsupported)
 
-        scope, scope_notes = _compute_scope(text, measure_result)
+        scope, scope_notes = _compute_scope(text, measure_result, source)
 
         # Surface the calibration regime at the API boundary. The baseline-
         # composition and judge-blend modes compose the supplied scores with
