@@ -167,6 +167,45 @@ async def test_verify_substrate_plus_judge_mode_auto_selects(server: FastMCP) ->
     assert "judge_hallucinated_prob" in out["signal_breakdown"]
 
 
+@pytest.mark.parametrize("field", ["text", "source"])
+async def test_verify_rejects_oversized_input(server: FastMCP, field: str) -> None:
+    """verify rejects a text or source longer than MAX_INPUT_CHARS."""
+    from fastmcp.exceptions import ToolError
+
+    from touchstone_mcp import MAX_INPUT_CHARS
+
+    args = {"text": SUPPORTED_TEXT, "source": SUPPORTED_SOURCE}
+    args[field] = "a" * (MAX_INPUT_CHARS + 1)
+    with pytest.raises(ToolError, match=field):
+        await server.call_tool("verify", args)
+
+
+async def test_verify_accepts_input_at_the_limit(server: FastMCP) -> None:
+    """An input of exactly MAX_INPUT_CHARS is scored, not rejected."""
+    from touchstone_mcp import MAX_INPUT_CHARS
+
+    text = (SUPPORTED_TEXT + " ") * (MAX_INPUT_CHARS // (len(SUPPORTED_TEXT) + 1) + 1)
+    text = text[:MAX_INPUT_CHARS]
+    result = await server.call_tool("verify", {"text": text, "source": SUPPORTED_SOURCE})
+    assert 0.0 <= result.structured_content["prob_hallucinated"] <= 1.0
+
+
+async def test_measure_rejects_oversized_comparison(server: FastMCP) -> None:
+    """measure applies the same cap to each comparisons entry."""
+    from fastmcp.exceptions import ToolError
+
+    from touchstone_mcp import MAX_INPUT_CHARS
+
+    with pytest.raises(ToolError, match=r"comparisons\[1\]"):
+        await server.call_tool(
+            "measure",
+            {
+                "text": SUPPORTED_TEXT,
+                "comparisons": [SUPPORTED_TEXT, "a" * (MAX_INPUT_CHARS + 1)],
+            },
+        )
+
+
 # -- measure tool -------------------------------------------------------------
 
 

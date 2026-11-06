@@ -48,6 +48,7 @@ from importlib.metadata import version as _pkg_version
 from typing import Any
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 
 from clarethium_touchstone import (
     VERIFIER_MODES,
@@ -75,6 +76,25 @@ except PackageNotFoundError:  # source checkout without an installed dist
 # repeated calls reuse them. The Verifier is stateless across calls;
 # each `score()` produces an independent result.
 _VERIFIER = Verifier()
+
+# Per-field input cap for the string arguments of ``verify`` and ``measure``.
+# The documented latency envelope is sub-100 ms per 5 KB document; scoring
+# time grows with input length, so an MCP host (or a model driving one) can
+# otherwise tie the server up with a multi-megabyte argument. 200,000
+# characters is 40 times that envelope and well above any summary or RAG
+# answer the calibration was fit on. Library callers of
+# ``clarethium_touchstone`` are not capped; this guards the server boundary.
+MAX_INPUT_CHARS = 200_000
+
+
+def _check_input_size(name: str, value: str | None) -> None:
+    """Raise :class:`ToolError` when ``value`` exceeds :data:`MAX_INPUT_CHARS`."""
+    if value is not None and len(value) > MAX_INPUT_CHARS:
+        raise ToolError(
+            f"{name} is {len(value):,} characters; the limit is "
+            f"{MAX_INPUT_CHARS:,}. Split the input or call the "
+            "clarethium_touchstone library directly."
+        )
 
 
 def build_server() -> FastMCP:
@@ -137,6 +157,9 @@ def build_server() -> FastMCP:
             top_k_unsupported: Maximum number of suspect spans to
                 return. Defaults to 3.
 
+        ``text`` and ``source`` are each limited to 200,000 characters;
+        longer inputs are rejected with an error.
+
         Returns:
             A dict with keys ``prob_hallucinated`` (float in [0, 1]),
             ``mode`` (which calibration mode produced the score),
@@ -153,6 +176,8 @@ def build_server() -> FastMCP:
         thresholds in the empirical-validation tables are 0.07-0.27.
         Tune on your held-out data before any production deployment.
         """
+        _check_input_size("text", text)
+        _check_input_size("source", source)
         result = _VERIFIER.score(
             text=text,
             source=source,
@@ -209,6 +234,10 @@ def build_server() -> FastMCP:
                 versions of the output for Layer 3 (temporal
                 instability).
 
+        ``text``, ``source``, ``topic`` and each entry of
+        ``comparisons`` are limited to 200,000 characters; longer inputs
+        are rejected with an error.
+
         Returns:
             The full MeasureResult dict keyed by layer name:
             ``structural_profile``, ``claim_density``,
@@ -218,6 +247,11 @@ def build_server() -> FastMCP:
             ``information_novelty``, ``quality_profile``,
             ``grounding_decomposition``.
         """
+        _check_input_size("text", text)
+        _check_input_size("source", source)
+        _check_input_size("topic", topic)
+        for i, comparison in enumerate(comparisons or []):
+            _check_input_size(f"comparisons[{i}]", comparison)
         return dict(_measure(text, source=source, topic=topic, comparisons=comparisons))
 
     @mcp.tool()
