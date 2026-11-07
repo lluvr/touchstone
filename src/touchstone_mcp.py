@@ -312,7 +312,9 @@ def build_server() -> FastMCP:
                 "name": "substrate_plus_minicheck",
                 "requires": ["minicheck_supported_prob"],
                 "description": (
-                    "Add the MiniCheck Flan-T5-Large supported-probability. AUC ~ 0.76."
+                    "Add the MiniCheck Flan-T5-Large supported-probability. "
+                    "MiniCheck alone averages AUC 0.76; this combined mode has "
+                    "no published evaluation yet."
                 ),
             },
             {
@@ -321,7 +323,7 @@ def build_server() -> FastMCP:
                     "minicheck_supported_prob",
                     "alignscore_supported_prob",
                 ],
-                "description": ("Add both LLM-based baselines. AUC ~ 0.77."),
+                "description": ("Add both LLM-based baselines. No published evaluation yet."),
             },
             {
                 "name": "substrate_plus_judge",
