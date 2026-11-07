@@ -85,6 +85,7 @@ The §4 subsections are organized by the discipline they apply rather than by ch
 - **§4.2.3**, calibration (ECE / Brier / BSS), load-bearing for the §5 architecture story.
 - **§4.2.5** (latency / cost) + **§4.2.6** (per-category audit on naturalistic positives), production-deployment context.
 - **§4.2.8**, multi-vendor judge panel (Grok / Claude / GPT / Gemini); cross-vendor robustness.
+- **§4.2.11**, sign-constrained substrate calibration: evaluated, not adopted; the true RAGTruth held-out AUC of the shipped calibration.
 - **§4.3** + **§4.3.1**, substrate-plus-judge value-add analysis (CV-discovery and holdout-published, respectively).
 
 The leakage discipline is applied throughout: substrate calibration in-sample inflation on RAGTruth is flagged at §4.2 below and propagated into §4.3 / §4.3.1 caveats.
@@ -539,6 +540,38 @@ Full disagreement list (8 RAGTruth + 4 SummEval + 10 HaluEval) with per-pair rea
 - Claim extraction is itself an LLM judgment; "atomic factual claim" is interpretive. Two independent extraction runs with different temperature seeds would produce slightly different claim sets. Single-judge claim extraction is a known fragility of FactScore-class methods.
 
 The §4.2 panel now has eight detector classes (substrate, MiniCheck, AlignScore, Grok cued, Grok blind, Claude cued, Claude blind, GPT-4o cued, GPT-5-mini cued, GPT-5-mini blind, Gemini blind, FactScore-Grok) on three corpora. FactScore-Grok joins MiniCheck and AlignScore as a "mid-tier" detector class, better than substrate, worse than single-step frontier judges, at intermediate cost.
+
+### 4.2.11 Sign-constrained substrate calibration (not adopted)
+
+The default `substrate_only` calibration has a negative `l4_unsourced` coefficient (-0.160): on its own, a higher share of unsourced numbers lowers `prob_hallucinated`. This section tests whether forbidding that inversion costs discrimination and whether it fixes the numeric-fabrication cases pinned as strict xfails in `tests/`. Reproduce via `python -m benchmarks.external.constrained_calibration` (needs `numpy`, `scikit-learn`, `scipy`); results in `benchmarks/external/constrained_calibration_2026-11-07.json`.
+
+**Original fit reproduced exactly.** The 900-row RAGTruth Summary pair file was rebuilt from `wandb/RAGTruth-processed` and matches the SHA-256 pinned in `data_hashes_2026-05-19.json`; features recomputed with the current library match the committed n=400 snapshot row for row. Splitting each class with `numpy.random.default_rng(0)` (positives shuffled first) and taking the first `int(0.7 * n)` of each class gives n_train=629 / n_test=271, and sklearn `LogisticRegression()` with default settings on those rows returns the shipped coefficients to within 1e-13. The 900-row feature snapshot is committed (`ragtruth_summary/results/substrate_features_n900_2026-11-07.json`), so the evaluation needs no corpus download.
+
+**Constrained fit.** Same rows, same solver; `l6_inv`, `l4_unsourced`, `l11_p` and `l5_entity_unsourced` bounded at zero from below, count features free. Only the `l4_unsourced` bound is active, so the constrained optimum is the refit without that feature (a bounded L-BFGS-B fit of the same objective agrees within solver tolerance).
+
+| Evaluation set | n (pos) | Current AUC [95% CI] | Constrained AUC [95% CI] | Paired diff [95% CI] |
+|---|---|---|---|---|
+| RAGTruth Summary, true held-out rows | 271 (62) | 0.677 [0.599, 0.748] | 0.678 [0.600, 0.748] | +0.001 [-0.010, +0.012] |
+| SummEval n=400 | 400 (46) | 0.647 [0.551, 0.740] | 0.648 [0.552, 0.743] | +0.001 [-0.002, +0.004] |
+| HaluEval n=400 | 400 (200) | 0.748 [0.700, 0.795] | 0.748 [0.700, 0.797] | +0.001 [-0.003, +0.005] |
+| RAGTruth n=400 (overlaps training) | 400 (95) | 0.659 [0.596, 0.721] | 0.653 [0.590, 0.717] | -0.006 [-0.012, -0.001] |
+
+CIs are the stratified percentile bootstrap from `_bootstrap.bootstrap_auc_ci` (1000 resamples, seed 0); paired differences from `_paired_tests.paired_bootstrap_auc_diff`.
+
+**Scores on the strict-xfail cases** (source: the Apple Q1 paragraph in `tests/test_verifier.py`):
+
+| Case | Current | Constrained |
+|---|---|---|
+| Verbatim copy | 0.121 | 0.120 |
+| Two numbers digit-swapped | 0.110 (below copy) | 0.120 (equal to copy) |
+| Every number fabricated | 0.179 (not flagged) | 0.187 (not flagged) |
+| Digit swap, short sentence, table row (Layer 11 parsing tests) | fail | fail (calibration-independent) |
+
+**Decision: the default is unchanged.** The constrained fit meets the AUC half of the rule on every corpus (it is statistically indistinguishable from the current fit), and it removes the inversion, so swapped and fabricated texts score slightly higher than they do today. But it does not make changed numbers raise the score: a digit swap scores exactly the same as the verbatim copy, a fully fabricated text stays far below 0.5, and none of the five xfail tests flips. Switching would shift every published Verifier number for no measured gain.
+
+**Why the data cannot fix this.** On RAGTruth Summary `l4_unsourced` carries no corpus-level signal: its univariate AUC is 0.55 on the held-out rows and 0.50 on the n=400 subsample. Over 200 stratified bootstrap resamples of the training rows its unconstrained coefficient has a 95% interval of [-0.78, +0.41] and is negative in 68% of them. The shipped -0.16 is noise around zero, not a learned inverse relationship, and a logistic fit on this corpus will not learn a positive numeric-fabrication weight. Closing the gap needs training data where hallucinations are numeric (or an explicit Layer 4 rule outside the logistic fit), plus the Layer 11 parsing fixes the three calibration-independent xfails pin.
+
+**Correction to the RAGTruth out-of-sample figure.** The 0.633 previously quoted as the out-of-sample RAGTruth AUC is the eval half of the n=400 interleave split, and 141 of its 199 rows are training rows of the 70/30 split. It is not out of sample. The true held-out figure for the shipped calibration is **0.677 [0.599, 0.748]** on the 271 test rows. The same overlap applies to the RAGTruth substrate column in §4.3.1.
 
 ### 4.3 Does the substrate add value when the judge is already in the loop?
 
