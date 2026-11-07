@@ -178,7 +178,7 @@ for span in result.top_unsupported:
 
 Three operating modes (auto-selected from which baseline scores you pass):
 
-- **Substrate-only** (default; no extras, sub-100 ms): Verifier AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples. The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; out of sample it is 0.633. The 0.67-0.76 range in the tables below is raw Layer 6 (inverse word overlap), not the Verifier. Research-tier signal. For drift detection, regression testing, or as a cheap first-pass filter ahead of an LLM-based judge.
+- **Substrate-only** (default; no extras, sub-100 ms): Verifier AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples. The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; on the 271 held-out rows of that split it is 0.677 (95% CI 0.599-0.748). The 0.67-0.76 range in the tables below is raw Layer 6 (inverse word overlap), not the Verifier. Research-tier signal. For drift detection, regression testing, or as a cheap first-pass filter ahead of an LLM-based judge.
 - **Substrate + MiniCheck** (caller invokes MiniCheck and passes `minicheck_supported_prob`): MiniCheck alone averages AUC 0.76 (0.68-0.90 across the three corpora); this combined mode has no published evaluation yet. Adds the MiniCheck cost (~5 s/pair on CPU).
 - **Substrate + MiniCheck + AlignScore** (pass both): AlignScore alone averages AUC 0.75 (0.69-0.81); this combined mode has no published evaluation yet. Adds the AlignScore cost.
 

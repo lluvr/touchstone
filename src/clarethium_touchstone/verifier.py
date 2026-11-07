@@ -28,8 +28,9 @@ increasing per-call latency:
 
 * **substrate_only** (default; no extra dependencies, sub-100 ms on
   5 KB documents). AUC 0.647-0.748 on n=400 subsamples of three
-  external summarization corpora (RAGTruth Summary 0.633 out of sample;
-  the default calibration was fit on a 70/30 split of it); research-tier.
+  external summarization corpora (RAGTruth Summary 0.677 on the 271
+  held-out rows of the 70/30 split the default calibration was fit on);
+  research-tier.
   F1-optimal threshold is 0.15-0.22 on those subsamples, NOT 0.5; the default
   ``should_flag(threshold=0.5)`` under-flags for any production
   deployment. Tune the threshold on your own held-out data.
@@ -471,10 +472,13 @@ class Verifier:
     an adopter must not miss:
 
     * The ``l4_unsourced`` coefficient is negative on the default
-      calibration, so on this distribution more unsourced numbers slightly
-      *lowers* the score. On a fabrication-heavy corpus that signal can run
-      backwards; recalibrate on your own held-out data (pass ``calibration``)
-      before relying on numeric-fabrication detection.
+      calibration, so more unsourced numbers slightly *lowers* the score.
+      The sign is noise: RAGTruth Summary carries no numeric-fabrication
+      signal, and a refit with the coefficient held at zero has the same
+      AUC (``docs/production_readiness.md`` section 4.2.11). Either way
+      the default does not detect swapped or fabricated numbers; read
+      Layer 4 from ``layer_outputs`` or recalibrate on held-out data that
+      contains them (pass ``calibration``).
     * Baseline scores passed to :meth:`score`
       (``minicheck_supported_prob``, ``alignscore_supported_prob``,
       ``judge_hallucinated_prob``) are composed without per-distribution

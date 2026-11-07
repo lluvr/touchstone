@@ -304,8 +304,8 @@ def build_server() -> FastMCP:
                     "Default. No external dependencies. Sub-100 ms per "
                     "5 KB document. Verifier AUC 0.65-0.75 on n=400 "
                     "subsamples of three external summarization corpora "
-                    "(RAGTruth Summary 0.633 out of sample; the default "
-                    "calibration was fit on a 70/30 split of it)."
+                    "(RAGTruth Summary 0.677 on the 271 held-out rows of "
+                    "the 70/30 split the default calibration was fit on)."
                 ),
             },
             {

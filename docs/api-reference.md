@@ -178,7 +178,7 @@ The four modes:
 
 | Mode | Required baseline arguments | When to use |
 |---|---|---|
-| `"substrate_only"` | None | Default. No external dependencies. Sub-100 ms per 5 KB document. Verifier AUC 0.647 (SummEval), 0.748 (HaluEval), 0.659 (RAGTruth Summary; partly in-sample because the default calibration was fit on a 70/30 split of it, 0.633 out of sample) on n=400 subsamples. The 0.67-0.76 range elsewhere is raw Layer 6. |
+| `"substrate_only"` | None | Default. No external dependencies. Sub-100 ms per 5 KB document. Verifier AUC 0.647 (SummEval), 0.748 (HaluEval), 0.659 (RAGTruth Summary; partly in-sample because the default calibration was fit on a 70/30 split of it, 0.677 on the 271 held-out rows of that split) on n=400 subsamples. The 0.67-0.76 range elsewhere is raw Layer 6. |
 | `"substrate_plus_minicheck"` | `minicheck_supported_prob` | Add the MiniCheck Flan-T5-Large supported-probability. MiniCheck alone averages AUC 0.76 (0.68-0.90 across the three corpora); this combined mode has no published evaluation yet. |
 | `"substrate_plus_minicheck_alignscore"` | `minicheck_supported_prob` + `alignscore_supported_prob` | Add both LLM-based baselines. AlignScore alone averages AUC 0.75 (0.69-0.81); this combined mode has no published evaluation yet. |
 | `"substrate_plus_judge"` | `judge_hallucinated_prob` | Linear-blend the substrate probability with a frontier LLM judge probability. AUC on the §4.2 corpora ranges 0.78-0.94 depending on judge vendor and cued/blind variant. Mutually exclusive with MiniCheck/AlignScore in the same call. |
