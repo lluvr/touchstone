@@ -43,6 +43,28 @@ def test_version_strings() -> None:
     assert __standard_version__.startswith("1.0")
 
 
+def test_library_version_is_the_library_not_the_distribution() -> None:
+    """``library_version`` stamps the ``clarethium_touchstone`` library
+    version, which is versioned independently of the ``touchstone-mcp``
+    distribution (see CHANGELOG and README "Versions"). The distribution
+    version is reported separately as ``touchstone_mcp.__version__``."""
+    from importlib.metadata import PackageNotFoundError, version
+
+    import clarethium_touchstone
+    import touchstone_mcp
+    from clarethium_touchstone import measure
+    from clarethium_touchstone._version import __standard_version__, __version__
+
+    result = measure("Revenue grew 12% to $143M in 2024.")
+    assert result["library_version"] == __version__ == clarethium_touchstone.__version__
+    assert result["standard_version"] == __standard_version__
+    try:
+        dist_version = version("touchstone-mcp")
+    except PackageNotFoundError:
+        dist_version = "0.0.0+source"
+    assert touchstone_mcp.__version__ == dist_version
+
+
 def test_measure_layer_functions_present() -> None:
     """All Standard Section 5 layer functions are accessible from measure module.
 

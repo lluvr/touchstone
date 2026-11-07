@@ -135,11 +135,21 @@ The Standard defines the methodology. The library implements it. Other implement
 
 ## Status
 
-Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/), a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (515 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
+Published on PyPI as [`touchstone-mcp`](https://pypi.org/project/touchstone-mcp/), a single package bundling the reference library and the MCP server. All eleven Section 5 measurement layers are implemented and tested (516 tests; CI green on ruff lint + format, mypy strict, and the pytest matrix across Python 3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three external corpus comparisons (RAGTruth Summary, SummEval, HaluEval summarization) ship with the source. The internal benchmarks reproduce exactly from a clone; the external runners stream the corpora from HuggingFace at runtime. The cross-corpus Touchstone signal pattern is internally consistent across three corpora and three task types with 95% bootstrap CIs; see §Empirical validation. Validation against TRUE, LLM-AggreFact held-out, and HaluBench remains open work; see Limitations.
 
 ```bash
 pip install touchstone-mcp                         # reference library + MCP server
 ```
+
+**Versions.** Three version numbers are tracked independently, and they are expected to differ:
+
+| Version | Where to read it | Changes when |
+|---|---|---|
+| `touchstone-mcp` distribution (e.g. 0.1.11) | `pip show touchstone-mcp`, `touchstone_mcp.__version__` | any PyPI release, including docs or metadata only |
+| `clarethium_touchstone` library (e.g. 0.2.2) | `clarethium_touchstone.__version__`, `library_version` in every `measure()` result | the measurement code changes |
+| Touchstone Standard (e.g. 1.0.0-draft.15) | `__standard_version__`, `standard_version` in every `measure()` result | the specification changes |
+
+`library_version` names the measurement code that produced a result, so a docs-only package release does not change it. The MCP `list_modes` tool reports all three.
 
 ## Read before deploying: `docs/production_readiness.md`
 

@@ -32,6 +32,10 @@ The Standard and the package are versioned independently. Standard versions trac
   test rows. A sign-constrained refit of the substrate calibration was
   evaluated and not adopted (`docs/production_readiness.md` section
   4.2.11; `benchmarks/external/constrained_calibration.py`).
+- README documents the three independent version numbers: the
+  `touchstone-mcp` distribution, the `clarethium_touchstone` library
+  (stamped as `library_version` in `measure()` results) and the Standard.
+  A test pins that `library_version` is the library version.
 
 ## touchstone-mcp v0.1.11 - 2026-07-03: metadata and docs refresh
 
