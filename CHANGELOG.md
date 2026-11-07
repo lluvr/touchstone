@@ -21,6 +21,10 @@ The Standard and the package are versioned independently. Standard versions trac
   across corpora, the out-of-sample RAGTruth figure and the calibration
   split are stated next to the numbers, and documents described as
   bundled with the wheel now link to the repository.
+- The MiniCheck and AlignScore Verifier modes no longer quote AUC 0.76 and
+  0.77, which no benchmark in the repository produces. 0.76 is MiniCheck's
+  own mean across the three corpora; the combined modes are described as
+  not yet evaluated.
 
 ## touchstone-mcp v0.1.11 - 2026-07-03: metadata and docs refresh
 

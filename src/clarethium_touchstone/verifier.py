@@ -34,9 +34,10 @@ increasing per-call latency:
   ``should_flag(threshold=0.5)`` under-flags for any production
   deployment. Tune the threshold on your own held-out data.
 * **substrate_plus_minicheck** — caller invokes MiniCheck and passes
-  ``minicheck_supported_prob``. AUC ≈ 0.76.
+  ``minicheck_supported_prob``. MiniCheck alone averages AUC 0.76 across
+  the three corpora; this combined mode has no published evaluation yet.
 * **substrate_plus_minicheck_alignscore** — both baseline probabilities
-  supplied. AUC ≈ 0.77.
+  supplied. No published evaluation yet.
 * **substrate_plus_judge** — caller invokes a frontier LLM judge (xAI
   Grok / Anthropic Claude / OpenAI GPT-4o per the §4.2.8 panel) and
   passes ``judge_hallucinated_prob`` (P(hallucinated), already in the
