@@ -25,6 +25,13 @@ The Standard and the package are versioned independently. Standard versions trac
   0.77, which no benchmark in the repository produces. 0.76 is MiniCheck's
   own mean across the three corpora; the combined modes are described as
   not yet evaluated.
+- The RAGTruth figure quoted as out of sample (0.633) was the eval half of
+  the n=400 interleave split, which overlaps the calibration's training
+  rows. Docs, the Verifier docstring and the MCP `list_modes` description
+  now quote the true held-out AUC, 0.677 (95% CI 0.599-0.748) on the 271
+  test rows. A sign-constrained refit of the substrate calibration was
+  evaluated and not adopted (`docs/production_readiness.md` section
+  4.2.11; `benchmarks/external/constrained_calibration.py`).
 
 ## touchstone-mcp v0.1.11 - 2026-07-03: metadata and docs refresh
 
