@@ -8,6 +8,10 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ## Unreleased
 
+- MCP `verify` now returns `reading` and `span_basis`. The sentences in
+  `top_unsupported` are the lexical shortlist in every mode, including
+  when the caller supplies a judge score. The probability is not a
+  verdict that a sentence is missing from the source.
 - `Verifier.score()` with an empty or whitespace-only `source` now
   returns scope `"insufficient_input"` instead of `"validated"`;
   `source=None` still raises `ValueError`.

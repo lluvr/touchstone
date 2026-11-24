@@ -108,8 +108,28 @@ async def test_verify_returns_required_shape(server: FastMCP) -> None:
         "scope",
         "scope_notes",
         "signal_breakdown",
+        "span_basis",
+        "reading",
         "top_unsupported",
     }
+    assert out["span_basis"] == "lexical"
+    assert "not a verdict" in out["reading"]
+
+
+async def test_verify_judge_score_does_not_relabel_the_sentences(server: FastMCP) -> None:
+    """A caller-supplied judge score changes the probability only."""
+    result = await server.call_tool(
+        "verify",
+        {
+            "text": HALLUCINATED_TEXT,
+            "source": HALLUCINATED_SOURCE,
+            "judge_hallucinated_prob": 0.9,
+        },
+    )
+    out = result.structured_content
+    assert out["mode"] == "substrate_plus_judge"
+    assert out["span_basis"] == "lexical"
+    assert "still the lexical shortlist" in out["reading"]
     assert isinstance(out["prob_hallucinated"], float)
     assert 0.0 <= out["prob_hallucinated"] <= 1.0
     assert isinstance(out["scope_notes"], list)

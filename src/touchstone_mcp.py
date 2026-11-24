@@ -112,10 +112,10 @@ def build_server() -> FastMCP:
             "Touchstone: a deterministic first-pass filter for unsupported "
             "claims in LLM output, computed without a second model call (not "
             "a standalone hallucination detector). Call `verify` to score a "
-            "(text, source) pair for hallucination probability with span-level "
-            "localization. Call `measure` for the raw multi-layer output. Read "
-            "scope and scope_notes on every verify result before acting on the "
-            "probability."
+            "(text, source) pair. Read `reading` and `scope` before acting. "
+            "`top_unsupported` is a lexical shortlist, not a finding that a "
+            "sentence is missing from the source. Call `measure` for the raw "
+            "multi-layer output."
         ),
     )
 
@@ -129,12 +129,15 @@ def build_server() -> FastMCP:
         judge_alpha: float = 0.3,
         top_k_unsupported: int = 3,
     ) -> dict[str, Any]:
-        """Score a (text, source) pair for hallucination probability.
+        """Lexical first pass on a (text, source) pair.
 
-        Returns the calibrated probability that ``text`` contains
-        unsupported claims relative to ``source``, along with the
-        signal breakdown, scope classification, and the top suspect
-        sentences with their Layer 11 markers.
+        The probability is not a verdict that a sentence is missing from
+        the source. Read ``reading`` before acting on it.
+        ``top_unsupported`` is the lexical shortlist in every mode,
+        including when the caller supplies a judge or detector score.
+
+        Returns the calibrated probability, the signal breakdown, the
+        scope classification, ``reading``, and the lexical shortlist.
 
         Args:
             text: The AI-generated output to verify.
@@ -164,10 +167,12 @@ def build_server() -> FastMCP:
             A dict with keys ``prob_hallucinated`` (float in [0, 1]),
             ``mode`` (which calibration mode produced the score),
             ``scope`` (``"validated"`` / ``"limited_signal"`` /
-            ``"insufficient_input"`` -- see scope_notes for the
+            ``"insufficient_input"``; see scope_notes for the
             classification reason), ``scope_notes`` (list of
             diagnostic strings), ``signal_breakdown`` (per-feature
-            logit contributions), and ``top_unsupported`` (list of
+            logit contributions), ``span_basis`` (``"lexical"``),
+            ``reading`` (what the probability and the sentences are
+            allowed to mean), and ``top_unsupported`` (list of
             sentence-level dicts with ``sentence``, ``sentence_index``,
             ``layer11_primary``, ``p_markers``, ``grounding_score``).
 
@@ -188,12 +193,32 @@ def build_server() -> FastMCP:
             judge_alpha=judge_alpha,
             top_k_unsupported=top_k_unsupported,
         )
+        # The sentences are Layer 11's lexical shortlist in every mode.
+        # A caller-supplied judge score changes the probability only.
+        # It does not choose these sentences, and it cannot see a
+        # direction, scope, or relation change that keeps the source words.
+        if result.mode == "substrate_only":
+            reading = (
+                "Lexical first pass. This probability is not a verdict that a "
+                "sentence is missing from the source. The sentences listed are "
+                "projected or loosely grounded. Direction, scope, and relation "
+                "changes that keep the source words are outside this score."
+            )
+        else:
+            reading = (
+                "The probability includes a caller-supplied detector score. "
+                "The sentences listed are still the lexical shortlist, not "
+                "that detector's sentences. A direction, scope, or relation "
+                "change that keeps the source words is not located here."
+            )
         return {
             "prob_hallucinated": result.prob_hallucinated,
             "mode": result.mode,
             "scope": result.scope,
             "scope_notes": list(result.scope_notes),
             "signal_breakdown": dict(result.signal_breakdown),
+            "span_basis": "lexical",
+            "reading": reading,
             "top_unsupported": [
                 {
                     "sentence": span.sentence,
