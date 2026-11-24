@@ -1,6 +1,6 @@
 # Touchstone
 
-A fast, deterministic first-pass filter for unsupported claims in LLM output, computed without calling another LLM. Not a standalone hallucination detector.
+A lexical ranker for a review queue. It scores how far a draft's words sit from a source, with no second model call. It is not a hallucination detector.
 
 A specification plus reference implementation for measuring LLM-generated text against its source: structural quality, claim density, source matching, grounding decomposition, and other layers. The scoring substrate is regex, structural analysis, source matching, and arithmetic; no model is called to judge another model's output. Specification compliance verification is reserved for Standard 1.1.
 

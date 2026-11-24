@@ -8,6 +8,12 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ## Unreleased
 
+- The README deploy section, the MCP server instructions, `list_modes`,
+  the Verifier mode list, `docs/mcp.md`, `docs/api-reference.md`, and
+  the example headers no longer call this a first-pass filter, no
+  longer tell you to act on a validated probability, and no longer
+  attribute the judge's 0.78-0.94 AUC to the blend. `judge_alpha`
+  stays 0.3. The tool name stays `verify`.
 - The README, the Verifier docstring, the MCP scope note, and the
   opening of `docs/production_readiness.md` no longer recommend blending
   this score onto a judge. The holdout was parity or worse on 5 of 6

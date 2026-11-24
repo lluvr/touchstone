@@ -141,7 +141,7 @@ The three tables below are **in-sample (F1-optimal chosen on the same 400 rows i
 
 **Production architecture implications (verified against this measurement, not derived from Appendix A.1):**
 
-The two-stage architecture in §5 still holds. The new evidence sharpens it:
+The numbered cascade in §5 is the earlier architecture. §5's opening is the deployment result: a frontier judge is the checker, and this score orders a queue. The notes below compare detectors. They are not a reason to blend.
 
 - For audit-grade applications (precision ≥ 0.8-0.9): a frontier LLM judge is the right stage-2 detector. Grok 4.20 materially outperforms the open-source trained discriminators here on F1-optimal (per §4.2/§4.2.1); R@P90 advantage is real but tie-sensitive (per §4.2.2). Per-call cost is currently unmeasured (see §7 carried-forward list).
 - For triage-grade applications (top-K human review): MiniCheck remains competitive with the judge at substantially lower per-call cost. Pick by budget.
@@ -704,25 +704,25 @@ Touchstone alone is NOT a sufficient hallucination detector for production deplo
 2. **Stage 2: A trained discriminator (MiniCheck Flan-T5-Large, AlignScore-base) OR an LLM-based judge (xAI Grok 4.20, Anthropic Claude Sonnet 4.6, OpenAI GPT-4o, Google Gemini-3-flash)** on the top X% of stage-1 outputs OR on every output if compute budget allows. Catches: semantically-distinguishable hallucinations (direction reversal, attribute swap, scoping shift, relation reversal, imputed cause). Trained discriminators and LLM judges are distinct detector classes with different cost / accuracy / latency profiles; §4.2.5 has the per-call cost table.
 3. **Stage 3: Human review** on the top Y% of stage-1+stage-2 outputs by combined score, with span-level localization from Touchstone Layer 11 to focus reviewer attention.
 
-The Verifier API supports this architecture in four discriminated modes selected by which Stage-2 detector probability the caller supplies to `score()`. Calling `Verifier().score(text, source)` gives substrate-only mode (Stage-1 alone). Passing `minicheck_supported_prob=` auto-selects `substrate_plus_minicheck`; passing both `minicheck_supported_prob=` and `alignscore_supported_prob=` auto-selects `substrate_plus_minicheck_alignscore`; passing `judge_hallucinated_prob=` auto-selects `substrate_plus_judge` (added 2026-05-19 alongside the §4.2.8 / §4.3.1 multi-vendor work; linear blend `judge_alpha * substrate_prob + (1 - judge_alpha) * judge_hallucinated_prob` with `judge_alpha` defaulting to ≈ 0.3, a deliberate substrate-light default below the §4.3.1 holdout-blend tune-AUC-picked mean of ≈ 0.375; the picked α is strongly corpus-dependent, so tune on held-out data). All four modes return the same `VerifierResult` shape (probability + signal breakdown + span localization).
+The API still exposes that earlier cascade as four modes selected by which detector probability the caller supplies to `score()`. Passing a judge probability blends, and the holdout did not support that blend (§4.3.1). The rest of this paragraph records the API. Calling `Verifier().score(text, source)` gives substrate-only mode (Stage-1 alone). Passing `minicheck_supported_prob=` auto-selects `substrate_plus_minicheck`; passing both `minicheck_supported_prob=` and `alignscore_supported_prob=` auto-selects `substrate_plus_minicheck_alignscore`; passing `judge_hallucinated_prob=` auto-selects `substrate_plus_judge` (added 2026-05-19 alongside the §4.2.8 / §4.3.1 multi-vendor work; linear blend `judge_alpha * substrate_prob + (1 - judge_alpha) * judge_hallucinated_prob` with `judge_alpha` defaulting to ≈ 0.3, a deliberate substrate-light default below the §4.3.1 holdout-blend tune-AUC-picked mean of ≈ 0.375; the picked α is strongly corpus-dependent, so tune on held-out data). All four modes return the same `VerifierResult` shape (probability + signal breakdown + span localization).
 
 §4.3 measures the substrate's value-add when a frontier LLM judge is stage 2 under CV; §4.3.1 re-measures under honest tune/eval holdout. The holdout result revises the §4.3 claim downward: of the six Grok (corpus × judge-variant) cells, only HaluEval-blind shows a positive eval gain (+0.019 F1, +0.023 AUC at α=0.7 picked on tune-AUC). On the other five cells the blend is at parity with judge-alone or worse. The "substrate complements judge" story holds only on adversarial-summarization corpora where the substrate is itself strong on AUC (§4.2.7's HaluEval result); on cleaner NLI-shaped corpora a blind frontier judge is at the ceiling for what a small lexical substrate can add.
 
 **Label noise floor compounds with the architecture recommendation (§4.2.9).** Cohen's κ on RAGTruth and HaluEval is 0.62 / 0.60, implying conservative ceiling AUCs of 0.68 / 0.60. The strongest cued-judge held-out F1s on those corpora (Claude / GPT-4o, both around 0.72-0.74) sit against the conservative ceiling, frontier judges are at the *label* noise floor, not the detection ceiling. The §4.3.1 HaluEval-blind blend gain (+0.019 F1, +0.023 AUC) lives inside the κ-implied label-noise band. Production teams considering whether to add the substrate alongside a frontier judge should treat that blend gain as suggestive, not confirmed, and should expect their own corpus-specific α-on-AUC measurement to come back small unless their labels are notably higher-quality than RAGTruth / HaluEval. For most corpus distributions the honest answer is "judge-alone is the deployable system; revisit if you have multi-annotator labels and a corpus where the substrate's AUC exceeds the trained-NLI baselines."
 
-Touchstone alone is sufficient for: drift detection on stable production streams, regression testing of LLM output pipelines, education / methodology research, and triage/prioritization for human review queues at the 1.6x-4.2x lift-vs-random level (corpus-dependent; §3).
+Touchstone alone is sufficient for: drift detection on stable production streams, regression testing of LLM output pipelines, education / methodology research, and triage/prioritization for human review queues. The substrate-only Verifier's top-10% lift on the n=400 subsamples is 1.70x-3.26x; raw Layer 6 on the full corpora is 1.6x-4.2x (§3).
 
 ## 6. The honest scope statement
 
 What Touchstone IS:
 
 - A research substrate with calibrated falsification protocol, bootstrap CIs, multi-corpus evaluation, and a reference test suite.
-- A triage / review-queue prioritization tool that delivers 1.6x-4.2x lift over random review on English news summarization, depending on corpus (§3).
+- A triage / review-queue prioritization tool. Top-10% lift over random on English news summarization is 1.70x-3.26x for the substrate-only Verifier on the n=400 subsamples, and 1.6x-4.2x for raw Layer 6 (§3).
 - A drift detector for stable production streams: aggregate Touchstone scores tracked over time flag distribution shifts.
 
 What Touchstone IS NOT:
 
-- A standalone production hallucination detector. The substrate is structurally blind to direction reversal, attribute swap, scoping shift, relation reversal, time-frame shift, and imputed cause, half of all real-world LLM hallucinations.
+- A standalone production hallucination detector. The substrate is structurally blind to direction reversal, attribute swap, scoping shift, relation reversal, time-frame shift, and imputed cause.
 - An audit-grade verification tool. At precision 0.9, the substrate (and every trained discriminator tested) catches 1-7% of real hallucinations on naturalistic corpora.
 - A drop-in replacement for an LLM-based judge, and not a blend that beat the judge. On 5 of 6 Grok holdout cells the blend was at parity or worse (§4.3.1).
 

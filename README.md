@@ -46,10 +46,10 @@ for span in result.top_unsupported:
 What just happened: this is the easy case, new numbers and new names.
 Touchstone flagged three sentences as projected, the unsourced `$185
 billion`, the unsourced 47% McKinsey forecast, and the unsourced 2027
-Tesla year, and produced a 0.796 probability. The `scope` field tells
-you whether the probability is trustworthy (`"validated"`) or whether
-there wasn't enough signal to score reliably (`"limited_signal"` or
-`"insufficient_input"`). A draft that keeps the source words and
+Tesla year, and produced a 0.796 probability. The flag is those new
+names. `"validated"` means the lexical features fired. It does not mean
+the probability is safe to block on. `"limited_signal"` and
+`"insufficient_input"` had less signal. A draft that keeps the source words and
 changes the claim will not look like this example.
 `should_flag()` refuses to flag low-signal results by default; pass
 `fail_open=True` to score them against your threshold anyway. The
@@ -156,15 +156,14 @@ Touchstone alone is NOT a standalone production hallucination detector. A 16-cas
 What Touchstone IS useful for in production:
 
 - **Triage / review-queue prioritization**: top-10% review lift over random of 1.70x (HaluEval) to 3.26x (SummEval) for the substrate-only Verifier on the n=400 subsamples, and 1.64x (HaluEval) to 4.22x (SummEval) for raw Layer 6 on the full corpora.
-- **Cheap first-pass filter** in a two-stage pipeline ahead of an LLM-based judge.
 - **Drift detection** on stable production streams.
-- **Lexical-feature half of a production hallucination detector**, combine with a trained semantic discriminator via `Verifier(mode="substrate_plus_minicheck").score(text, source, minicheck_supported_prob=mc_prob)`, or with a frontier LLM judge via `Verifier().score(text, source, judge_hallucinated_prob=judge_prob)` (mode auto-selects to `substrate_plus_judge`; linear blend with `judge_alpha` defaulting to 0.3 per §4.3.1).
+- **A queue order beside a judge you already run.** Passing `judge_hallucinated_prob` changes this probability only. The holdout was parity or worse on 5 of 6 Grok cells (`docs/production_readiness.md` §4.3.1). `judge_alpha` stays 0.3. Judge-alone is the check.
 
 Full operational analysis with precision/recall/F1/lift numbers, the 16-case stress test results, and the production architecture recommendation: see `docs/production_readiness.md` and `docs/methodology.md`. Read both before shipping anything that depends on Touchstone's output.
 
 ## Quick example: the calibrated `Verifier` API
 
-The `Verifier` is the production-shaped API: one `score()` call, calibrated probability + explainable signal breakdown + span-level localization. Use it as the lexical half of a two-stage architecture, not as a standalone detector.
+The `Verifier` is the library API: one `score()` call, a probability, a signal breakdown, and lexical spans. The probability orders a review queue on English news summaries.
 
 ```python
 from clarethium_touchstone import Verifier

@@ -23,8 +23,8 @@ What this class IS useful for:
   or ``judge_hallucinated_prob`` changes the probability only. It does
   not turn this score into that detector.
 
-Three operating modes, listed in order of increasing accuracy and
-increasing per-call latency:
+Four operating modes. They are not ordered by accuracy. Supplying
+a judge or detector score changes the probability only:
 
 * **substrate_only** (default; no extra dependencies, sub-100 ms on
   5 KB documents). AUC 0.647-0.748 on n=400 subsamples of three
@@ -50,9 +50,10 @@ increasing per-call latency:
   §4.3.1's holdout-blend tune splits is strongly corpus-dependent
   (mean ≈ 0.375, range 0.0-0.7), so adopters should tune α on their
   own held-out data (see ``substrate_plus_judge_holdout`` reproduction).
-  AUC on the
-  three §4.2 corpora ranges 0.78-0.94 depending on judge vendor and
-  cued/blind variant; see §4.2.8 in production_readiness.md.
+  The 0.78-0.94 range is the judge's own AUC on the three §4.2
+  corpora (§4.2.8), not a gain from the blend. On the holdout the
+  blend was at parity with the judge or worse on 5 of 6 Grok cells
+  (§4.3.1).
 
 The honest empirical bound, operational metrics, and subtle-case
 stress test are documented in ``docs/production_readiness.md``.
@@ -151,7 +152,7 @@ class VerifierResult:
     """
 
     prob_hallucinated: float
-    """Calibrated probability in [0, 1] that the output is hallucinated."""
+    """Lexical score in [0, 1]. Higher means the draft's words sit further from the source. It is not a verdict that the output is hallucinated."""
 
     mode: VerifierMode
     """Which calibration mode produced this score."""
@@ -159,9 +160,10 @@ class VerifierResult:
     scope: Literal["validated", "limited_signal", "insufficient_input"]
     """Signal-quality classification for this result.
 
-    * ``"validated"`` — Layer 6 plus at least one of Layers 4 / 5 / 11
-      produced informative readings. ``prob_hallucinated`` is calibrated
-      on this regime; act on it.
+    * ``"validated"``: Layer 6 plus at least one of Layers 4 / 5 / 11
+      produced informative readings. The probability is calibrated for
+      queue order on English news summaries. Validated means those
+      features fired.
     * ``"limited_signal"`` — the input was substantive but fewer than two
       substrate signals had their preconditions met. The probability may
       be intercept-dominated; treat as low-confidence.
@@ -312,9 +314,10 @@ def _compute_scope(
 
     Returns ``(scope, notes)`` where ``scope`` is one of:
 
-    * ``"validated"`` — the substrate produced informative readings from at
+    * ``"validated"``: the substrate produced informative readings from at
       least Layer 6 and one other source-dependent layer (Layers 4, 5, or
-      11). The probability is calibrated on this regime; act on it.
+      11). The probability is calibrated for queue order on English news
+      summaries. Validated means those features fired.
     * ``"limited_signal"`` — the input was substantive but the substrate
       produced fewer than two informative signals. The probability may be
       dominated by the intercept; treat it as a low-confidence read.

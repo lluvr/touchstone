@@ -1,22 +1,19 @@
-"""Two-stage cascade: substrate cheap-screen + LLM judge on the maybe pile.
+"""Earlier cascade demo. The holdout does not support shipping this shape.
 
-Production hallucination detection at scale is rarely about running the
-most expensive judge on every output. The cheap-screen-plus-judge pattern
-is what makes it economically viable:
+The script runs the substrate, then a stub judge, then a blend. On the
+published holdout, blending this score onto a frontier judge was parity
+or worse on 5 of 6 Grok cells (``docs/production_readiness.md`` §4.3.1).
+Judge-alone is the check. This score orders a queue.
 
-* **Stage 1 (substrate):** Run :class:`Verifier` in ``substrate_only`` mode
-  on every output. Sub-100 ms per 5 KB document, zero per-call cost,
-  AUC ≈ 0.67-0.76 on the published external corpora.
-* **Stage 2 (judge):** For outputs in the substrate's uncertain band
-  (typically substrate probability 0.20-0.70), call a frontier LLM judge
-  for a second-pass probability. The Verifier supports this directly via
-  the ``substrate_plus_judge`` mode (see Standard §13.6 and
-  ``docs/production_readiness.md`` §4.3.1).
+* **Stage 1 (substrate):** :class:`Verifier` in ``substrate_only``.
+  Sub-100 ms per 5 KB document. Verifier AUC on the n=400 subsamples
+  is 0.647 to 0.748. The 0.67-0.76 range is raw Layer 6.
+* **Stage 2:** the stub stands in for a caller-supplied judge. Passing
+  that probability into ``substrate_plus_judge`` changes the blended
+  number only.
 
-This example simulates the judge with a deterministic stub so the script
-runs offline; replace ``simulated_judge_call()`` with your real LLM
-client. The simulated judge returns a fixed mapping per item id; in
-production it makes one chat-completion call per uncertain trace.
+The simulated judge returns a fixed mapping per item id. The bands
+below are this script's constants, not a deployment recipe.
 
 Run from the repository root::
 

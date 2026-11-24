@@ -1,28 +1,25 @@
-"""Production usage demo for the Touchstone Verifier.
+"""Library demo for the Touchstone Verifier.
 
-Shows the four operating modes:
+The probability orders a review queue. It is not a hallucination
+detector, and the result has no confidence interval.
 
 1. **Substrate-only** (no extras, sub-100 ms per pair): the default.
-   Suitable for drift detection and regression testing; not for
-   sole-source audit decisions. Default-calibrated AUC ≈ 0.67-0.76
-   on three external summarization corpora.
-2. **Substrate + MiniCheck** (caller invokes MiniCheck themselves and
-   passes the supported-probability): AUC ≈ 0.76 on RAGTruth Summary
-   held-out test split. Adds the MiniCheck cost (~5 s/pair on CPU).
-3. **Substrate + MiniCheck + AlignScore**: AUC ≈ 0.77. Adds the
-   AlignScore cost (~5 s/pair on CPU) on top of MiniCheck.
-4. **Substrate + LLM judge** (caller invokes any frontier judge —
-   xAI Grok / Anthropic Claude / OpenAI GPT-4o per §4.2.8 — and
-   passes the P(hallucinated) the judge returned). Linear blend
-   with ``judge_alpha`` defaulting to ≈ 0.3 (cross-corpus mean of
-   the §4.3.1 picked α). Highest AUC of the four modes when the
-   judge is competently chosen; deployment cost is one judge call
-   per pair (~1-2 s, $.001-.005 per call depending on vendor).
+   Verifier AUC on the n=400 subsamples is 0.647 (SummEval), 0.748
+   (HaluEval), 0.659 (RAGTruth Summary; 0.677 on the 271 held-out
+   rows). The 0.67-0.76 range is raw Layer 6.
+2. **Substrate + MiniCheck**: the caller passes MiniCheck's
+   supported-probability. MiniCheck alone averages AUC 0.76. This
+   combined mode has no published evaluation.
+3. **Substrate + MiniCheck + AlignScore**: both probabilities. This
+   combined mode has no published evaluation. AlignScore alone
+   averages AUC 0.75.
+4. **Substrate + a caller-supplied judge**: linear blend,
+   ``judge_alpha`` default 0.3 (a substrate-light default, below the
+   §4.3.1 tune mean of about 0.375). The 0.78-0.94 range is the
+   judge's own AUC. On the holdout the blend was at parity with the
+   judge or worse on 5 of 6 Grok cells.
 
-The Verifier is the production-shaped API: one ``score()`` call,
-calibrated probability + CI bounds + per-sentence localization. See
-``docs/methodology.md`` for the honest empirical envelope these
-calibrations deliver on held-out corpora.
+See ``docs/production_readiness.md``.
 
 Run::
 

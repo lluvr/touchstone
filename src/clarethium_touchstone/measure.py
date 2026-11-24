@@ -1938,8 +1938,8 @@ def assess_derivation_regime(source_num_count: int) -> ScopeAssessment:
 
     The function is exposed publicly so callers can compute the
     assessment from any source number count without running the full
-    layer (e.g., to display a "trust this signal" UI hint before
-    measurement begins).
+    layer. The regime says when Layer 11's number signal is weak.
+    It is not a hint to trust the score.
     """
     if source_num_count < _DERIVATION_REGIME_DIAGNOSTIC_MAX:
         regime: DerivationRegime = "diagnostic"

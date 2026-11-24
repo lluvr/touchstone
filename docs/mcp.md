@@ -22,9 +22,9 @@ registered alongside.
 
 | Tool | What it does |
 |---|---|
-| `verify(text, source, ...)` | Calibrated `(text, source)` hallucination probability, scope classification, signal breakdown, and span-level localization. Mirrors `Verifier.score()`. |
+| `verify(text, source, ...)` | Lexical overlap score for a `(text, source)` pair, plus scope, signal breakdown, and span localization. The probability orders a queue. Mirrors `Verifier.score()`. |
 | `measure(text, source, ...)` | Raw multi-layer Touchstone output (all eleven Section 5 measurement layers). |
-| `assess_derivation_regime(source_num_count)` | Layer 11 standalone regime classifier; surfaces a "trust this signal" hint before measurement runs. |
+| `assess_derivation_regime(source_num_count)` | Layer 11 regime label for a source's number count. Saturated means Layer 11's number signal is weak. |
 | `list_modes()` | Enumerate the four Verifier modes with their required inputs and the library + Standard versions in use. |
 
 The `verify` tool accepts all the same optional baseline arguments the
@@ -126,11 +126,10 @@ source receives:
 }
 ```
 
-The host can act on `prob_hallucinated` directly for `scope ==
-"validated"` results. For `"limited_signal"` or
-`"insufficient_input"` scopes, route the result to manual review
-rather than auto-flagging; see [`api-reference.md`](api-reference.md#scope)
-for scope semantics.
+`scope == "validated"` means the lexical features fired. It does not
+mean the probability is safe to block on. `"limited_signal"` and
+`"insufficient_input"` are weaker still. See
+[`api-reference.md`](api-reference.md#scope) for scope semantics.
 
 ## Threshold guidance
 

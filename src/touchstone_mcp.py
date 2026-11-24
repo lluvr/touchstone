@@ -1,6 +1,6 @@
-"""Touchstone MCP server: a deterministic first-pass filter for unsupported
-claims in LLM output, computed without a second model call (not a standalone
-hallucination detector), exposed as Model Context Protocol tools.
+"""Touchstone MCP server: a lexical overlap score for a text and a source,
+with no second model call. It is not a hallucination detector. Exposed as
+Model Context Protocol tools.
 
 Install with::
 
@@ -20,16 +20,16 @@ Programmatic use::
 
 The four tools exposed:
 
-* ``verify`` -- calibrated production Verifier. Returns probability,
-  scope, signal breakdown, and span-level localization for a
-  ``(text, source)`` pair. Use this for the common "is this output
-  faithful to its source" decision.
+* ``verify`` -- lexical score for a ``(text, source)`` pair. Returns
+  probability, scope, signal breakdown, and span-level localization.
+  The probability orders a review queue. It does not decide that the
+  output is faithful to the source.
 * ``measure`` -- low-level orchestrator that runs every Touchstone
   Section 5 measurement layer whose preconditions are met. Use this
   when the caller needs the raw layer outputs for drill-down.
-* ``assess_derivation_regime`` -- Layer 11 standalone regime classifier.
-  Useful for surfacing a "trust this signal" hint before any
-  measurement runs.
+* ``assess_derivation_regime`` -- Layer 11 regime label for a source's
+  number count. Saturated means Layer 11's number signal is weak.
+  It is not a hint to trust the score.
 * ``list_modes`` -- enumerate the four Verifier modes and their
   preconditions. Helpful for hosts that present a mode selector.
 
@@ -109,13 +109,15 @@ def build_server() -> FastMCP:
         name="touchstone",
         version=__version__,
         instructions=(
-            "Touchstone: a deterministic first-pass filter for unsupported "
-            "claims in LLM output, computed without a second model call (not "
-            "a standalone hallucination detector). Call `verify` to score a "
-            "(text, source) pair. Read `reading` and `scope` before acting. "
-            "`top_unsupported` is a lexical shortlist, not a finding that a "
-            "sentence is missing from the source. Call `measure` for the raw "
-            "multi-layer output."
+            "Touchstone scores lexical overlap between a text and a source, "
+            "with no second model call. The probability orders a review "
+            "queue. It does not decide that a sentence is missing from the "
+            "source, and a validated scope is not a reason to block. Call "
+            "`verify` to score a (text, source) pair. Read `reading` and "
+            "`scope` before using the probability. `top_unsupported` is a "
+            "lexical shortlist. Call `measure` for the raw multi-layer "
+            "output. Blending this score onto a judge was parity or worse "
+            "on 5 of 6 Grok holdout cells."
         ),
     )
 
@@ -129,10 +131,11 @@ def build_server() -> FastMCP:
         judge_alpha: float = 0.3,
         top_k_unsupported: int = 3,
     ) -> dict[str, Any]:
-        """Lexical first pass on a (text, source) pair.
+        """Lexical overlap score for a (text, source) pair.
 
-        The probability is not a verdict that a sentence is missing from
-        the source. Read ``reading`` before acting on it.
+        The probability orders a review queue. It is not a verdict that
+        a sentence is missing from the source. Read ``reading`` before
+        using it.
         ``top_unsupported`` is the lexical shortlist in every mode,
         including when the caller supplies a judge or detector score.
 
@@ -291,11 +294,9 @@ def build_server() -> FastMCP:
         < 5, ``"transition"`` for [5, 10), ``"saturated"`` for >= 10)
         and the user-facing guidance text.
 
-        Use this before running ``measure`` or ``verify`` to surface
-        a "trust this signal" hint to the user. On saturated sources,
-        the result's guidance string directs callers to Layer 4
-        source matching for numerical fabrication detection rather
-        than to Layer 11.
+        On saturated sources, the guidance string points callers at
+        Layer 4 source matching for numbers, rather than at Layer 11.
+        The regime is not a hint to trust the score.
 
         Args:
             source_num_count: Count of digit-formatted numbers in the
@@ -354,11 +355,13 @@ def build_server() -> FastMCP:
                 "name": "substrate_plus_judge",
                 "requires": ["judge_hallucinated_prob"],
                 "description": (
-                    "Linear-blend the substrate probability with a frontier "
-                    "LLM judge probability. AUC ranges 0.78-0.94 on the "
-                    "published corpora depending on judge vendor and "
-                    "cued/blind variant. Mutually exclusive with MiniCheck "
-                    "/ AlignScore in the same call."
+                    "Linear blend of the substrate probability and a "
+                    "caller-supplied frontier judge probability. The "
+                    "0.78-0.94 range is the judge's own AUC on the "
+                    "published corpora, not a gain from the blend. On the "
+                    "holdout the blend was at parity with the judge or "
+                    "worse on 5 of 6 Grok cells. Mutually exclusive with "
+                    "MiniCheck / AlignScore in the same call."
                 ),
             },
         ]

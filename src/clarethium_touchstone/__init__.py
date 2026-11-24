@@ -1,9 +1,9 @@
 """Touchstone reference implementation.
 
-A deterministic first-pass filter for unsupported claims in LLM output,
-without calling another LLM (not a standalone hallucination detector).
-Scores whether LLM-generated text is supported by its source using
-regex, structural analysis, source matching, and arithmetic.
+A lexical ranker for a review queue. It scores how far a draft's words
+sit from a source, with no second model call. It is not a hallucination
+detector. The score uses regex, structural analysis, source matching,
+and arithmetic.
 Implements Section 5 (Output Measurement) of the Touchstone Standard.
 See ``STANDARDS/touchstone-1.0.md`` for the canonical reference.
 
@@ -13,8 +13,8 @@ Public API (v0.1):
 
     result = measure(text, source=source_text)
 
-    # Standalone Layer 11 regime classifier - useful for UIs that
-    # display "trust this signal" hints before measurement begins.
+    # Standalone Layer 11 regime label. Saturated means the number
+    # signal is weak. It is not a hint to trust the score.
     assessment = assess_derivation_regime(source_num_count=14)
 
 The ``measure()`` orchestrator runs every measurement layer whose

@@ -65,7 +65,7 @@ constructor overrides auto-selection.
 | `minicheck_supported_prob` | `float \| None` | `None` | MiniCheck supported-probability in [0, 1] (caller invokes MiniCheck themselves). Higher means more supported. |
 | `alignscore_supported_prob` | `float \| None` | `None` | AlignScore supported-probability in [0, 1]. Higher means more supported. |
 | `judge_hallucinated_prob` | `float \| None` | `None` | LLM-judge probability that the output is **hallucinated** in [0, 1]. Sign convention is inverted relative to MiniCheck/AlignScore because frontier judges return the detector-side probability directly. |
-| `judge_alpha` | `float` | `0.3` | Substrate weight in the substrate+judge linear blend. Tune on your held-out data; default is the cross-corpus mean from `production_readiness.md` §4.3.1. |
+| `judge_alpha` | `float` | `0.3` | Substrate weight in the substrate+judge linear blend. Default 0.3 is a substrate-light default, below the §4.3.1 holdout-blend tune mean of about 0.375. The holdout does not support blending. |
 | `top_k_unsupported` | `int` | `3` | Maximum number of unsupported spans to return. |
 
 **Mode auto-selection rules** (in priority order):
@@ -112,8 +112,9 @@ A `VerifierResult` is classified into one of three scopes that gate
 whether `should_flag()` will act on the probability:
 
 - **`"validated"`**, Layer 6 plus at least one of Layers 4 / 5 / 11
-  produced informative readings. Calibrated on this regime; act on
-  `prob_hallucinated`.
+  produced informative readings. The probability is calibrated for
+  queue order on English news summaries. Validated means those
+  features fired.
 - **`"limited_signal"`**, The input was substantive (above the
   character floor and at least one substrate signal fired) but the
   validated combination (Layer 6 plus one of L4/L5/L11) did not hold.
@@ -181,7 +182,7 @@ The four modes:
 | `"substrate_only"` | None | Default. No external dependencies. Sub-100 ms per 5 KB document. Verifier AUC 0.647 (SummEval), 0.748 (HaluEval), 0.659 (RAGTruth Summary; partly in-sample because the default calibration was fit on a 70/30 split of it, 0.677 on the 271 held-out rows of that split) on n=400 subsamples. The 0.67-0.76 range elsewhere is raw Layer 6. |
 | `"substrate_plus_minicheck"` | `minicheck_supported_prob` | Add the MiniCheck Flan-T5-Large supported-probability. MiniCheck alone averages AUC 0.76 (0.68-0.90 across the three corpora); this combined mode has no published evaluation yet. |
 | `"substrate_plus_minicheck_alignscore"` | `minicheck_supported_prob` + `alignscore_supported_prob` | Add both LLM-based baselines. AlignScore alone averages AUC 0.75 (0.69-0.81); this combined mode has no published evaluation yet. |
-| `"substrate_plus_judge"` | `judge_hallucinated_prob` | Linear-blend the substrate probability with a frontier LLM judge probability. AUC on the §4.2 corpora ranges 0.78-0.94 depending on judge vendor and cued/blind variant. Mutually exclusive with MiniCheck/AlignScore in the same call. |
+| `"substrate_plus_judge"` | `judge_hallucinated_prob` | Linear blend of the substrate probability and a caller-supplied judge probability. The 0.78-0.94 range is the judge's own AUC on the §4.2 corpora, not a gain from this blend. On the holdout the blend was at parity with the judge or worse on 5 of 6 Grok cells (§4.3.1). Mutually exclusive with MiniCheck/AlignScore in the same call. |
 
 ---
 
@@ -221,8 +222,8 @@ Per-layer keys: `structural_profile` (Layer 1), `claim_density` (Layer 2),
 
 ## `assess_derivation_regime()`
 
-Layer-11 standalone regime classifier. Useful for UIs that want to surface
-a "trust this signal" hint before running the full measurement.
+Layer-11 standalone regime classifier. Saturated means Layer 11's number
+signal is weak. The regime is not a hint to trust the score.
 
 ```python
 from clarethium_touchstone import assess_derivation_regime

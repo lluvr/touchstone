@@ -186,7 +186,7 @@ def main() -> int:
     print(" • Default threshold 0.5 under-flags on every published external corpus.")
     print("   Tune on your own held-out data; F1-optimal threshold on RAGTruth")
     print("   Summary is ≈ 0.26, on SummEval ≈ 0.09, on HaluEval ≈ 0.13.")
-    print(" • Scope=='validated' rows are calibrated; act on prob_hallucinated.")
+    print(" • Scope=='validated' means the lexical features fired. It is not a license to block.")
     print(" • Scope=='limited_signal' rows route to manual review, not auto-flag.")
     print(" • Scope=='insufficient_input' rows are typically empty/whitespace or")
     print("   below the char floor; the substrate cannot score them meaningfully.")
