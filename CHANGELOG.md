@@ -8,6 +8,10 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ## Unreleased
 
+- The README, the Verifier docstring, the MCP scope note, and the
+  opening of `docs/production_readiness.md` no longer recommend blending
+  this score onto a judge. The holdout was parity or worse on 5 of 6
+  Grok cells. The score is a queue order. Judge-alone is the check.
 - MCP `verify` now returns `reading` and `span_basis`. The sentences in
   `top_unsupported` are the lexical shortlist in every mode, including
   when the caller supplies a judge score. The probability is not a

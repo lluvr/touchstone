@@ -149,9 +149,9 @@ production deployment. [`production_readiness.md`](production_readiness.md)
   alone scores at chance on subtle semantic hallucinations that
   preserve vocabulary; the 16-case stress test in
   [`production_readiness.md`](production_readiness.md) documents the
-  structural blindness. Use Touchstone as a triage signal or as the
-  lexical-feature half of a two-stage architecture with an LLM-based
-  judge.
+  structural blindness. Use the score to order a review queue. On the
+  holdout, blending it onto a frontier judge did not beat the judge
+  (parity or worse on 5 of 6 Grok cells). Judge-alone is the check.
 - **Not a benchmark harness.** Touchstone ships benchmarks
   (`benchmarks/external/`) for reproducing the empirical-validation
   tables; this MCP server exposes the inference-time tools, not the

@@ -11,7 +11,7 @@ If you only read one block, read this one:
 - **What Touchstone catches today:** unsourced numbers, unsourced years, unsourced named entities, and lexical drift from source. On three published external corpora (RAGTruth Summary, SummEval, HaluEval), raw Layer 6 (inverse word overlap) alone gets AUC 0.67-0.76 on the full corpora; the substrate-only Verifier gets AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples (§4.3). The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; on the 271 held-out rows of that split it is 0.677 [0.599, 0.748] (§4.2.11). Both run at sub-100 ms per 5 KB document and $0 in API cost.
 - **What Touchstone does NOT catch alone:** direction reversals, attribute swaps, scope shifts, relation reversals, time-frame shifts, and other semantic hallucinations that preserve vocabulary. The 16-case stress test in §3 separates the hallucinated from the faithful case at 50% (random); the substrate is structurally blind to this class.
 - **The default decision threshold is wrong.** `should_flag(threshold=0.5)` under-flags on every corpus tested. The Verifier's own F1-optimal thresholds on the n=400 subsamples are 0.15-0.22 (substrate-only mode, `benchmarks/external/substrate_plus_judge_n400_2026-05-18.json`); the 0.07-0.27 range in §2 is for raw per-detector scores (Layer 6, MiniCheck, AlignScore), not the Verifier probability. Tune on your held-out data before any production deployment; the §2 tables document the per-corpus optimal.
-- **The right deployment shapes:** (1) triage / review-queue prioritization (top-10% review lift over random of 1.70x-3.26x for the substrate-only Verifier and 1.64x-4.22x for raw Layer 6, depending on corpus; §3, §4.3); (2) cheap first-pass filter in a two-stage pipeline ahead of an LLM-based judge; (3) drift detection on stable production streams; (4) the lexical-feature half of a production hallucination detector when blended with MiniCheck / AlignScore / a frontier LLM judge via the `substrate_plus_*` modes.
+- **The deployment that matches the holdout:** order a review queue by the score (top-10% lift about 1.70x-3.26x for the substrate-only Verifier and 1.64x-4.22x for raw Layer 6, depending on corpus; §3, §4.3), or watch the score for drift on a stable stream. Do not blend this score into a judge. On the six Grok holdout cells, the blend was at parity with the judge or worse on five (§4.3.1). Judge-alone is the checker.
 - **The wrong deployment shapes:** standalone production hallucination detection on subtle-semantic-hallucination categories; replacement for an LLM judge on long-form generation; adversarial-robustness use cases (the regex substrate is public and evadable).
 - **Default-calibration caveat.** The shipped calibration was fitted on RAGTruth Summary; the `l4_unsourced` coefficient is negative on that corpus by construction. On adversarial-fabrication corpora that coefficient should be positive. Recalibrate via `Verifier.with_calibration()` if your input distribution differs materially.
 
@@ -698,7 +698,7 @@ Method: bin Grok-blind probabilities at width 0.05 (the natural cluster grid on 
 
 ## 5. The honest production architecture
 
-Touchstone alone is NOT a sufficient hallucination detector for production deployment in the general case. For real-world AI output verification, the production architecture is:
+Touchstone alone is NOT a sufficient hallucination detector for production deployment in the general case. The holdout in §4.3.1 is the deployment result: judge-alone is the checker, and blending this score onto the judge was parity or worse on 5 of 6 Grok cells. The numbered list below is the earlier cascade. Read §4.3.1 before you build it. For real-world AI output verification, the architecture the holdout supports is: the judge checks, and this score only orders a review queue.
 
 1. **Stage 1: Touchstone substrate (Verifier substrate-only)**, runs in <100 ms per output. Catches: lexically-distinguishable hallucinations (new numbers, new entities, new years, vocabulary drift). Routes outputs into a review queue ordered by suspicion score. Cheap enough to run on every output.
 2. **Stage 2: A trained discriminator (MiniCheck Flan-T5-Large, AlignScore-base) OR an LLM-based judge (xAI Grok 4.20, Anthropic Claude Sonnet 4.6, OpenAI GPT-4o, Google Gemini-3-flash)** on the top X% of stage-1 outputs OR on every output if compute budget allows. Catches: semantically-distinguishable hallucinations (direction reversal, attribute swap, scoping shift, relation reversal, imputed cause). Trained discriminators and LLM judges are distinct detector classes with different cost / accuracy / latency profiles; §4.2.5 has the per-call cost table.
@@ -719,18 +719,16 @@ What Touchstone IS:
 - A research substrate with calibrated falsification protocol, bootstrap CIs, multi-corpus evaluation, and a reference test suite.
 - A triage / review-queue prioritization tool that delivers 1.6x-4.2x lift over random review on English news summarization, depending on corpus (§3).
 - A drift detector for stable production streams: aggregate Touchstone scores tracked over time flag distribution shifts.
-- A cheap first-pass filter ahead of an LLM-based judge, where the substrate runs in <100 ms and the judge runs only on the top X% suspect outputs.
-- The lexical-feature half of a production hallucination detector. Combine with the semantic half (any trained discriminator or LLM judge).
 
 What Touchstone IS NOT:
 
 - A standalone production hallucination detector. The substrate is structurally blind to direction reversal, attribute swap, scoping shift, relation reversal, time-frame shift, and imputed cause, half of all real-world LLM hallucinations.
 - An audit-grade verification tool. At precision 0.9, the substrate (and every trained discriminator tested) catches 1-7% of real hallucinations on naturalistic corpora.
-- A drop-in replacement for an LLM-based judge. The two are complementary; the substrate is the cheap filter, the judge is the semantic check.
+- A drop-in replacement for an LLM-based judge, and not a blend that beat the judge. On 5 of 6 Grok holdout cells the blend was at parity or worse (§4.3.1).
 
 What changes this story:
 
-- Adding a trained semantic discriminator to the Stage-2 architecture moves the production-grade conversation forward. The Verifier ALREADY supports this via `substrate_plus_minicheck` and `substrate_plus_minicheck_alignscore` modes. The 16-case cross-detector measurement in Appendix A.1 is the empirical backing for "the substrate's blind spots are solved by an existing trained checker."
+- The holdout in §4.3.1 is the measurement for blending. Appendix A is a 16-case substrate probe, not production evidence, and it does not show that a trained checker removes the blind spot. Further work on substrate AUC does not catch a direction, scope, or relation change that keeps the source words.
 - Building Touchstone-on-its-own up the operational metrics curve is bounded by the substrate's structural limitations (§4). Further investment in pure-substrate AUC has diminishing returns.
 
 ## 7. Reproducing every number in this document

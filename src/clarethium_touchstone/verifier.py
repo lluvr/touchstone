@@ -15,13 +15,13 @@ What this class IS useful for:
 * **Triage / review-queue prioritization**: top-10% review lift over
   random of 1.70x-3.26x on English news summarization corpora,
   depending on corpus (``docs/production_readiness.md`` §4.3).
-* **Cheap first-pass filter** ahead of an LLM-based judge in a two-
-  stage architecture.
 * **Drift detection** on stable production streams.
-* The **lexical-feature half** of a production hallucination detector
-  when combined with a trained semantic discriminator via the
-  ``minicheck_supported_prob`` and/or ``alignscore_supported_prob``
-  arguments to :meth:`Verifier.score`.
+* Not a blend on top of a judge. On 5 of 6 Grok holdout cells the
+  blend was at parity with the judge or worse
+  (``docs/production_readiness.md`` §4.3.1). Judge-alone is the check.
+  Passing ``minicheck_supported_prob``, ``alignscore_supported_prob``,
+  or ``judge_hallucinated_prob`` changes the probability only. It does
+  not turn this score into that detector.
 
 Three operating modes, listed in order of increasing accuracy and
 increasing per-call latency:

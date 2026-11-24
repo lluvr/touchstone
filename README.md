@@ -1,21 +1,17 @@
 # Touchstone
 
-A cheap, deterministic first-pass filter for unsupported claims in LLM
-output. Not a standalone hallucination detector.
+A cheap ranker for a review queue. Not a hallucination detector.
 
-Touchstone scores whether LLM-generated text is supported by its source
-using regex, structural analysis, and arithmetic, with no second model
-call. You get a probability, a flag for when the input is too thin to
-score reliably, and highlights of the sentences that look unsupported.
-
-Read this first: Touchstone is structurally blind to hallucinations that
-keep the source vocabulary and only change the meaning. On a 16-case
-subtle-hallucination stress test it separates at 50%, no better than
-random. Where it earns its keep is triage, a cheap first stage ahead of
-an LLM judge, and drift detection. Reviewing the top 10% of outputs ranked
-by the Verifier catches 1.7x to 3.3x more hallucinations than random
-review, depending on corpus (raw Layer 6 alone: 1.6x to 4.2x). See
-`docs/production_readiness.md` before relying on it.
+Touchstone orders a draft by how far its words sit from the source. No
+second model call. Reviewing the top 10% of English news summaries by
+the Verifier catches about 1.7x to 3.3x more hallucinations than
+reviewing at random (raw Layer 6 alone: 1.6x to 4.2x). A sentence that
+keeps the source words and changes the direction, the scope, or the
+relation is outside this score. On a 16-case set of those, separation
+is 8/16, chance. Adding this score to a frontier judge was parity or
+worse on 5 of 6 Grok holdout cells. The judge alone is the check. This
+score is the queue order. See `docs/production_readiness.md` §4.3.1
+before relying on it.
 
 ## Quickstart (60 seconds)
 
@@ -47,12 +43,14 @@ for span in result.top_unsupported:
     print(f"  [{span.layer11_primary}] {span.sentence!r} {span.p_markers}")
 ```
 
-What just happened: Touchstone flagged three sentences as projected
-(unsupported), the unsourced `$185 billion`, the unsourced 47%
-McKinsey forecast, and the unsourced 2027 Tesla year, and produced a
-0.796 probability. The `scope` field tells you whether the probability
-is trustworthy (`"validated"`) or whether there wasn't enough signal
-to score reliably (`"limited_signal"` or `"insufficient_input"`).
+What just happened: this is the easy case, new numbers and new names.
+Touchstone flagged three sentences as projected, the unsourced `$185
+billion`, the unsourced 47% McKinsey forecast, and the unsourced 2027
+Tesla year, and produced a 0.796 probability. The `scope` field tells
+you whether the probability is trustworthy (`"validated"`) or whether
+there wasn't enough signal to score reliably (`"limited_signal"` or
+`"insufficient_input"`). A draft that keeps the source words and
+changes the claim will not look like this example.
 `should_flag()` refuses to flag low-signal results by default; pass
 `fail_open=True` to score them against your threshold anyway. The
 probability on a low-signal result is not calibrated: it is often near
@@ -188,7 +186,7 @@ for span in result.top_unsupported:
 
 Three operating modes (auto-selected from which baseline scores you pass):
 
-- **Substrate-only** (default; no extras, sub-100 ms): Verifier AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples. The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; on the 271 held-out rows of that split it is 0.677 (95% CI 0.599-0.748). The 0.67-0.76 range in the tables below is raw Layer 6 (inverse word overlap), not the Verifier. Research-tier signal. For drift detection, regression testing, or as a cheap first-pass filter ahead of an LLM-based judge.
+- **Substrate-only** (default; no extras, sub-100 ms): Verifier AUC 0.647 (SummEval), 0.748 (HaluEval) and 0.659 (RAGTruth Summary) on n=400 subsamples. The default calibration was fit on a 70/30 split of RAGTruth Summary, so the RAGTruth figure is partly in-sample; on the 271 held-out rows of that split it is 0.677 (95% CI 0.599-0.748). The 0.67-0.76 range in the tables below is raw Layer 6 (inverse word overlap), not the Verifier. Research-tier signal. Fits a review queue and drift detection on a stable stream. On the holdout, blending it onto a frontier judge did not beat the judge (parity or worse on 5 of 6 Grok cells, `docs/production_readiness.md` §4.3.1).
 - **Substrate + MiniCheck** (caller invokes MiniCheck and passes `minicheck_supported_prob`): MiniCheck alone averages AUC 0.76 (0.68-0.90 across the three corpora); this combined mode has no published evaluation yet. Adds the MiniCheck cost (~5 s/pair on CPU).
 - **Substrate + MiniCheck + AlignScore** (pass both): AlignScore alone averages AUC 0.75 (0.69-0.81); this combined mode has no published evaluation yet. Adds the AlignScore cost.
 
