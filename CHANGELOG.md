@@ -8,6 +8,9 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ## Unreleased
 
+## touchstone-mcp v0.1.12 - 2026-11-24: the score is a queue, not a detector
+
+- Package version 0.1.12. The library measurement version stays 0.2.2. `judge_alpha` stays 0.3. The tool name stays `verify`.
 - The PyPI description, the citation, the examples index, and a deployment note on Standard draft.15 no longer call this a first-pass filter or tell an auditor to run it alongside a judge. The Standard's measurement sections are unchanged. `judge_alpha` stays 0.3. The tool name stays `verify`.
 - The README deploy section, the MCP server instructions, `list_modes`,
   the Verifier mode list, `docs/mcp.md`, `docs/api-reference.md`, and

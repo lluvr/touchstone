@@ -143,7 +143,7 @@ pip install touchstone-mcp                         # reference library + MCP ser
 
 | Version | Where to read it | Changes when |
 |---|---|---|
-| `touchstone-mcp` distribution (e.g. 0.1.11) | `pip show touchstone-mcp`, `touchstone_mcp.__version__` | any PyPI release, including docs or metadata only |
+| `touchstone-mcp` distribution (e.g. 0.1.12) | `pip show touchstone-mcp`, `touchstone_mcp.__version__` | any PyPI release, including docs or metadata only |
 | `clarethium_touchstone` library (e.g. 0.2.2) | `clarethium_touchstone.__version__`, `library_version` in every `measure()` result | the measurement code changes |
 | Touchstone Standard (e.g. 1.0.0-draft.15) | `__standard_version__`, `standard_version` in every `measure()` result | the specification changes |
 
