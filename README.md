@@ -330,7 +330,7 @@ This report does NOT show that Touchstone has a methodologically superior signal
 - Layer 4 unsourced_rate spikes to AUC 0.7603 [0.6907, 0.8260] on RAGTruth QA, the first task type where output number density is high enough for Layer 4 to fire on a usable fraction (n=277/900). On summary task outputs the signal is gated out for most examples.
 - MiniCheck Flan-T5-Large is at chance on RAGTruth Data2Txt (AUC 0.4871 [0.4494, 0.5283]; CI squarely includes 0.5000). The fine-tuned discriminator does not generalize across task types.
 
-**Honest scope statement.** All three external corpora are English-news-summarization derivatives. Both LLM-based baselines tested are budget-tier (MiniCheck Flan-T5-Large at 770M, AlignScore-base at 125M); SOTA methods (Bespoke-MiniCheck-7B, GPT-4-as-judge) are not tested and would score higher AUC. **Touchstone is positioned as a research substrate for studying hallucination-detection methodology at low compute cost, NOT as a production-grade hallucination detector.** Auditors, compliance regimes, and platforms requiring high-recall production behaviour should use Touchstone alongside (not instead of) LLM-based methods.
+**Honest scope statement.** All three external corpora are English-news-summarization derivatives. Both LLM-based baselines tested are budget-tier (MiniCheck Flan-T5-Large at 770M, AlignScore-base at 125M); SOTA methods (Bespoke-MiniCheck-7B, GPT-4-as-judge) are not tested and would score higher AUC. **Touchstone is a research substrate for studying this measurement at low compute cost. It is not a production hallucination detector.** A judge is the check. This score orders a review queue. The holdout does not support blending the two (`docs/production_readiness.md` §4.3.1).
 
 ### Compute disclosure
 
@@ -432,7 +432,7 @@ What this release does **not** demonstrate:
 
 - **Three external corpora, two budget-tier LLM-based baselines, three trivial lexical baselines.** See the §Empirical validation "Headline finding" subsection for the full table. Layer 6 is statistically indistinguishable from a 3-line WordOverlapInv baseline on every corpus tested; the substrate-independence finding is shared by trivial lexical features. SOTA LLM-based discriminators (Bespoke-MiniCheck-7B, GPT-4-as-judge) are NOT tested, they would score higher AUC and are the right next-step baselines for a methodology paper. Open work on corpora: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open work on baselines: HHEM 2.1 (`trust_remote_code` API rename conflict with current transformers), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (requires GPU), AlignScore on RAGTruth QA / Data2Txt task types.
 - **All three external corpora are English-news-summarization derivatives.** RAGTruth Summary, SummEval, HaluEval summarization all anchor on CNN/DM or similar English news content. The substrate-independence finding is on this single domain. Generalization to non-English text, legal documents, medical documents, code, or any non-summarization output task is OUT OF VALIDATED SCOPE. The cross-task evidence within RAGTruth (Summary / QA / Data2Txt) is the only multi-task evidence in the report; further task and language coverage is open work.
-- **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. Adopters running on short-form text should pair Touchstone with a different fidelity signal; on Touchstone alone, Layer 6 inverse_proximity is the surviving out-of-domain option (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance).
+- **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. On short-form text the composite does not hold. Layer 6 inverse_proximity is the surviving out-of-domain option in this library (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance). Pairing it with another score does not make it a detector.
 - **EXP-081 corpus is single-vendor.** All 12 documents are xAI grok-4-1-fast. Cross-vendor generalization within the fast tier and to flagship-tier model outputs is open research.
 - **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-8.926, -4.498] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.835) is reported alongside.
 - **Layer 11 entity list is domain-biased.** The hardcoded external-entity P-markers (`_GFP_EXTERNAL_ENTITIES` in `measure.py`) cover GLP-1 drugs, Apple products, and BLS labor terms (the three EXP-095 source domains). On new domains, the secondary P-signal goes silent; adopters extending to new domains must author new entity lists with their own false-positive control.
@@ -485,8 +485,8 @@ on separating the distinct failure modes behind unsupported output.
 
 ## Citation
 
-    Lucic, L. (2026). Touchstone: a deterministic first-pass filter for
-    unsupported claims in LLM output.
+    Lucic, L. (2026). Touchstone: a lexical ranker for a review queue.
+    It is not a hallucination detector.
     https://pypi.org/project/touchstone-mcp/
 
 The wheel ships the reference implementation under Apache-2.0. The

@@ -105,9 +105,8 @@ def main() -> int:
     print("Library version:", _library_version())
     print("Standard version:", _standard_version())
 
-    # Pre-measurement scope hint: how many source numbers are we working
-    # with? Useful for adopter UIs that want to surface "trust this
-    # signal" before any measurement runs.
+    # How many source numbers are in the sample. Saturated means Layer 11's
+    # number signal is weak. The regime is not a hint to trust the score.
     src_num_hint = _count_source_numbers()
     assessment = assess_derivation_regime(source_num_count=src_num_hint)
     print(

@@ -2,10 +2,10 @@ cff-version: 1.2.0
 message: "If you use Touchstone (Standard or library), please cite both the Standard and the library."
 title: "Touchstone"
 abstract: >
-  Touchstone is a verification methodology and reference implementation
-  for measuring whether LLM output is supported by its source (a deterministic
-  first-pass filter, not a standalone hallucination detector), whose scoring functions
-  do not invoke another LLM on the output being measured. Standard 1.0
+  Touchstone is a lexical ranker for a review queue and a reference
+  implementation of that measurement. It scores how far a draft's words
+  sit from a source. The scoring functions do not invoke another LLM on
+  the output being measured. It is not a hallucination detector. Standard 1.0
   defines eleven measurement layers for output profiling (Section 5);
   Section 6 (Specification Compliance) is reserved for Standard 1.1.
   The library is the canonical reference implementation. v0.1 ships
@@ -15,7 +15,8 @@ abstract: >
   gap-direction agreement; MAE 0.014 on unsourced rate) and EXP-095
   (13 outputs, three model families; P-existence direction agreement
   100%). Both benchmarks are project-authored regression baselines,
-  not external replications; external-corpus validation is open work.
+  not external replications. External-corpus results are in
+  docs/production_readiness.md. The score orders a review queue.
 type: software
 authors:
   - family-names: Lucic
@@ -48,7 +49,7 @@ references:
       Independent editor review is pending.
 preferred-citation:
   type: software
-  title: "Touchstone: a deterministic first-pass filter for unsupported claims in LLM output"
+  title: "Touchstone: a lexical ranker for a review queue"
   authors:
     - family-names: Lucic
       given-names: Lovro
