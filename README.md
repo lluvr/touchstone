@@ -71,11 +71,20 @@ so read `scope_notes` before using `fail_open`.
 
 The probability is driven mostly by vocabulary overlap. A number that is
 changed or fabricated against a number-dense source may not raise it, and
-can even lower it slightly on the default calibration: swapping two
-numbers in the source above scored below a verbatim copy. Check
-`result.layer_outputs["source_matching"]` (Layer 4) for that case: its
-`unsourced_rate` and `unsourced_details` list every number in the text
-that does not appear in the source.
+can even lower it slightly on the default calibration: transposing the
+digits of two numbers in the source above (`$134 billion`, `23%`) scores
+0.110, below the 0.121 of a verbatim copy. For that case read
+`unsourced_details` (Layer 4, also the first key of the MCP `verify`
+result). It lists each checked number in the text whose digits are not
+in the source. Checked means a percentage, a money amount, a multiplier,
+or a plain integer of 2 to 6 digits or with thousands commas. A
+single-digit count (`5 stores`) and a year are not checked. That covers
+the transposed pair, and a truncated figure such as `$14 billion`
+against `$143 billion`. A figure written in another form still counts as
+sourced: `$185 billion` against `185 billion dollars`, `10.5%` against
+`10%`. A figure moved to the wrong line is not listed. Putting the `32%`
+on the iPhone line and the `8%` on the margin line leaves the list empty,
+and the score stays 0.121. That case needs a reader or a judge.
 
 **Before deploying read [`docs/production_readiness.md`](https://github.com/lluvr/touchstone/blob/main/docs/production_readiness.md)**
 (in the repository; the wheel ships only the code). The default
@@ -371,9 +380,9 @@ Expected per-document metrics are recorded in `benchmarks/exp_081_discrimination
 |---|---|---|
 | Mean gap (Touchstone) | -0.4377 | +0.1585 |
 | Mean gap (detector_v031) | -0.443 | +0.169 |
-| Cohen's d | **-5.238** vs detector_v031 **-5.43** | |
-| **Hedges' g** (small-N corrected) | **-4.835** | |
-| **95% bootstrap CI on Cohen's d** | **[-8.926, -4.498]** (2000 resamples, fixed seed) | |
+| Cohen's d | **-5.279** vs detector_v031 **-5.43** | |
+| **Hedges' g** (small-N corrected) | **-4.873** | |
+| **95% bootstrap CI on Cohen's d** | **[-9.067, -4.536]** (2000 resamples, fixed seed) | |
 | Per-doc gap-direction agreement with detector_v031 | 100% (12/12) | |
 | MAE on unsourced_rate / gap / substance / presentation | 0.014 / 0.010 / 0.010 / 0.000 | |
 
@@ -449,9 +458,9 @@ What this release does **not** demonstrate:
 
 - **Three external corpora, two budget-tier LLM-based baselines, three trivial lexical baselines.** See the §Empirical validation "Headline finding" subsection for the full table. Layer 6 is statistically indistinguishable from a 3-line WordOverlapInv baseline on every corpus tested; the substrate-independence finding is shared by trivial lexical features. SOTA LLM-based discriminators (Bespoke-MiniCheck-7B, GPT-4-as-judge) are NOT tested, they would score higher AUC and are the right next-step baselines for a methodology paper. Open work on corpora: TRUE (Honovich et al. 2022), LLM-AggreFact held-out (Tang et al. 2024), HaluBench / Lynx (Patronus 2024). Open work on baselines: HHEM 2.1 (`trust_remote_code` API rename conflict with current transformers), SelfCheckGPT (Manakul et al. 2023), G-Eval (Liu et al. 2023), Bespoke-MiniCheck-7B (requires GPU), AlignScore on RAGTruth QA / Data2Txt task types.
 - **All three external corpora are English-news-summarization derivatives.** RAGTruth Summary, SummEval, HaluEval summarization all anchor on CNN/DM or similar English news content. The substrate-independence finding is on this single domain. Generalization to non-English text, legal documents, medical documents, code, or any non-summarization output task is OUT OF VALIDATED SCOPE. The cross-task evidence within RAGTruth (Summary / QA / Data2Txt) is the only multi-task evidence in the report; further task and language coverage is open work.
-- **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.238). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. On short-form text the composite does not hold. Layer 6 inverse_proximity is the surviving out-of-domain option in this library (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance). Pairing it with another score does not make it a detector.
+- **Layer 10 gap is input-regime-conditional.** The composite holds on long-form analytical Markdown with adequate claim density (EXP-081 internal corpus, d = -5.279). It does NOT hold on short summary outputs across any of the three external corpora tested: 95% bootstrap CIs all include 0.5000. On short-form text the composite does not hold. Layer 6 inverse_proximity is the surviving out-of-domain option in this library (AUC 0.64-0.76 across three corpora × three task types, all CIs disjoint from chance). Pairing it with another score does not make it a detector.
 - **EXP-081 corpus is single-vendor.** All 12 documents are xAI grok-4-1-fast. Cross-vendor generalization within the fast tier and to flagship-tier model outputs is open research.
-- **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-8.926, -4.498] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.835) is reported alongside.
+- **Small-N statistics.** N=6/6 yields a wide bootstrap CI on Cohen's d ([-9.067, -4.536] at 95%). The sign of the effect is stable across resamples; the magnitude is uncertain at this corpus size. Hedges' g (-4.873) is reported alongside.
 - **Layer 11 entity list is domain-biased.** The hardcoded external-entity P-markers (`_GFP_EXTERNAL_ENTITIES` in `measure.py`) cover GLP-1 drugs, Apple products, and BLS labor terms (the three EXP-095 source domains). On new domains, the secondary P-signal goes silent; adopters extending to new domains must author new entity lists with their own false-positive control.
 - **No constituted editor body.** Standard §11 references an editor body for formal certification; that body is not yet constituted. Conformance today is self-certification by passing the test suite in this repo.
 

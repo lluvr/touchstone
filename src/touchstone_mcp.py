@@ -117,7 +117,9 @@ def build_server() -> FastMCP:
             "`scope` before using the probability. `top_unsupported` is a "
             "lexical shortlist. Call `measure` for the raw multi-layer "
             "output. Blending this score onto a judge was parity or worse "
-            "on 5 of 6 Grok holdout cells."
+            "on 5 of 6 Grok holdout cells. `verify` returns "
+            "`unsourced_details` first: numbers in the text whose digits "
+            "are not in the source."
         ),
     )
 
@@ -167,7 +169,14 @@ def build_server() -> FastMCP:
         longer inputs are rejected with an error.
 
         Returns:
-            A dict with keys ``prob_hallucinated`` (float in [0, 1]),
+            A dict with keys ``unsourced_details`` (first: each number
+            in the text whose digits do not appear in the source, as
+            ``value``, ``type``, ``context``, and ``currency`` for
+            money; checked numbers are percentages, money, multipliers,
+            and integers of 2 to 6 digits or with commas, so a year or a
+            single-digit count is not in this list, and a changed number
+            that reuses a source figure is not caught),
+            ``prob_hallucinated`` (float in [0, 1]),
             ``mode`` (which calibration mode produced the score),
             ``scope`` (``"validated"`` / ``"limited_signal"`` /
             ``"insufficient_input"``; see scope_notes for the
@@ -214,7 +223,17 @@ def build_server() -> FastMCP:
                 "that detector's sentences. A direction, scope, or relation "
                 "change that keeps the source words is not located here."
             )
+        # Layer 4 runs on every call. Its list is the one output here that
+        # names a checkable fact: these digits are in the text and not in
+        # the source. It comes first so a host reads it before the score.
+        source_matching = result.layer_outputs.get("source_matching")
+        unsourced = (
+            [dict(detail) for detail in source_matching["unsourced_details"]]
+            if source_matching
+            else []
+        )
         return {
+            "unsourced_details": unsourced,
             "prob_hallucinated": result.prob_hallucinated,
             "mode": result.mode,
             "scope": result.scope,

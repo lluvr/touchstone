@@ -22,7 +22,7 @@ registered alongside.
 
 | Tool | What it does |
 |---|---|
-| `verify(text, source, ...)` | Lexical overlap score for a `(text, source)` pair, plus scope, signal breakdown, and span localization. The probability orders a queue. Mirrors `Verifier.score()`. |
+| `verify(text, source, ...)` | The numbers in the text that are not in the source (`unsourced_details`, first), then the lexical overlap score, scope, signal breakdown, and span localization. The probability orders a queue. Mirrors `Verifier.score()`. |
 | `measure(text, source, ...)` | Raw multi-layer Touchstone output (all eleven Section 5 measurement layers). |
 | `assess_derivation_regime(source_num_count)` | Layer 11 regime label for a source's number count. Saturated means Layer 11's number signal is weak. |
 | `list_modes()` | Enumerate the four Verifier modes with their required inputs and the library + Standard versions in use. |
@@ -94,13 +94,36 @@ can be attached to any FastMCP-compatible transport.
 ## Example tool call
 
 A host calling `verify` with a hallucinated summary against a faithful
-source receives the queue score first. Read `top_unsupported` before
-that score. On this easy case the `$185 billion` sentence is marked
-`unsourced_numbers`. `0.796` is the queue score on this easy case.
-`reading` and `span_basis` say the check is lexical.
+source receives `unsourced_details` first: the numbers in the text whose
+digits are not in the source. Here that is `47` percent, `$185`, and
+`75`. The checked numbers are percentages, money amounts, multipliers,
+and plain integers of 2 to 6 digits or with thousands commas; a
+single-digit count is not checked. Each entry is a fact a reviewer can check against the source in
+seconds. The list does not catch a changed number that reuses a source
+figure, such as `8%` moved from one segment to another, and a year is
+not in it. `0.796` is the queue score on this easy case. `reading` and
+`span_basis` say the check is lexical.
 
 ```json
 {
+  "unsourced_details": [
+    {
+      "value": "47",
+      "type": "percentage",
+      "context": "ever. McKinsey forecasts industry-wide growth of 47% next quarter. The Federal Reserve will raise rate"
+    },
+    {
+      "value": "185",
+      "type": "dollar",
+      "context": "Apple reported Q1 fiscal 2026 revenue of $185 billion, the company's highest ever. McKinsey for",
+      "currency": "$"
+    },
+    {
+      "value": "75",
+      "type": "integer",
+      "context": "ext quarter. The Federal Reserve will raise rates 75 basis points in response. Tesla announced a compe"
+    }
+  ],
   "prob_hallucinated": 0.796,
   "mode": "substrate_only",
   "scope": "validated",

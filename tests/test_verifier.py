@@ -512,3 +512,18 @@ def test_fabricated_numbers_flag_at_default_threshold() -> None:
     v = Verifier()
     result = v.score(NUMERIC_FABRICATED, source=NUMERIC_SOURCE)
     assert result.should_flag()
+
+
+def test_a_figure_moved_to_the_wrong_line_is_not_listed() -> None:
+    """Pinned limit, stated in the README: Layer 4 matches digits, not the
+    claim a number is attached to. Moving 8% and 32% between lines keeps
+    every digit in the source, so the list is empty and the score does
+    not move."""
+    v = Verifier()
+    moved = NUMERIC_SOURCE.replace("8%", "@").replace("32%", "8%").replace("@", "32%")
+    copy = v.score(NUMERIC_SOURCE, source=NUMERIC_SOURCE)
+    result = v.score(moved, source=NUMERIC_SOURCE)
+    sm = result.layer_outputs["source_matching"]
+    assert sm is not None
+    assert sm["unsourced_details"] == []
+    assert result.prob_hallucinated == pytest.approx(copy.prob_hallucinated)

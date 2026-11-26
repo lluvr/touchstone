@@ -103,6 +103,7 @@ async def test_verify_returns_required_shape(server: FastMCP) -> None:
     )
     out = result.structured_content
     assert set(out.keys()) >= {
+        "unsourced_details",
         "prob_hallucinated",
         "mode",
         "scope",
@@ -114,6 +115,43 @@ async def test_verify_returns_required_shape(server: FastMCP) -> None:
     }
     assert out["span_basis"] == "lexical"
     assert "not a verdict" in out["reading"]
+
+
+async def test_verify_leads_with_the_unsourced_numbers(server: FastMCP) -> None:
+    """The numbers absent from the source come first, before the score."""
+    result = await server.call_tool(
+        "verify",
+        {"text": HALLUCINATED_TEXT, "source": HALLUCINATED_SOURCE},
+    )
+    out = result.structured_content
+    assert next(iter(out)) == "unsourced_details"
+    assert [(d["value"], d["type"]) for d in out["unsourced_details"]] == [
+        ("47", "percentage"),
+        ("185", "dollar"),
+        ("75", "integer"),
+    ]
+    assert all(set(d) >= {"value", "type", "context"} for d in out["unsourced_details"])
+
+
+async def test_verify_lists_no_numbers_for_a_faithful_pair(server: FastMCP) -> None:
+    result = await server.call_tool(
+        "verify",
+        {"text": SUPPORTED_TEXT, "source": SUPPORTED_SOURCE},
+    )
+    assert result.structured_content["unsourced_details"] == []
+
+
+async def test_verify_lists_a_truncated_number(server: FastMCP) -> None:
+    """$14 billion against a $143 billion source is a different number."""
+    result = await server.call_tool(
+        "verify",
+        {
+            "text": SUPPORTED_TEXT.replace("$143 billion", "$14 billion"),
+            "source": SUPPORTED_SOURCE,
+        },
+    )
+    values = [d["value"] for d in result.structured_content["unsourced_details"]]
+    assert values == ["14"]
 
 
 async def test_verify_judge_score_does_not_relabel_the_sentences(server: FastMCP) -> None:
