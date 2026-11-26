@@ -294,7 +294,7 @@ python -m benchmarks.exp_081_discrimination.run
 python -m benchmarks.exp_095_grounding.run
 ```
 
-EXP-081 records Cohen's d = -5.238 on a 12-document single-vendor
+EXP-081 records Cohen's d = -5.279 on a 12-document single-vendor
 corpus against the recorded `detector_v031` baseline of d = -5.43.
 EXP-095 records P-existence direction agreement (P>0 vs P=0) of
 100% on 13 hand-classified outputs across three model families;

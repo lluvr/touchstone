@@ -19,7 +19,7 @@ The falsification protocol distinguishes:
 - **Full falsification.** A confirmed empirical case where the construct claim is false. Triggers either a Standard amendment (layer redefinition) or a layer retirement under the §10 versioning rules.
 - **Partial falsification.** The construct holds in one input regime but not another. Triggers a §9.2 scope update rather than a layer retirement; the layer's validity claim becomes conditional on input regime.
 
-Layer 10's `quality_profile.gap` is the canonical instance of partial falsification: it holds within the calibrated long-form analytical regime (EXP-081 internal corpus, d = -5.238) but does NOT generalize to short summary outputs across any of three external corpora tested (AUC 95% CIs all overlap 0.5000). The §9.2 scope statement is updated to reflect this.
+Layer 10's `quality_profile.gap` is the canonical instance of partial falsification: it holds within the calibrated long-form analytical regime (EXP-081 internal corpus, d = -5.279) but does NOT generalize to short summary outputs across any of three external corpora tested (AUC 95% CIs all overlap 0.5000). The §9.2 scope statement is updated to reflect this.
 
 ## 3. Empirical evidence
 
@@ -27,7 +27,7 @@ Layer 10's `quality_profile.gap` is the canonical instance of partial falsificat
 
 Two project-authored corpora ship in the repository, each pinned to byte-exact JSON snapshots verified by pytest:
 
-- **EXP-081** (12 documents, single-vendor): tests whether the composite `quality_profile.gap` discriminates faithful-vs-embellished outputs on the same source. Touchstone records d = -5.238 (Hedges' g = -4.835, 95% bootstrap CI on Cohen's d = [-8.926, -4.498]) against an earlier internal detector's recorded baseline of d = -5.43. This is a regression baseline, not an external replication; the embellishment instruction's textual features (external citations, statistics, forward references) overlap with what Layers 4/5/11 detect.
+- **EXP-081** (12 documents, single-vendor): tests whether the composite `quality_profile.gap` discriminates faithful-vs-embellished outputs on the same source. Touchstone records d = -5.279 (Hedges' g = -4.873, 95% bootstrap CI on Cohen's d = [-9.067, -4.536]) against an earlier internal detector's recorded baseline of d = -5.43. This is a regression baseline, not an external replication; the embellishment instruction's textual features (external citations, statistics, forward references) overlap with what Layers 4/5/11 detect.
 - **EXP-095** (13 hand-classified outputs, three model families): tests Layer 11's G/F/P decomposition. P-existence direction agreement with manual classification is 100% (13/13); aggregate G/F/P MAE is 0.02-0.04 vs `detector_v031`, 0.12-0.13 vs full manual classification (n=7 outputs with complete annotations).
 
 Both internal benchmarks are reproducible from a fresh clone.

@@ -51,17 +51,17 @@ The detector_v031 numbers are the baseline that the Touchstone
 implementation is expected to track to within the MAE bands below;
 they are not an independent ground truth.
 
-## Touchstone reproduction (2026-05-12 baseline)
+## Touchstone reproduction (2026-11-26 baseline)
 
 | Metric | Faithful | Embellished | Touchstone | detector_v031 |
 |---|---|---|---|---|
-| Mean gap | -0.4377 | +0.1585 | - | - |
-| **Cohen's d** | | | **-5.238** | -5.43 |
-| **Hedges' g** (small-N corrected) | | | **-4.835** | - |
-| **95% bootstrap CI on Cohen's d** | | | **[-8.926, -4.498]** | [-9.077, -4.681] |
+| Mean gap | -0.4377 | +0.1625 | - | - |
+| **Cohen's d** | | | **-5.279** | -5.43 |
+| **Hedges' g** (small-N corrected) | | | **-4.873** | - |
+| **95% bootstrap CI on Cohen's d** | | | **[-9.067, -4.536]** | [-9.077, -4.681] |
 | Gap direction agreement | | | **100% (12/12)** | - |
 | MAE vs detector_v031 | unsourced_rate | gap | substance | presentation |
-| | 0.014 | 0.0097 | 0.0095 | 0.0 |
+| | 0.014 | 0.0098 | 0.0098 | 0.0 |
 
 Hedges' g applies the standard small-N correction (1 - 3 / (4 * N - 9))
 to Cohen's d; at N=12 the correction shrinks |d| by ~7.7%. The 95%
@@ -83,7 +83,7 @@ Establishes (with corpus-bound caveats):
 - Layers 4, 5, 7, 8 (composed via Layer 10) discriminate this specific
   faithful-vs-embellished construct on this 12-document single-vendor
   corpus.
-- Cohen's d = -5.238 reproduces to within 0.2 of the recorded
+- Cohen's d = -5.279 reproduces to within 0.2 of the recorded
   detector_v031 baseline on the same corpus.
 - Per-document gap direction matches detector_v031 on 12/12.
 
@@ -94,8 +94,8 @@ Does not establish:
 - Generalization to flagship-tier models; corpus is fast-tier only.
 - Head-to-head comparison against AlignScore, MiniCheck, HHEM 2.1,
   SelfCheckGPT, G-Eval, or other published faithfulness metrics.
-- Statistical reliability at small N: Hedges' g (-4.835) and the
-  bootstrap CI ([-8.926, -4.498]) are reported in the table above;
+- Statistical reliability at small N: Hedges' g (-4.873) and the
+  bootstrap CI ([-9.067, -4.536]) are reported in the table above;
   they quantify uncertainty within this corpus. They do not address
   generalization to other corpora, which remains the open work.
 

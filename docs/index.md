@@ -87,7 +87,7 @@ and tested (502 tests total across library and MCP server; CI green on
 ruff lint + format, mypy strict, and the pytest matrix across Python
 3.10/3.11/3.12). Test coverage (library + MCP server) is 97% with a 95% CI gate. Two internal regression benchmarks plus three
 external corpus comparisons ship in `benchmarks/`. Internal: EXP-081
-(Cohen's d = -5.238 on a 12-document single-vendor corpus, vs the
+(Cohen's d = -5.279 on a 12-document single-vendor corpus, vs the
 recorded `detector_v031` baseline of -5.43) and EXP-095 (P-existence
 direction agreement 100% on 13 outputs). External: RAGTruth Summary,
 SummEval, HaluEval summarization (n totals 900 / 1600 / 1000;

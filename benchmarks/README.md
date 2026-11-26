@@ -81,8 +81,8 @@ embellished AI outputs. 12 documents (3 topics × 2 conditions ×
 embellished system instructions. Single-vendor corpus; cross-vendor
 and flagship-tier generalization is open work.
 
-Touchstone's `quality_profile` gap records **d = -5.238**
-(Hedges' g = -4.835, 95% bootstrap CI [-8.926, -4.498]) against the
+Touchstone's `quality_profile` gap records **d = -5.279**
+(Hedges' g = -4.873, 95% bootstrap CI [-9.067, -4.536]) against the
 recorded `detector_v031` baseline of **d = -5.43** (recorded CI
 [-9.077, -4.681]). Per-doc MAE on unsourced_rate, gap,
 substance_index, and presentation_index all < 0.015. This is a

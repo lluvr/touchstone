@@ -235,16 +235,46 @@ def test_year_boundary_inclusive_at_1990_and_2035() -> None:
     assert out_range["n_total"] == 2  # 1989 and 2036 are integers, kept
 
 
-def test_multiplier_uses_substring_match_in_source() -> None:
-    """Behaviour: multiplier source matching uses unanchored substring
-    search, so "2x" output matches "12x" in source. This is generous and
-    intentional; pinned here so future tightening is visible.
-    """
+def test_multiplier_is_not_matched_inside_a_longer_number() -> None:
+    """An output 2x is not the 12x in the source."""
     out = "Margin grew 2x year over year for sustained profitable growth here."
     src = "Margin grew 12x year over year for sustained profitable growth here."
     result = source_matching(out, src)
-    # "2x" output is marked in-source because "12x" contains the substring
-    assert result["n_unsourced"] == 0
+    assert [d["value"] for d in result["unsourced_details"]] == ["2"]
+
+
+@pytest.mark.parametrize(
+    ("output", "source", "value"),
+    [
+        # A dropped digit is a different number, not a rounding.
+        ("Revenue was $14 billion.", "Revenue was $143 billion.", "14"),
+        ("Revenue was $18 billion.", "Revenue was $185 billion.", "18"),
+        ("Revenue was $14,000.", "Revenue was $14,000,000.", "14000"),
+        ("Growth was 7%.", "Growth was 47%.", "7"),
+        ("Growth was 7%.", "Growth was 4.7%.", "7"),
+        ("Margin was 3.2x.", "Margin was 13.2x.", "3.2"),
+    ],
+)
+def test_a_number_inside_a_longer_source_number_is_unsourced(
+    output: str, source: str, value: str
+) -> None:
+    result = source_matching(output, source)
+    assert [d["value"] for d in result["unsourced_details"]] == [value]
+
+
+@pytest.mark.parametrize(
+    ("output", "source"),
+    [
+        # Rounding a source figure stays sourced, as before.
+        ("Revenue was $143 billion.", "Revenue was $143.8 billion."),
+        ("Margin was 10.5%.", "Margin was 10%."),
+        ("Growth was 47%.", "Growth was 47 %."),
+        ("Revenue was $143 billion.", "Revenue was $ 143 billion."),
+        ("Margin grew 2x.", "Margin grew 2X."),
+    ],
+)
+def test_the_boundary_keeps_rounded_and_spaced_forms(output: str, source: str) -> None:
+    assert source_matching(output, source)["unsourced_details"] == []
 
 
 def test_scale_word_extraction_with_raw_form_source_match() -> None:
@@ -472,3 +502,46 @@ def test_embellished_output_has_high_unsourced_rate() -> None:
 
     assert embellished_result["unsourced_rate"] > faithful_result["unsourced_rate"]
     assert embellished_result["n_unsourced"] > faithful_result["n_unsourced"]
+
+
+@pytest.mark.parametrize(
+    ("output", "source"),
+    [
+        ("Revenue was $185 billion.", "Revenue was 185 billion dollars."),
+        ("Revenue was $185 billion.", "Revenue was USD 185 billion."),
+        ("Revenue was $40.", "It cost 40 US dollars."),
+        ("Revenue was €30 million.", "Revenue was 30 million euros."),
+        ("Revenue was £12.", "It cost 12 pounds."),
+        ("Revenue was $1,200.", "It cost 1,200 dollars."),
+    ],
+)
+def test_a_currency_written_as_a_word_in_the_source_is_sourced(output: str, source: str) -> None:
+    assert source_matching(output, source)["unsourced_details"] == []
+
+
+@pytest.mark.parametrize(
+    ("output", "source"),
+    [
+        # The word form still needs the same currency and the same number.
+        ("Revenue was €30 million.", "Revenue was 30 million dollars."),
+        ("Revenue was $18 billion.", "Revenue was 185 billion dollars."),
+        ("Revenue was $185 billion.", "Revenue was 185 billion people."),
+    ],
+)
+def test_the_currency_word_form_needs_the_same_currency_and_number(
+    output: str, source: str
+) -> None:
+    assert len(source_matching(output, source)["unsourced_details"]) == 1
+
+
+@pytest.mark.parametrize(
+    ("output", "source"),
+    [
+        ("It has 5 stores.", "It has 4 stores."),
+        ("It sold 1234567 units.", "It sold 7654321 units."),
+    ],
+)
+def test_pinned_limit_unchecked_integer_forms(output: str, source: str) -> None:
+    """Stated in the README: a single-digit count and a bare integer of 7
+    or more digits are not extracted, so a change to one is not listed."""
+    assert source_matching(output, source)["n_total"] == 0

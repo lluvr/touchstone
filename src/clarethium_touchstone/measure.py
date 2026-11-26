@@ -152,6 +152,18 @@ _SCALE_MULTIPLIERS: dict[str, int] = {
 # path and don't double-extract).
 _CURRENCY_CHARS = "$€£¥₹"
 
+# A source may write the currency as a word or a code instead of the
+# symbol: "$185 billion" in a draft, "185 billion dollars" or
+# "USD 185 billion" in the source. Each symbol maps to the words that
+# follow a number and the codes that precede one.
+_CURRENCY_WORDS: dict[str, tuple[str, str]] = {
+    "$": (r"(?:us\s+)?dollars?", r"usd"),
+    "€": (r"euros?", r"eur"),
+    "£": (r"pounds?(?:\s+sterling)?", r"gbp"),
+    "¥": (r"yen|yuan|renminbi", r"jpy|cny|rmb"),
+    "₹": (r"rupees?", r"inr"),
+}
+
 # Regex patterns for digit-formatted numerical claims, in priority order.
 # Higher-priority patterns claim character ranges first, preventing decimal
 # and integer patterns from extracting sub-tokens of already-captured
@@ -315,12 +327,18 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
     ntype = num["type"]
     raw = num.get("raw", "")
 
+    # A number found inside a longer source number is a different number:
+    # "$14" is not in "$143", "7%" is not in "47%". A decimal after the
+    # match is still allowed, so "$143" stays sourced by "$143.8".
+    left = r"(?<![\d.])"
+    right = r"(?!\d|,\d)"
+
     if ntype == "percentage":
-        if re.search(re.escape(val) + r"\s*%", source_text):
+        if re.search(left + re.escape(val) + r"\s*%", source_text):
             return True
         if "." in val:
             int_val = val.split(".")[0]
-            if re.search(re.escape(int_val) + r"\s*%", source_text):
+            if re.search(left + re.escape(int_val) + r"\s*%", source_text):
                 return True
         return False
 
@@ -332,13 +350,25 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
         # USD-only behaviour).
         currency = num.get("currency", "$")
         currency_re = re.escape(currency) + r"\s*"
-        if re.search(currency_re + re.escape(val), source_text):
+        if re.search(currency_re + re.escape(val) + right, source_text):
             return True
         comma_val = _add_commas(val)
-        return bool(comma_val and re.search(currency_re + re.escape(comma_val), source_text))
+        if comma_val and re.search(currency_re + re.escape(comma_val) + right, source_text):
+            return True
+        words = _CURRENCY_WORDS.get(currency)
+        if words is None:
+            return False
+        after, before = words
+        forms = "|".join(re.escape(v) for v in (val, comma_val) if v)
+        number = left + "(?:" + forms + ")" + right
+        scale = r"(?:\s*(?:thousand|million|billion|trillion|bn|mn|[mbk])\b)?"
+        return bool(
+            re.search(number + scale + r"\s+(?:" + after + r")\b", source_text, re.IGNORECASE)
+            or re.search(r"\b(?:" + before + r")\s*" + number, source_text, re.IGNORECASE)
+        )
 
     if ntype == "multiplier":
-        return bool(re.search(re.escape(val) + r"[xX]", source_text))
+        return bool(re.search(left + re.escape(val) + r"[xX]", source_text))
 
     # integer, decimal: try raw value, comma-formatted variant, then
     # (for scaled-form raw) the original "N word" form.
@@ -1777,7 +1807,7 @@ def quality_profile(
     values are ``0.0``.
 
     Validation in public surface: EXP-081 (`benchmarks/exp_081_discrimination/`)
-    records Cohen's d = -5.238 on a 12-document single-vendor corpus
+    records Cohen's d = -5.279 on a 12-document single-vendor corpus
     against the `detector_v031` reference of d = -5.43; this is an
     internal regression baseline, not an external replication.
     External-corpus validation (TRUE, LLM-AggreFact, HaluBench,

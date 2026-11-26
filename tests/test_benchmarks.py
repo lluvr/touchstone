@@ -144,7 +144,7 @@ def test_exp_081_benchmark_runs_to_completion() -> None:
 def test_exp_081_reproduces_published_effect_size() -> None:
     """Touchstone reproduces the published d=-5.43 effect size for
     faithful-vs-embellished gap discrimination. Published CI is
-    [-9.077, -4.681]; current Touchstone result is -5.238.
+    [-9.077, -4.681]; current Touchstone result is -5.279.
 
     The threshold here (-4.0) catches a regression that would
     meaningfully weaken the discrimination signal but tolerates
@@ -159,7 +159,7 @@ def test_exp_081_reproduces_published_effect_size() -> None:
     # Direction (sign) and substantial-magnitude both required.
     assert d < -4.0, (
         f"Cohen's d for faithful-vs-embellished gap regressed to {d}. "
-        f"Published value -5.43 (CI [-9.077, -4.681]); current baseline -5.238."
+        f"Published value -5.43 (CI [-9.077, -4.681]); current baseline -5.279."
     )
 
 
@@ -206,7 +206,7 @@ def test_exp_081_snapshot_matches_committed_baseline() -> None:
         run_all,
     )
 
-    snapshot_path = BENCHMARK_DIR / "results" / "snapshot_2026-05-12.json"
+    snapshot_path = BENCHMARK_DIR / "results" / "snapshot_2026-11-26.json"
     if not snapshot_path.exists():
         pytest.skip(f"baseline snapshot missing: {snapshot_path}")
 
@@ -232,9 +232,9 @@ def test_exp_081_aggregate_statistics_stable() -> None:
     from benchmarks.exp_081_discrimination.run import aggregate, run_all
 
     agg = aggregate(run_all())
-    assert agg["cohens_d_faithful_vs_embellished"] == -5.238
-    assert agg["hedges_g_faithful_vs_embellished"] == -4.835
-    assert agg["cohens_d_bootstrap_ci_95"] == [-8.926, -4.498]
+    assert agg["cohens_d_faithful_vs_embellished"] == -5.279
+    assert agg["hedges_g_faithful_vs_embellished"] == -4.873
+    assert agg["cohens_d_bootstrap_ci_95"] == [-9.067, -4.536]
 
 
 def test_exp_095_snapshot_matches_committed_baseline() -> None:
