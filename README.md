@@ -81,8 +81,10 @@ or a plain integer of 2 to 6 digits or with thousands commas. A
 single-digit count (`5 stores`) and a year are not checked. That covers
 the transposed pair, and a truncated figure such as `$14 billion`
 against `$143 billion`. A figure written in another form still counts as
-sourced: `$185 billion` against `185 billion dollars`, `10.5%` against
-`10%`. A figure moved to the wrong line is not listed. Putting the `32%`
+sourced: `$185 billion` against `185 billion dollars`, `$20k` against
+`$20,000`, `$3.6 million` against `$3.64 million` (a money amount matches
+the source amount rounded to the text's own precision), and `10.5%`
+against `10%`. A figure moved to the wrong line is not listed. Putting the `32%`
 on the iPhone line and the `8%` on the margin line leaves the list empty,
 and the score stays 0.121. That case needs a reader or a judge.
 

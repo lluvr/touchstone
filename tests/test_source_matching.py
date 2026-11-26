@@ -545,3 +545,38 @@ def test_pinned_limit_unchecked_integer_forms(output: str, source: str) -> None:
     """Stated in the README: a single-digit count and a bare integer of 7
     or more digits are not extracted, so a change to one is not listed."""
     assert source_matching(output, source)["n_total"] == 0
+
+
+@pytest.mark.parametrize(
+    ("output", "source"),
+    [
+        # Same amount, another scale form, or rounded to the text's precision.
+        # Each pair is a faithful HaluEval summary that the bounded match
+        # would otherwise have flagged.
+        ("They earn $20k or $250k.", "They earn $20,000 or $250,000."),
+        ("He took the £100k-a-week offer.", "He took the £100,000 a week offer."),
+        ("The lot fetched $3.6 million.", "The lot fetched a total of $3.64 million."),
+        ("The farm sold for $4.8million.", "The farm sold for $4.85million."),
+        ("It sold for $932k.", "It sold for $932,500."),
+        ("A £22k salary.", "A £22,023 salary."),
+        ("It raised $2 bn.", "It raised $2,000,000,000."),
+        ("It cost $20,000.", "It cost $20k."),
+    ],
+)
+def test_a_money_amount_matches_by_magnitude(output: str, source: str) -> None:
+    assert source_matching(output, source)["unsourced_details"] == []
+
+
+@pytest.mark.parametrize(
+    ("output", "source"),
+    [
+        # Different magnitudes, each a hallucinated HaluEval summary.
+        ("Osborne will cut £3billion.", "A cost of £3,500 for a family."),
+        ("His £15m fortune is gone.", "His £150million fortune is gone."),
+        ("A $3 million outfit.", "His $300m mega-fight."),
+        ("A £1 million dress.", "A dress worth £1,640."),
+        ("It cost $20k.", "It cost €20,000."),
+    ],
+)
+def test_a_money_amount_of_another_magnitude_is_unsourced(output: str, source: str) -> None:
+    assert len(source_matching(output, source)["unsourced_details"]) == 1

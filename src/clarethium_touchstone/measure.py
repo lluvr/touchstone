@@ -163,6 +163,79 @@ _CURRENCY_WORDS: dict[str, tuple[str, str]] = {
     "¥": (r"yen|yuan|renminbi", r"jpy|cny|rmb"),
     "₹": (r"rupees?", r"inr"),
 }
+# Plain stems of those words and codes. The word-form search runs only when
+# the lowercased source contains one, so a source with no currency words
+# costs one substring scan instead of two case-insensitive regex scans per
+# unsourced amount.
+_CURRENCY_STEMS: dict[str, tuple[str, ...]] = {
+    "$": ("dollar", "usd"),
+    "€": ("euro", "eur"),
+    "£": ("pound", "gbp"),
+    "¥": ("yen", "yuan", "renminbi", "jpy", "cny", "rmb"),
+    "₹": ("rupee", "inr"),
+}
+
+
+# Scale suffixes on a money amount: "$20k", "£3.6m", "$2 bn", "$4.8million".
+# Used to compare amounts by magnitude when the text and the source write the
+# same amount in different forms.
+_MONEY_SCALES: dict[str, float] = {
+    "k": 1e3,
+    "thousand": 1e3,
+    "m": 1e6,
+    "mn": 1e6,
+    "million": 1e6,
+    "bn": 1e9,
+    "billion": 1e9,
+    "tn": 1e12,
+    "trillion": 1e12,
+}
+_MONEY_SCALE_RE = re.compile(
+    r"\s*(k|m|mn|bn|tn|thousand|million|billion|trillion)\b", re.IGNORECASE
+)
+_MONEY_AMOUNT = r"\s*(\d+(?:\.\d+)?(?:,\d{3})*)"
+
+
+def _money_scale_at(text: str, pos: int) -> str:
+    """Return the lowercased scale suffix that starts at ``pos``, or ``""``."""
+    m = _MONEY_SCALE_RE.match(text, pos)
+    return m.group(1).lower() if m else ""
+
+
+def _money_magnitude_in_source(val: str, scale: str, currency: str, source_text: str) -> bool:
+    """Return True if a same-currency source amount rounds to the text amount.
+
+    The text's own precision sets the tolerance: "$3.6 million" is sourced
+    by "$3.64 million", "$20k" by "$20,000", "$932k" by "$932,500". "$15m"
+    is not sourced by "$150 million", and "$3 million" not by "$300m".
+    """
+    if currency not in source_text:
+        return False
+    unit = _MONEY_SCALES.get(scale, 1.0)
+    decimals = len(val.split(".", 1)[1]) if "." in val else 0
+    amount = float(val) * unit
+    tolerance = 0.5 * unit * 10.0**-decimals
+    for m in re.finditer(re.escape(currency) + _MONEY_AMOUNT, source_text):
+        source_scale = _MONEY_SCALES.get(_money_scale_at(source_text, m.end()), 1.0)
+        source_amount = float(m.group(1).replace(",", "")) * source_scale
+        if abs(source_amount - amount) <= tolerance * (1 + 1e-9):
+            return True
+    return False
+
+
+def _search_bounded(pattern: str, text: str, flags: int = 0) -> bool:
+    """Return True if ``pattern`` matches with no digit or dot before it.
+
+    ``pattern`` starts with the literal number, so the regex engine can
+    scan for that literal; a leading lookbehind would defeat that scan and
+    made long sources several times slower.
+    """
+    for m in re.finditer(pattern, text, flags):
+        start = m.start()
+        if start == 0 or text[start - 1] not in "0123456789.":
+            return True
+    return False
+
 
 # Regex patterns for digit-formatted numerical claims, in priority order.
 # Higher-priority patterns claim character ranges first, preventing decimal
@@ -284,6 +357,10 @@ def _extract_numbers_for_matching(text: str) -> list[dict[str, str]]:
                 first_char = m.group(0)[0]
                 if first_char in _CURRENCY_CHARS:
                     entry["currency"] = first_char
+                if num_type == "dollar":
+                    scale = _money_scale_at(text, m.end())
+                    if scale:
+                        entry["scale"] = scale
             numbers.append(entry)
     return numbers
 
@@ -330,15 +407,14 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
     # A number found inside a longer source number is a different number:
     # "$14" is not in "$143", "7%" is not in "47%". A decimal after the
     # match is still allowed, so "$143" stays sourced by "$143.8".
-    left = r"(?<![\d.])"
     right = r"(?!\d|,\d)"
 
     if ntype == "percentage":
-        if re.search(left + re.escape(val) + r"\s*%", source_text):
+        if _search_bounded(re.escape(val) + r"\s*%", source_text):
             return True
         if "." in val:
             int_val = val.split(".")[0]
-            if re.search(left + re.escape(int_val) + r"\s*%", source_text):
+            if _search_bounded(re.escape(int_val) + r"\s*%", source_text):
                 return True
         return False
 
@@ -355,20 +431,24 @@ def _number_in_source(num: dict[str, str], source_text: str) -> bool:
         comma_val = _add_commas(val)
         if comma_val and re.search(currency_re + re.escape(comma_val) + right, source_text):
             return True
+        if _money_magnitude_in_source(val, num.get("scale", ""), currency, source_text):
+            return True
         words = _CURRENCY_WORDS.get(currency)
         if words is None:
             return False
+        source_lower = source_text.lower()
+        if not any(stem in source_lower for stem in _CURRENCY_STEMS[currency]):
+            return False
         after, before = words
         forms = "|".join(re.escape(v) for v in (val, comma_val) if v)
-        number = left + "(?:" + forms + ")" + right
+        number = "(?:" + forms + ")" + right
         scale = r"(?:\s*(?:thousand|million|billion|trillion|bn|mn|[mbk])\b)?"
-        return bool(
-            re.search(number + scale + r"\s+(?:" + after + r")\b", source_text, re.IGNORECASE)
-            or re.search(r"\b(?:" + before + r")\s*" + number, source_text, re.IGNORECASE)
-        )
+        if _search_bounded(number + scale + r"\s+(?:" + after + r")\b", source_lower):
+            return True
+        return bool(re.search(r"\b(?:" + before + r")\s*" + number, source_lower))
 
     if ntype == "multiplier":
-        return bool(re.search(left + re.escape(val) + r"[xX]", source_text))
+        return _search_bounded(re.escape(val) + r"[xX]", source_text)
 
     # integer, decimal: try raw value, comma-formatted variant, then
     # (for scaled-form raw) the original "N word" form.
@@ -1074,8 +1154,21 @@ def source_matching(text: str, source: str) -> SourceMatching:
     in_source: list[dict[str, str]] = []
     not_in_source: list[dict[str, str]] = []
 
+    # A long draft repeats the same figure many times. Each distinct
+    # figure is searched once per call; the cache dies with the call, so a
+    # long-running server holds no source text.
+    seen: dict[tuple[str, str, str, str], bool] = {}
     for num in numbers:
-        if _number_in_source(num, source):
+        key = (
+            num["value"],
+            num["type"],
+            num.get("raw", ""),
+            num.get("currency", "") + num.get("scale", ""),
+        )
+        found = seen.get(key)
+        if found is None:
+            found = seen[key] = _number_in_source(num, source)
+        if found:
             in_source.append(num)
         else:
             not_in_source.append(num)
