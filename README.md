@@ -5,7 +5,11 @@ A cheap ranker for a review queue. Not a hallucination detector.
 Touchstone orders a draft by how far its words sit from the source. No
 second model call. Reviewing the top 10% of English news summaries by
 the Verifier catches about 1.7x to 3.3x more hallucinations than
-reviewing at random (raw Layer 6 alone: 1.6x to 4.2x). A sentence that
+reviewing at random (raw Layer 6 alone: 1.6x to 4.2x). At precision 0.9
+on those summaries, MiniCheck catches 3 of 204 hallucinations on
+RAGTruth Summary and 11 of 161 on SummEval. Touchstone Layer 6 catches
+1 of 204 and 5 of 161. That is about 0.5% to 7% recall
+(`docs/production_readiness.md` §2). A sentence that
 keeps the source words and changes the direction, the scope, or the
 relation is outside this score. On a 16-case set of those, separation
 is 8/16, chance. Adding this score to a frontier judge was parity or
@@ -36,6 +40,12 @@ result = v.score(
         "investments during the earnings call. Operating margins reached 32%."
     ),
 )
+numbers = result.layer_outputs["source_matching"]["unsourced_details"]
+for number in numbers:
+    print(f"{number['value']} {number['type']}")
+# 47 percentage
+# 185 dollar
+# 75 integer
 print(f"prob_hallucinated = {result.prob_hallucinated:.3f}")  # → 0.796
 print(f"scope             = {result.scope}")                  # → validated
 print(f"should_flag()     = {result.should_flag()}")          # → True
@@ -44,10 +54,12 @@ for span in result.top_unsupported:
 ```
 
 What just happened: this is the easy case, new numbers and new names.
-Touchstone flagged three sentences as projected, the unsourced `$185
-billion`, the unsourced 47% McKinsey forecast, and the unsourced 2027
-Tesla year, and produced a 0.796 probability. The flag is those new
-names. `"validated"` means the lexical features fired. It does not mean
+The first lines are the numbers in the text that do not appear in the
+source: `47` percent, `$185`, and `75`. The projected sentences also
+mark the 2027 Tesla year. That year is a year marker, not one of those
+Layer 4 numbers. `0.796` is the queue score on this easy case.
+`should_flag()` is True because the default threshold is 0.5.
+`"validated"` means the lexical features fired. It does not mean
 the probability is safe to block on. `"limited_signal"` and
 `"insufficient_input"` had less signal. A draft that keeps the source words and
 changes the claim will not look like this example.
@@ -173,6 +185,11 @@ result = v.score(
     text="Apple reported Q1 revenue of $185 billion. McKinsey forecasts 47% growth.",
     source="Apple reported Q1 revenue of $143 billion.",
 )
+numbers = result.layer_outputs["source_matching"]["unsourced_details"]
+for number in numbers:
+    print(f"{number['value']} {number['type']}")
+# 47 percentage
+# 185 dollar
 print(f"prob_hallucinated = {result.prob_hallucinated:.3f}")  # → 0.219
 print(f"should flag (>0.5)? {result.should_flag()}")          # → False at the 0.5 default
 for span in result.top_unsupported:

@@ -8,6 +8,8 @@ The Standard and the package are versioned independently. Standard versions trac
 
 ## Unreleased
 
+- The README opening puts the precision-0.9 catch counts beside the review-queue lift. On RAGTruth Summary and SummEval, MiniCheck catches 3 of 204 and 11 of 161, and Touchstone Layer 6 catches 1 of 204 and 5 of 161 (`docs/production_readiness.md` §2). The quickstart prints the unsourced numbers before the probability and `should_flag()`. `docs/mcp.md` points at that unsourced sentence before the `0.796` queue score. The scorer, `should_flag`, `judge_alpha`, and the tool name are unchanged.
+
 ## touchstone-mcp v0.1.12 - 2026-11-24: the score is a queue, not a detector
 
 - Package version 0.1.12. The library measurement version stays 0.2.2. `judge_alpha` stays 0.3. The tool name stays `verify`.

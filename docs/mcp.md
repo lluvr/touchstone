@@ -94,7 +94,10 @@ can be attached to any FastMCP-compatible transport.
 ## Example tool call
 
 A host calling `verify` with a hallucinated summary against a faithful
-source receives:
+source receives the queue score first. Read `top_unsupported` before
+that score. On this easy case the `$185 billion` sentence is marked
+`unsourced_numbers`. `0.796` is the queue score on this easy case.
+`reading` and `span_basis` say the check is lexical.
 
 ```json
 {
@@ -114,6 +117,8 @@ source receives:
     "l5_entity_unsourced": 0.0,
     "l5_n_entities_norm": 0.0947
   },
+  "span_basis": "lexical",
+  "reading": "Lexical first pass. This probability is not a verdict that a sentence is missing from the source. The sentences listed are projected or loosely grounded. Direction, scope, and relation changes that keep the source words are outside this score.",
   "top_unsupported": [
     {
       "sentence": "Apple reported Q1 fiscal 2026 revenue of $185 billion, the company's highest ever.",
